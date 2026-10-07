@@ -1,0 +1,32 @@
+<mc-page-header
+  title="Opportunités"
+  description="Publication des formations gratuites, bourses, programmes et appels."
+/>
+<section class="mc-card p-5">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="font-semibold">Gestion éditoriale</h2>
+      <p class="mc-muted">Seul le SuperAdmin publie les opportunités.</p>
+    </div>
+    <button class="btn btn-primary rounded-md">Nouvelle opportunité</button>
+  </div>
+  <div class="mt-5 grid gap-3 sm:grid-cols-4">
+    <div class="rounded-md border p-4">
+      <p class="text-xs text-base-content/50">Brouillons</p>
+      <strong>—</strong>
+    </div>
+    <div class="rounded-md border p-4">
+      <p class="text-xs text-base-content/50">Publiées</p>
+      <strong>—</strong>
+    </div>
+    <div class="rounded-md border p-4">
+      <p class="text-xs text-base-content/50">Expirées</p>
+      <strong>—</strong>
+    </div>
+    <div class="rounded-md border p-4">
+      <p class="text-xs text-base-content/50">Archivées</p>
+      <strong>—</strong>
+    </div>
+  </div>
+  <mc-empty-state title="API opportunités à exposer" />
+</section>

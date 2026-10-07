@@ -1,0 +1,15 @@
+<mc-page-header
+  title="Suivi des talents"
+  description="Kanban métier : étude, contact, mise en relation puis archivage. Pas de statut Recruté."
+/>
+<div class="grid gap-4 lg:grid-cols-4">
+  @for (status of ['A_L_ETUDE', 'CONTACT_EN_COURS', 'MISE_EN_RELATION', 'ARCHIVE']; track status) {
+    <section class="mc-card min-h-56 p-4">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-sm font-semibold">{{ status }}</h2>
+        <span class="badge badge-sm rounded-md">0</span>
+      </div>
+      <p class="text-xs text-base-content/50">TODO API : SuiviBesoinTalent</p>
+    </section>
+  }
+</div>

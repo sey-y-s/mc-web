@@ -1,0 +1,20 @@
+<mc-page-header
+  title="Mon profil"
+  description="Compte utilisé pour accéder à l'espace professionnel."
+/>
+<section class="mc-card max-w-2xl p-6">
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <p class="text-xs uppercase tracking-wide text-base-content/50">Identifiant</p>
+      <p class="mt-1 font-medium">{{ 'session' }}</p>
+    </div>
+    <div>
+      <p class="text-xs uppercase tracking-wide text-base-content/50">Rôle</p>
+      <p class="mt-1 font-medium">Session JWT</p>
+    </div>
+  </div>
+  <div class="alert alert-warning mt-6 rounded-md text-sm">
+    TODO backend : endpoint /me pour retourner le profil complet sans décoder des informations
+    métier depuis le JWT.
+  </div>
+</section>

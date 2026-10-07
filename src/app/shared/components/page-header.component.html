@@ -1,0 +1,11 @@
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="mc-page-title">{{ title() }}</h1>
+    @if (description()) {
+      <p class="mc-muted mt-1">{{ description() }}</p>
+    }
+  </div>
+  @if (actionLabel()) {
+    <button class="btn btn-primary rounded-md">{{ actionLabel() }}</button>
+  }
+</div>

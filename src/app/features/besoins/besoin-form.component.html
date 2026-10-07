@@ -1,0 +1,37 @@
+<mc-page-header
+  title="Nouveau besoin"
+  description="Décrivez le besoin sans transformer ce formulaire en fiche de recrutement."
+/>
+<section class="mc-card max-w-3xl p-6">
+  <form class="space-y-5" (ngSubmit)="submit()">
+    @if (error) {
+      <div class="alert alert-error rounded-md text-sm">{{ error }}</div>
+    }
+    <label
+      ><span class="mc-label">Titre</span
+      ><input class="mc-input" name="titre" [(ngModel)]="titre" required /></label
+    ><label
+      ><span class="mc-label">Description</span
+      ><textarea
+        class="textarea textarea-bordered min-h-32 w-full rounded-md"
+        name="description"
+        [(ngModel)]="description"
+      ></textarea>
+    </label>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label
+        ><span class="mc-label">Date de début</span
+        ><input class="mc-input" name="dateDebut" type="date" [(ngModel)]="dateDebut" /></label
+      ><label
+        ><span class="mc-label">Date de fin</span
+        ><input class="mc-input" name="dateFin" type="date" [(ngModel)]="dateFin"
+      /></label>
+    </div>
+    <div class="flex gap-3">
+      <a routerLink="/besoins" class="btn btn-ghost rounded-md">Annuler</a
+      ><button class="btn btn-primary rounded-md" [disabled]="loading">
+        Enregistrer le brouillon
+      </button>
+    </div>
+  </form>
+</section>

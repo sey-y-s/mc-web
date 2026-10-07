@@ -1,0 +1,23 @@
+@if (besoin) {
+  <mc-page-header
+    [title]="besoin.titre"
+    description="Détail du besoin et accès au suivi des talents."
+  />
+  <section class="mc-card p-6">
+    <div class="flex items-center gap-3">
+      <mc-status-badge [value]="besoin.statut" /><span class="text-sm text-base-content/50">{{
+        besoin.dateCreation
+      }}</span>
+    </div>
+    <p class="mt-5 whitespace-pre-line text-sm leading-7">
+      {{ besoin.description || 'Aucune description.' }}
+    </p>
+    <div class="mt-6 flex gap-3">
+      <a [routerLink]="['/suivi-talents']" class="btn btn-primary rounded-md"
+        >Voir les talents suivis</a
+      ><a routerLink="/besoins" class="btn btn-ghost rounded-md">Retour</a>
+    </div>
+  </section>
+} @else {
+  <div class="alert alert-info rounded-md">{{ error || 'Besoin introuvable.' }}</div>
+}

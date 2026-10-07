@@ -1,0 +1,30 @@
+/** Contrat indicatif : seules les routes réellement présentes côté backend sont appelées automatiquement. */
+export const API_CONTRACT = {
+  implemented: [
+    'POST /auth/register',
+    'POST /auth/login',
+    'GET /competences',
+    'GET /competences/:id',
+    'GET/POST /citoyens/:id/competences',
+    'GET/POST/PUT/DELETE /citoyens/:id/experiences',
+    'GET/POST/PUT/DELETE /citoyens/:id/portfolio',
+    'GET/POST/PUT/DELETE /portfolio-realisations/:id/medias',
+    'GET/POST/PUT/DELETE /citoyen-competences/:id/preuves',
+    'GET/POST/PATCH /citoyen-competences/:id/validations',
+    'GET /tests-numeriques/*',
+    'POST /tests-numeriques/:id/resultats',
+  ],
+  pendingBackend: [
+    'Organisations',
+    'Besoins',
+    'SuiviBesoinTalent',
+    'DemandesMiseEnRelation',
+    'Notifications',
+    'Opportunites',
+    'Dashboard agrégé',
+    'Recherche / Matching',
+    'Administration utilisateurs',
+    'Audit ConsultationProfil',
+    'Institutions / Observateurs',
+  ],
+} as const;

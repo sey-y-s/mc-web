@@ -1,0 +1,96 @@
+@import 'leaflet/dist/leaflet.css';
+@import 'tailwindcss';
+@plugin "daisyui";
+
+@theme {
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --color-mc-blue-950: #0b1f3a;
+  --color-mc-blue-900: #12345b;
+  --color-mc-blue-800: #174a7e;
+  --color-mc-blue-700: #1b5e96;
+  --color-mc-blue-600: #2878b8;
+  --color-mc-blue-100: #e8f1f8;
+  --color-mc-blue-50: #f4f8fb;
+  --color-mc-gold-600: #b8891d;
+  --color-mc-gold-500: #d2a638;
+  --color-mc-gold-100: #fbf3da;
+  --color-mc-ink: #111827;
+  --color-mc-muted: #6b7280;
+  --color-mc-background: #f5f7fa;
+  --radius-mc: 0.375rem;
+  --shadow-mc: 0 1px 2px rgb(0 0 0 / 0.05), 0 1px 3px rgb(0 0 0 / 0.04);
+}
+
+@plugin "daisyui" {
+  themes: light;
+}
+
+[data-theme='light'] {
+  --p: 209 58% 29%;
+  --pc: 0 0% 100%;
+  --s: 43 62% 46%;
+  --sc: 0 0% 100%;
+  --a: 209 58% 45%;
+  --ac: 0 0% 100%;
+  --b1: 0 0% 100%;
+  --b2: 210 33% 98%;
+  --b3: 210 18% 89%;
+  --bc: 220 28% 13%;
+  --su: 158 64% 38%;
+  --wa: 43 80% 47%;
+  --er: 0 68% 48%;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--color-mc-background);
+  color: var(--color-mc-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+button,
+a,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@layer components {
+  .mc-card {
+    @apply rounded-md border border-base-300 bg-base-100;
+    box-shadow: var(--shadow-mc);
+  }
+  .mc-page-title {
+    @apply text-2xl font-semibold tracking-tight text-base-content;
+  }
+  .mc-muted {
+    @apply text-sm leading-6 text-base-content/60;
+  }
+  .mc-label {
+    @apply mb-1.5 block text-sm font-medium text-base-content;
+  }
+  .mc-input {
+    @apply input w-full rounded-md bg-white;
+  }
+  .mc-select {
+    @apply select w-full rounded-md bg-white;
+  }
+  .mc-table {
+    @apply w-full text-left text-sm;
+  }
+  .mc-table th {
+    @apply border-b border-base-300 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-base-content/60;
+  }
+  .mc-table td {
+    @apply border-b border-base-200 px-4 py-3 align-middle;
+  }
+  .mc-link {
+    @apply text-primary hover:underline;
+  }
+}

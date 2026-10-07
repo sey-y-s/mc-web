@@ -1,0 +1,21 @@
+<mc-page-header
+  title="Matching"
+  description="Comparer un besoin avec les compétences disponibles et expliquer le score de correspondance."
+/>
+<section class="mc-card p-6">
+  <div class="grid gap-4 md:grid-cols-2">
+    <label
+      ><span class="mc-label">Besoin</span
+      ><select class="mc-select">
+        <option>Sélectionner un besoin</option>
+      </select></label
+    ><label
+      ><span class="mc-label">Filtre territorial</span
+      ><input class="mc-input" placeholder="Région / commune"
+    /></label>
+  </div>
+  <mc-empty-state
+    title="Moteur de matching à connecter"
+    message="TODO backend : endpoint de matching et détails du score. La logique doit rester dans le service backend."
+  />
+</section>

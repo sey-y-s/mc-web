@@ -1,0 +1,73 @@
+<div class="min-h-screen bg-base-200 px-4 py-10">
+  <div class="mx-auto max-w-md">
+    <div class="mb-8 flex items-center gap-3">
+      <span
+        class="flex h-10 w-10 items-center justify-center rounded-md bg-primary font-bold text-primary-content"
+        >MC</span
+      >
+      <div>
+        <strong class="block">MaliCompétences</strong
+        ><span class="text-xs text-base-content/50">Espace professionnel</span>
+      </div>
+    </div>
+    <section class="mc-card p-6 sm:p-8">
+      <h1 class="text-xl font-semibold">Créer un compte organisation</h1>
+      <p class="mc-muted mt-1">L'accès citoyen reste sur l'application mobile.</p>
+      @if (error) {
+        <div class="alert alert-error mt-5 rounded-md py-3 text-sm">{{ error }}</div>
+      }
+      @if (success) {
+        <div class="alert alert-success mt-5 rounded-md py-3 text-sm">{{ success }}</div>
+      }
+      <form class="mt-6 space-y-5" (ngSubmit)="submit()">
+        <label
+          ><span class="mc-label">Téléphone</span
+          ><input
+            class="mc-input"
+            name="telephone"
+            [(ngModel)]="telephone"
+            required
+            autocomplete="tel"
+        /></label>
+        <label
+          ><span class="mc-label"
+            >E-mail <span class="font-normal text-base-content/40">(facultatif)</span></span
+          ><input
+            class="mc-input"
+            name="email"
+            [(ngModel)]="email"
+            type="email"
+            autocomplete="email"
+        /></label>
+        <label
+          ><span class="mc-label">Mot de passe</span
+          ><input
+            class="mc-input"
+            name="password"
+            [(ngModel)]="password"
+            type="password"
+            required
+            minlength="8"
+            autocomplete="new-password"
+        /></label>
+        <label
+          ><span class="mc-label">Confirmation</span
+          ><input
+            class="mc-input"
+            name="confirmation"
+            [(ngModel)]="confirmation"
+            type="password"
+            required
+            minlength="8"
+            autocomplete="new-password"
+        /></label>
+        <button class="btn btn-primary w-full rounded-md" [disabled]="loading">
+          {{ loading ? 'Création…' : 'Créer le compte' }}
+        </button>
+      </form>
+      <p class="mt-6 text-center text-sm text-base-content/60">
+        <a routerLink="/auth/login" class="mc-link font-medium">Retour à la connexion</a>
+      </p>
+    </section>
+  </div>
+</div>

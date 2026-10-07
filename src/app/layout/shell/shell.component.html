@@ -1,0 +1,17 @@
+<div class="flex min-h-screen bg-base-200">
+  <div class="hidden lg:block"><app-sidebar /></div>
+  <div class="drawer lg:hidden">
+    <input id="mc-drawer" type="checkbox" class="drawer-toggle" />
+    <div class="drawer-content min-h-screen">
+      <app-header />
+      <main class="p-4 sm:p-6"><router-outlet /></main>
+    </div>
+    <div class="drawer-side z-40">
+      <label for="mc-drawer" class="drawer-overlay"></label><app-sidebar />
+    </div>
+  </div>
+  <div class="hidden min-w-0 flex-1 lg:block">
+    <app-header />
+    <main class="mx-auto max-w-[1440px] p-5 sm:p-7"><router-outlet /></main>
+  </div>
+</div>

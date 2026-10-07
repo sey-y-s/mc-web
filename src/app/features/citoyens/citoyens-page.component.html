@@ -1,0 +1,23 @@
+<mc-page-header
+  title="Citoyens"
+  description="Recherche administrative des passeports et profils lorsque le rôle le permet."
+/>
+<section class="mc-card p-5">
+  <div class="grid gap-4 md:grid-cols-3">
+    <label
+      ><span class="mc-label">Code passeport</span
+      ><input class="mc-input" placeholder="MC-…" /></label
+    ><label
+      ><span class="mc-label">Nom</span><input class="mc-input" placeholder="Recherche" /></label
+    ><label
+      ><span class="mc-label">Commune</span><input class="mc-input" placeholder="Recherche"
+    /></label>
+  </div>
+  <div class="mt-4 flex justify-end">
+    <button class="btn btn-primary rounded-md">Rechercher</button>
+  </div>
+  <mc-empty-state
+    title="Endpoint de recherche à exposer"
+    message="Le backend permet la consultation par ID, mais pas encore la recherche/liste administrative des citoyens."
+  />
+</section>

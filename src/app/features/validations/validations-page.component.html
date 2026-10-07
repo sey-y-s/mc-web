@@ -1,0 +1,15 @@
+<mc-page-header
+  title="Validations"
+  description="Administration des validations et contrôle des preuves."
+/>
+<section class="mc-card p-5">
+  <div class="flex flex-wrap gap-2">
+    <button class="btn btn-sm btn-primary rounded-md">En attente</button
+    ><button class="btn btn-sm btn-ghost rounded-md">Approuvées</button
+    ><button class="btn btn-sm btn-ghost rounded-md">Rejetées</button>
+  </div>
+  <mc-empty-state
+    title="Aucune validation chargée"
+    message="Le backend expose déjà la validation par compétence ; la liste globale reste à compléter côté API."
+  />
+</section>

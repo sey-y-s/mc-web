@@ -1,0 +1,27 @@
+<mc-page-header
+  title="Recherche de talents"
+  description="Rechercher des profils anonymisés selon les compétences et le territoire."
+/>
+<section class="mc-card p-5">
+  <div class="grid gap-4 md:grid-cols-3">
+    <label
+      ><span class="mc-label">Compétence</span
+      ><input class="mc-input" placeholder="Ex. Électricien" /></label
+    ><label
+      ><span class="mc-label">Métier</span
+      ><input class="mc-input" placeholder="Ex. Installateur" /></label
+    ><label
+      ><span class="mc-label">Territoire</span
+      ><input class="mc-input" placeholder="Région ou commune"
+    /></label>
+  </div>
+  <div class="mt-4 flex justify-end">
+    <button class="btn btn-primary rounded-md">Rechercher</button>
+  </div>
+</section>
+<section class="mc-card mt-5 p-6">
+  <mc-empty-state
+    title="Recherche à connecter"
+    message="TODO backend : endpoint de recherche/matching des talents et règles d'anonymisation."
+  />
+</section>

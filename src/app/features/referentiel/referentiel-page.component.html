@@ -1,0 +1,24 @@
+<mc-page-header
+  title="Référentiel des compétences"
+  description="La base commune des secteurs, métiers et compétences."
+/>
+<div class="grid gap-5 md:grid-cols-3">
+  <section class="mc-card p-5">
+    <h2 class="font-semibold">Secteurs</h2>
+    <p class="mc-muted mt-1">Organisation des domaines d'activité.</p>
+    <mc-empty-state title="TODO API" />
+  </section>
+  <section class="mc-card p-5">
+    <h2 class="font-semibold">Métiers</h2>
+    <p class="mc-muted mt-1">Métiers rattachés aux secteurs.</p>
+    <mc-empty-state title="TODO API" />
+  </section>
+  <section class="mc-card p-5">
+    <h2 class="font-semibold">Compétences</h2>
+    <p class="mc-muted mt-1">Compétences utilisées par les profils et besoins.</p>
+    <mc-empty-state
+      title="API disponible"
+      message="Le GET /api/v1/competences peut être branché ici."
+    />
+  </section>
+</div>

@@ -1,0 +1,133 @@
+<mc-page-header
+  title="Tableau de bord"
+  description="Vue synthétique des compétences, besoins et tensions territoriales."
+/>
+@if (error) {
+  <div class="alert alert-warning mb-5 rounded-md text-sm">
+    {{ error }}
+    <span class="text-xs opacity-70"
+      >Les API Skills-Gap peuvent encore être en préparation côté backend.</span
+    >
+  </div>
+}
+<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <div class="mc-card p-5">
+    <p class="text-xs font-medium uppercase tracking-wide text-base-content/50">Demande estimée</p>
+    <p class="mt-2 text-2xl font-semibold">{{ totalDemand }}</p>
+    <p class="mt-1 text-xs text-base-content/50">selon les snapshots disponibles</p>
+  </div>
+  <div class="mc-card p-5">
+    <p class="text-xs font-medium uppercase tracking-wide text-base-content/50">Offre disponible</p>
+    <p class="mt-2 text-2xl font-semibold">{{ totalOffer }}</p>
+    <p class="mt-1 text-xs text-base-content/50">compétences visibles</p>
+  </div>
+  <div class="mc-card p-5">
+    <p class="text-xs font-medium uppercase tracking-wide text-base-content/50">Écart cumulé</p>
+    <p class="mt-2 text-2xl font-semibold text-warning">{{ totalGap }}</p>
+    <p class="mt-1 text-xs text-base-content/50">demande − offre</p>
+  </div>
+  <div class="mc-card p-5">
+    <p class="text-xs font-medium uppercase tracking-wide text-base-content/50">Snapshots</p>
+    <p class="mt-2 text-2xl font-semibold">{{ data.length }}</p>
+    <p class="mt-1 text-xs text-base-content/50">indicateurs territoriaux</p>
+  </div>
+</div>
+<div class="mt-5 grid gap-5 xl:grid-cols-[1.5fr_1fr]">
+  <section class="mc-card p-5">
+    <div class="mb-5 flex items-start justify-between">
+      <div>
+        <h2 class="font-semibold">Offre et demande</h2>
+        <p class="mc-muted">Compétences avec les données actuellement disponibles.</p>
+      </div>
+      <mc-status-badge value="Skills-Gap" />
+    </div>
+    @if (!loading) {
+      @if (data.length) {
+        <div class="space-y-5">
+          @for (item of data.slice(0, 8); track item.id) {
+            <div>
+              <div class="mb-2 flex justify-between text-xs">
+                <span class="font-medium">{{ item.competenceNom ?? item.competenceId }}</span
+                ><span class="text-base-content/50"
+                  >{{ item.ecart > 0 ? '+' : '' }}{{ item.ecart }}</span
+                >
+              </div>
+              <div class="space-y-1">
+                <div class="h-2 rounded bg-primary/15">
+                  <div
+                    class="h-2 rounded bg-primary"
+                    [style.width.%]="(item.offreDisponible / max()) * 100"
+                  ></div>
+                </div>
+                <div class="h-2 rounded bg-warning/20">
+                  <div
+                    class="h-2 rounded bg-warning"
+                    [style.width.%]="(item.demandeEstimee / max()) * 100"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="mc-muted py-8">Aucun indicateur retourné.</p>
+      }
+    } @else {
+      <span class="loading loading-spinner"></span>
+    }
+  </section>
+  <section class="mc-card p-5">
+    <div class="mb-4">
+      <h2 class="font-semibold">Compétences sous tension</h2>
+      <p class="mc-muted">Les écarts les plus élevés.</p>
+    </div>
+    <div class="divide-y divide-base-200">
+      @for (item of top(); track item.id) {
+        <div class="flex items-center justify-between py-3">
+          <div>
+            <p class="text-sm font-medium">{{ item.competenceNom ?? item.competenceId }}</p>
+            <p class="text-xs text-base-content/50">
+              {{ item.regionNom ?? 'Territoire non précisé' }}
+            </p>
+          </div>
+          <span class="font-semibold text-warning">+{{ item.ecart }}</span>
+        </div>
+      }
+    </div>
+  </section>
+</div>
+<div class="mt-5">
+  <section class="mc-card overflow-hidden">
+    <div class="border-b border-base-300 px-5 py-4">
+      <h2 class="font-semibold">Lecture territoriale</h2>
+      <p class="mc-muted">La carte sera progressivement alimentée par les indicateurs régionaux.</p>
+    </div>
+    <app-mali-map [items]="data" />
+  </section>
+</div>
+<div class="mt-5 grid gap-5 lg:grid-cols-2">
+  <section class="mc-card p-5">
+    <h2 class="font-semibold">Activité récente</h2>
+    <div class="mt-4 space-y-4 text-sm">
+      <div class="flex gap-3">
+        <span class="mt-1 h-2 w-2 rounded-full bg-primary"></span>
+        <p>
+          Les validations, besoins et mises en relation apparaîtront ici lorsque leurs API seront
+          disponibles.
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <span class="mt-1 h-2 w-2 rounded-full bg-warning"></span>
+        <p>Le dashboard ne présente pas de faux événements comme s'ils provenaient du backend.</p>
+      </div>
+    </div>
+  </section>
+  <section class="mc-card p-5">
+    <h2 class="font-semibold">Périmètre de votre rôle</h2>
+    <p class="mc-muted mt-2">
+      Session : <strong>{{ auth.getCurrentUser()?.role }}</strong
+      >. Les menus sont filtrés côté interface ; les autorisations réelles restent celles du
+      backend.
+    </p>
+  </section>
+</div>

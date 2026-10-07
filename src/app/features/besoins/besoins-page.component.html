@@ -1,0 +1,40 @@
+<mc-page-header
+  title="Besoins"
+  description="Déclarer et suivre les besoins en compétences de l'organisation."
+/>
+<div class="mb-4 flex justify-end">
+  <a routerLink="/besoins/nouveau" class="btn btn-primary rounded-md">Nouveau besoin</a>
+</div>
+@if (error) {
+  <div class="alert alert-warning mb-4 rounded-md text-sm">{{ error }}</div>
+}
+<section class="mc-card overflow-x-auto">
+  @if (loading) {
+    <mc-loading />
+  } @else if (besoins.length) {
+    <table class="mc-table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Statut</th>
+          <th>Début</th>
+          <th>Fin</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of besoins; track b.id) {
+          <tr>
+            <td class="font-medium">{{ b.titre }}</td>
+            <td><mc-status-badge [value]="b.statut" /></td>
+            <td>{{ b.dateDebut || '—' }}</td>
+            <td>{{ b.dateFin || '—' }}</td>
+            <td><a class="mc-link" [routerLink]="['/besoins', b.id]">Voir</a></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <mc-empty-state title="Aucun besoin" message="Créez votre premier besoin en compétences." />
+  }
+</section>

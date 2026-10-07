@@ -1,0 +1,36 @@
+<mc-page-header
+  title="Organisations"
+  description="Valider, suivre et suspendre les organisations selon leur statut."
+/>
+<section class="mc-card p-5">
+  <div class="mb-5 flex flex-wrap gap-2">
+    <button class="btn btn-sm btn-primary rounded-md">Toutes</button
+    ><button class="btn btn-sm btn-ghost rounded-md">En attente</button
+    ><button class="btn btn-sm btn-ghost rounded-md">Approuvées</button
+    ><button class="btn btn-sm btn-ghost rounded-md">Suspendues</button>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="mc-table">
+      <thead>
+        <tr>
+          <th>Organisation</th>
+          <th>Statut</th>
+          <th>Contact</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="font-medium">TODO API</td>
+          <td><span class="badge rounded-md">EN_ATTENTE</span></td>
+          <td>—</td>
+          <td><button class="btn btn-xs rounded-md">Voir</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-4 text-xs text-base-content/50">
+    TODO backend : contrôleur Organisation non présent dans le backend livré ; ne pas simuler une
+    validation réelle.
+  </p>
+</section>
