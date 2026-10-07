@@ -15,12 +15,14 @@ export class BesoinDetailPageComponent implements OnInit {
   besoin?: Besoin;
   error = '';
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id')!;
-    this.s
-      .lister()
-      .subscribe({
-        next: (list) => (this.besoin = list.find((x) => x.id === id)),
-        error: (e) => (this.error = e?.error?.message ?? 'Impossible de charger le besoin.'),
-      });
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.error = 'Identifiant du besoin manquant.';
+      return;
+    }
+    this.s.obtenir(id).subscribe({
+      next: (besoin) => (this.besoin = besoin),
+      error: (e) => (this.error = e?.error?.message ?? e?.message ?? 'Impossible de charger le besoin.'),
+    });
   }
 }

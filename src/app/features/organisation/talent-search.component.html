@@ -1,0 +1,56 @@
+<mc-page-header
+  title="Rechercher un talent"
+  description="Filtrer par compétence, métier et localisation."
+/>
+
+<section class="mc-card p-5 md:p-6">
+  <div class="grid items-end gap-4 md:grid-cols-4">
+    <label>
+      <span class="mc-label">Compétence</span>
+      <input class="mc-input" placeholder="Ex. Angular" [(ngModel)]="filters.competence" name="competence" />
+    </label>
+    <label>
+      <span class="mc-label">Métier</span>
+      <input class="mc-input" placeholder="Ex. Développeur" [(ngModel)]="filters.metier" name="metier" />
+    </label>
+    <label>
+      <span class="mc-label">Localisation</span>
+      <input class="mc-input" placeholder="Ville ou région" [(ngModel)]="filters.localisation" name="localisation" />
+    </label>
+    <button class="btn btn-primary w-full" type="button" (click)="search()" [disabled]="loading">
+      {{ loading ? 'Recherche…' : 'Rechercher des talents' }}
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="mt-6 rounded-xl bg-base-200/50 px-5 py-10 text-center" role="status">Recherche en cours…</div>
+  } @else if (error) {
+    <div class="alert alert-warning mt-6" role="status">{{ error }}</div>
+  } @else if (resultats.length) {
+    <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (talent of resultats; track talent.id) {
+        <article class="mc-card mc-card-hover p-5">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="font-semibold tracking-tight">{{ talent.pseudo ?? talent.nom }}</h2>
+              <p class="mt-1 text-sm text-base-content/60">{{ talent.metierNom || 'Métier non renseigné' }}</p>
+            </div>
+            <span class="badge badge-success badge-outline">{{ talent.scoreGlobal ?? 0 }}%</span>
+          </div>
+          <p class="mt-3 text-sm text-base-content/65">{{ talent.localisation || 'Localisation inconnue' }}</p>
+          <p class="mt-3 line-clamp-3 text-sm leading-6 text-base-content/75">{{ talent.description || 'Aucune description disponible.' }}</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            @for (competence of talent.competences ?? []; track competence.id) {
+              <span class="badge badge-ghost">{{ competence.nom }}</span>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  } @else {
+    <div class="mt-6 rounded-xl border border-dashed border-base-300 bg-base-200/30 px-5 py-10 text-center">
+      <h2 class="font-semibold">Aucun talent trouvé</h2>
+      <p class="mt-1 text-sm text-base-content/60">Modifiez vos critères puis relancez la recherche.</p>
+    </div>
+  }
+</section>

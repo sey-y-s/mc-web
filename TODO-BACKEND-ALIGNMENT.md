@@ -11,33 +11,26 @@ Le Citoyen et l'Évaluateur ne sont pas exposés dans ce Web de départ. Le parc
 
 Les rôles Gestionnaire/Centre et Institution/Observateur sont préparés dans l'interface mais ne sont pas ajoutés au JWT tant que le backend ne les expose pas.
 
-## Déjà réellement raccordé aux routes backend livrées
+## Raccordé dans les routes utilisées par l'interface professionnelle
 
-- authentification JWT
-- référentiel des compétences (lecture)
-- compétences citoyen (API disponible, UI professionnelle à compléter selon les usages admin)
-- expériences
-- portfolio et médias
-- preuves
-- validations par compétence
-- tests numériques et résultats
+- Organisation : consultation du profil courant, modification et indicateurs agrégés.
+- Besoins : liste par organisation, lecture, création, modification des compétences associées et suppression avec contrôle de propriété.
+- Talents : recherche anonymisée par compétence, métier, lieu et disponibilité ; détail et matching par besoin.
+- Suivis et mises en relation : API de liste/création/mise à jour contextualisée, avec vérification d'accès.
+- Notifications : liste triée par date, marquage comme lue et vérification du destinataire.
+- Administration : tableaux de synthèse, citoyens, organisations, validations, tests numériques, opportunités, centres et compétences.
+- Super-administration : liste des comptes sans données d'authentification et modification du rôle.
+- Opportunités : lecture publique, API de gestion protégée, publication et archivage.
+- Skills-Gap : lecture des indicateurs et filtres territoriaux.
 
-## Endpoints backend à compléter avant activation des écrans concernés
+## Encore à compléter avant de déclarer tout le cahier des charges livré
 
-- Organisation : CRUD + statut
-- Besoin : CRUD + BesoinCompetence
-- Recherche de talents : recherche anonymisée + filtres
-- Matching : score + détails de correspondance
-- SuiviBesoinTalent : Kanban et actions de statut
-- DemandeMiseEnRelation : création, réponse, historique
-- Notifications : lecture/non-lu
-- Opportunités : CRUD + publication SuperAdmin
-- Dashboard agrégé
-- Administration des utilisateurs
-- Audit ConsultationProfil
-- Centres
-- Vue Institution / Observateur
+- Gestion complète (création/modification/suppression) du référentiel secteurs/métiers/compétences et interface CRUD dédiée.
+- Formulaires d'administration complets pour les tests/questions/propositions, les opportunités et les centres (les API disponibles ne remplacent pas ces interfaces CRUD).
+- Journal d'audit persistant des consultations, actions et événements importants : aucun modèle/service d'audit exploitable n'existait; les journaux ne sont pas simulés.
+- Paramètres globaux persistants de la plateforme : aucun modèle ni stockage de paramètres n'existait.
+- Workflow de réponse par le destinataire d'une demande de mise en relation et synchronisation de son statut avec le suivi.
+- Vue Institution / Observateur : rôles et endpoints dédiés absents du backend.
+- Les suites backend doivent être exécutées avec un JDK correspondant à la version configurée dans le projet.
 
-## Important
-
-Les écrans correspondants existent déjà avec des TODO explicites. Ils ne fabriquent pas de données fictives présentées comme provenant du backend.
+Les erreurs d'API sont exposées dans l'interface; aucune donnée de secours n'est présentée comme une réponse backend.

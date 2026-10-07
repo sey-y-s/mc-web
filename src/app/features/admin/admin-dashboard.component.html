@@ -1,0 +1,21 @@
+<mc-page-header title="Dashboard admin" description="Indicateurs globaux et état de la plateforme." />
+
+<section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Indicateurs globaux">
+  @if (error) { <p class="col-span-full text-sm text-red-700" role="alert">{{ error }}</p> }
+  <div class="mc-card mc-stat-card mc-card-hover">
+    <div class="mc-stat-label">Citoyens</div>
+    <div class="mc-stat-value">{{ metrics.citoyens }}</div>
+  </div>
+  <div class="mc-card mc-stat-card mc-card-hover">
+    <div class="mc-stat-label">Organisations</div>
+    <div class="mc-stat-value">{{ metrics.organisations }}</div>
+  </div>
+  <div class="mc-card mc-stat-card mc-card-hover">
+    <div class="mc-stat-label">Validations</div>
+    <div class="mc-stat-value">{{ metrics.validations }}</div>
+  </div>
+  <div class="mc-card mc-stat-card mc-card-hover">
+    <div class="mc-stat-label">Tests numériques</div>
+    <div class="mc-stat-value">{{ metrics.tests }}</div>
+  </div>
+</section>

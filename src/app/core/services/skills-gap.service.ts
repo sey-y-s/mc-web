@@ -6,9 +6,9 @@ import { SkillsGap } from '../../shared/models';
 export class SkillsGapService {
   private readonly api = inject(ApiService);
   lister() {
-    return this.api.get<SkillsGap[]>('/indicateurs/skills-gap');
+    return this.api.get<SkillsGap[]>('/api/indicateurs/skills-gap');
   }
   parRegion(regionId: string) {
-    return this.api.get<SkillsGap[]>(`/indicateurs/skills-gap/region/${regionId}`);
+    return this.api.get<SkillsGap[]>(`/api/indicateurs/skills-gap/region/${regionId}`);
   }
 }

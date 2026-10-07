@@ -1,0 +1,28 @@
+<mc-page-header
+  title="Modifier un besoin"
+  description="Mettre à jour le besoin et les compétences associées."
+/>
+
+@if (loading) {
+  <div class="mc-card p-6" role="status">Chargement du besoin…</div>
+} @else {
+<section class="mc-card max-w-4xl p-6">
+  @if (error) {
+    <div class="alert alert-warning mb-5" role="status">{{ error }}</div>
+  }
+  <div class="grid gap-5 md:grid-cols-2">
+    <label class="block md:col-span-2">
+      <span class="mc-label">Titre</span>
+      <input class="mc-input" [(ngModel)]="besoin.titre" name="titre" />
+    </label>
+    <label class="block md:col-span-2">
+      <span class="mc-label">Description</span>
+      <textarea class="mc-input" rows="4" [(ngModel)]="besoin.description" name="description"></textarea>
+    </label>
+  </div>
+  <div class="mt-6 flex gap-3">
+    <button class="btn btn-primary" type="button" (click)="save()">Enregistrer</button>
+    <button class="btn btn-ghost" type="button" (click)="cancel()">Annuler</button>
+  </div>
+</section>
+}
