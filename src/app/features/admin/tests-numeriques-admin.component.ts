@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { PageHeaderComponent } from '../../shared/components';
 import { AdminService, AdminTestNumerique } from '../../core/services/admin.service';
 
@@ -20,7 +20,7 @@ import { AdminService, AdminTestNumerique } from '../../core/services/admin.serv
             </tr>
           </thead>
           <tbody>
-            @for (test of tests; track test.id) {
+            @for (test of tests(); track test.id) {
               <tr>
                 <td>{{ test.titre }}</td>
                 <td><span class="badge">{{ test.statut }}</span></td>
@@ -35,13 +35,16 @@ import { AdminService, AdminTestNumerique } from '../../core/services/admin.serv
 })
 export class TestsNumeriquesAdminComponent {
   private readonly service = inject(AdminService);
-  tests: AdminTestNumerique[] = [];
+  // tests: AdminTestNumerique[] = [];
+  tests = signal<AdminTestNumerique[]>([]);
   error = '';
 
   constructor() {
     this.service.testsNumeriques().subscribe({
       next: (items) => {
-        this.tests = items ?? [];
+        console.log("its fine");
+        console.log(items);
+        this.tests.set(items ?? []);
       },
       error: (error: Error) => {
         this.error = error.message || 'Impossible de charger les tests numériques.';

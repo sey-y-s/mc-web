@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { PageHeaderComponent } from '../../shared/components';
 import { AdminService } from '../../core/services/admin.service';
 import { Opportunite } from '../../shared/models';
@@ -39,10 +39,11 @@ export class OpportunitesAdminComponent {
   opportunites: Opportunite[] = [];
   error = '';
 
-  constructor() {
+  constructor(private cdr: ChangeDetectorRef) {
     this.service.opportunites().subscribe({
       next: (items) => {
         this.opportunites = items ?? [];
+        this.cdr.detectChanges();
       },
       error: (error: Error) => {
         this.error = error.message || 'Impossible de charger les opportunités.';

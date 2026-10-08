@@ -6,7 +6,7 @@ import { API_CONFIG } from '../api/api.config';
 import { UserRole } from './user-role.enum';
 
 export interface LoginRequest {
-  identifier: string;
+  identifiant: string;
   password: string;
 }
 export interface RegisterRequest {

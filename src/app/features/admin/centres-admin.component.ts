@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { PageHeaderComponent } from '../../shared/components';
 import { AdminService } from '../../core/services/admin.service';
 
@@ -14,14 +14,14 @@ interface CentreAdmin {
   standalone: true,
   imports: [PageHeaderComponent],
   template: `
-    <mc-page-header title="Centres d’évaluation" description="Gérer les centres d’évaluation." />
+    <mc-page-header title="Centres d'évaluation" description="Gérer les centres d'évaluation." />
     <section class="mc-card p-6">
       @if (error) {
         <p class="text-sm text-red-700" role="alert">{{ error }}</p>
       } @else if (loading) {
         <p class="text-sm text-slate-500">Chargement des centres…</p>
       } @else if (centres.length === 0) {
-        <p class="text-sm text-slate-500">Aucun centre d’évaluation enregistré.</p>
+        <p class="text-sm text-slate-500">Aucun centre d'évaluation enregistré.</p>
       } @else {
         <div class="overflow-x-auto">
           <table class="table table-zebra w-full">
@@ -43,11 +43,12 @@ export class CentresAdminComponent {
   loading = true;
   error = '';
 
-  constructor() {
+  constructor(private cdr: ChangeDetectorRef) {
     this.service.centres().subscribe({
       next: (centres) => {
         this.centres = centres;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error: Error) => {
         this.error = error.message || 'Impossible de charger les centres.';

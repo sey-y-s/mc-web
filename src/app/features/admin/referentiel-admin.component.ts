@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { PageHeaderComponent } from '../../shared/components';
 import { AdminService } from '../../core/services/admin.service';
 
@@ -40,14 +40,16 @@ interface CompetenceAdmin {
 export class ReferentielAdminComponent {
   private readonly service = inject(AdminService);
   competences: CompetenceAdmin[] = [];
+  
   loading = true;
   error = '';
 
-  constructor() {
+  constructor(private cdr: ChangeDetectorRef) {
     this.service.competences().subscribe({
       next: (competences) => {
         this.competences = competences;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error: Error) => {
         this.error = error.message || 'Impossible de charger le référentiel.';
