@@ -1,0 +1,51 @@
+<mc-page-header
+  title="Mise en relation"
+  description="Envoyer et suivre les demandes de mise en relation."
+/>
+
+<section class="mc-card p-6">
+  @if (error) { <p class="mb-4 text-sm text-red-700" role="alert">{{ error }}</p> }
+  @if (success) { <p class="mb-4 text-sm text-green-700" role="status">{{ success }}</p> }
+  <div class="grid gap-4 md:grid-cols-2">
+    <label class="grid gap-2 text-sm font-medium">
+      Identifiant du talent
+      <input class="mc-input" placeholder="ID talent" [(ngModel)]="destinataireId" name="destinataireId" />
+    </label>
+  </div>
+  <div class="mt-4">
+    <label class="grid gap-2 text-sm font-medium">
+      Message
+      <textarea class="mc-input" rows="4" placeholder="Présentez votre demande" [(ngModel)]="message" name="message"></textarea>
+    </label>
+  </div>
+  <div class="mt-6 flex gap-3">
+    <button class="btn btn-primary" [disabled]="sending" (click)="send()">
+      {{ sending ? 'Envoi…' : 'Envoyer' }}
+    </button>
+  </div>
+</section>
+
+<section class="mc-card mt-6 p-6">
+  <h2 class="text-lg font-semibold">Demandes envoyées</h2>
+  @if (loading) {
+    <p class="mt-4 text-sm text-slate-500">Chargement des demandes…</p>
+  } @else if (demandes.length === 0) {
+    <p class="mt-4 text-sm text-slate-500">Aucune demande envoyée pour le moment.</p>
+  } @else {
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead><tr><th class="py-2">Talent</th><th>Statut</th><th>Envoyée le</th><th>Message</th></tr></thead>
+        <tbody>
+          @for (demande of demandes; track demande.id) {
+            <tr class="border-t border-slate-100">
+              <td class="py-3">{{ demande.destinataireNomComplet || demande.destinataireId }}</td>
+              <td>{{ demande.statut }}</td>
+              <td>{{ demande.dateDemande | date:'short' }}</td>
+              <td>{{ demande.message }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

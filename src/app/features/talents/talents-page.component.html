@@ -3,25 +3,59 @@
   description="Rechercher des profils anonymisés selon les compétences et le territoire."
 />
 <section class="mc-card p-5">
-  <div class="grid gap-4 md:grid-cols-3">
-    <label
-      ><span class="mc-label">Compétence</span
-      ><input class="mc-input" placeholder="Ex. Électricien" /></label
-    ><label
-      ><span class="mc-label">Métier</span
-      ><input class="mc-input" placeholder="Ex. Installateur" /></label
-    ><label
-      ><span class="mc-label">Territoire</span
-      ><input class="mc-input" placeholder="Région ou commune"
-    /></label>
+  <div class="grid gap-4 md:grid-cols-4">
+    <label>
+      <span class="mc-label">Compétence</span>
+      <input class="mc-input" placeholder="Ex. Angular" [(ngModel)]="filters.competence" name="competence" />
+    </label>
+    <label>
+      <span class="mc-label">Métier</span>
+      <input class="mc-input" placeholder="Ex. Product Owner" [(ngModel)]="filters.metier" name="metier" />
+    </label>
+    <label>
+      <span class="mc-label">Territoire</span>
+      <input class="mc-input" placeholder="Région ou commune" [(ngModel)]="filters.localisation" name="localisation" />
+    </label>
+    <label>
+      <span class="mc-label">Disponibilité</span>
+      <input class="mc-input" placeholder="Ex. IMMÉDIATE" [(ngModel)]="filters.disponibilite" name="disponibilite" />
+    </label>
   </div>
   <div class="mt-4 flex justify-end">
-    <button class="btn btn-primary rounded-md">Rechercher</button>
+    <button class="btn btn-primary rounded-md" type="button" (click)="rechercher()" [disabled]="loading">
+      {{ loading ? 'Recherche…' : 'Rechercher' }}
+    </button>
   </div>
 </section>
 <section class="mc-card mt-5 p-6">
-  <mc-empty-state
-    title="Recherche à connecter"
-    message="TODO backend : endpoint de recherche/matching des talents et règles d'anonymisation."
-  />
+  @if (loading) {
+    <div class="rounded-xl bg-base-200/50 px-5 py-10 text-center" role="status">Recherche en cours…</div>
+  } @else if (error) {
+    <div class="alert alert-warning" role="status">{{ error }}</div>
+  } @else if (resultats.length) {
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (talent of resultats; track talent.id) {
+        <article class="rounded-xl border border-base-300 bg-base-100 p-4">
+          <div class="flex items-center justify-between gap-3">
+            <h3 class="font-semibold">{{ talent.pseudo ?? `${talent.prenom ?? ''} ${talent.nom}`.trim() }}</h3>
+            <span class="badge badge-success">{{ talent.scoreGlobal ?? 0 }}%</span>
+          </div>
+          <p class="mt-2 text-sm text-base-content/70">{{ talent.metierNom ?? 'Métier non renseigné' }} · {{ talent.localisation ?? 'Localisation inconnue' }}</p>
+          <p class="mt-3 text-sm text-base-content/70">{{ talent.description ?? 'Aucune description disponible.' }}</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            @for (competence of talent.competences ?? []; track competence.id) {
+              <span class="badge badge-outline">{{ competence.nom }}</span>
+            }
+          </div>
+          <div class="mt-4">
+            <a class="btn btn-sm btn-primary" [routerLink]="['/talents', talent.id]">Voir le profil</a>
+          </div>
+        </article>
+      }
+    </div>
+  } @else {
+    <div class="alert alert-info">
+      Aucun talent ne correspond à ces critères de recherche pour le moment.
+    </div>
+  }
 </section>

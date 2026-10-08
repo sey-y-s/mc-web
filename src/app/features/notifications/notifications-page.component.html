@@ -3,8 +3,29 @@
   description="Événements liés aux validations, besoins, mises en relation et opportunités."
 />
 <section class="mc-card p-6">
-  <mc-empty-state
-    title="Aucune notification chargée"
-    message="TODO backend : endpoints Notification / NotificationDestinataire."
-  />
+  @if (error) { <p class="mb-4 text-sm text-red-700" role="alert">{{ error }}</p> }
+  @if (loading) {
+    <p class="text-sm text-slate-500">Chargement des notifications…</p>
+  } @else if (notifications.length === 0) {
+    <p class="text-sm text-slate-500">Aucune notification à afficher.</p>
+  } @else {
+    <ul class="divide-y divide-base-200">
+      @for (notification of notifications; track notification.id) {
+        <li class="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 class="font-semibold">{{ notification.titre }}</h2>
+            <p class="mt-1 text-sm text-base-content/70">{{ notification.message }}</p>
+            <p class="mt-2 text-xs text-base-content/50">{{ notification.dateCreation | date:'short' }}</p>
+          </div>
+          @if (notification.lu) {
+            <span class="badge badge-ghost">Lue</span>
+          } @else {
+            <button class="btn btn-sm btn-outline" [disabled]="pending.has(notification.id)" (click)="marquerLue(notification)">
+              {{ pending.has(notification.id) ? 'Mise à jour…' : 'Marquer comme lue' }}
+            </button>
+          }
+        </li>
+      }
+    </ul>
+  }
 </section>

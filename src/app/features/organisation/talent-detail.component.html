@@ -1,0 +1,28 @@
+<mc-page-header
+  title="Profil talent"
+  description="Afficher les compétences, preuves, validations et disponibilité."
+/>
+
+@if (loading) {
+  <div class="mc-card animate-pulse p-6" role="status">Chargement du profil talent…</div>
+} @else if (error) {
+  <div class="alert alert-error" role="alert">{{ error }}</div>
+} @else if (talent; as data) {
+  <section class="mc-card p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold">Profil talent</h2>
+        <p class="text-base-content/70">Informations anonymisées non disponibles via l’API actuelle.</p>
+      </div>
+      <span class="badge badge-primary">{{ data.estDisponible ? 'Disponible' : 'Indisponible' }}</span>
+    </div>
+
+    <div class="mt-6 rounded-xl border border-base-300 p-4">
+      <h3 class="font-semibold">Compétences</h3>
+      <p class="mt-2 text-sm text-base-content/65">
+        Le backend permet actuellement de lire les informations de base du citoyen. Les compétences,
+        validations et éléments de portfolio ne sont pas inclus dans cette réponse.
+      </p>
+    </div>
+  </section>
+}

@@ -63,8 +63,41 @@ textarea {
 
 @layer components {
   .mc-card {
-    @apply rounded-md border border-base-300 bg-base-100;
-    box-shadow: var(--shadow-mc);
+    @apply rounded-xl border border-base-300/80 bg-base-100;
+    box-shadow: 0 2px 8px rgb(11 31 58 / 0.04), 0 12px 32px rgb(11 31 58 / 0.035);
+    transition:
+      box-shadow 160ms ease,
+      border-color 160ms ease,
+      transform 160ms ease;
+  }
+  .mc-card-hover:hover {
+    @apply border-primary/20;
+    box-shadow: 0 8px 24px rgb(11 31 58 / 0.09);
+    transform: translateY(-2px);
+  }
+  .mc-stat-card {
+    @apply relative isolate overflow-hidden p-5;
+  }
+  .mc-stat-card::after {
+    position: absolute;
+    z-index: -1;
+    top: -2.5rem;
+    right: -2.5rem;
+    width: 8rem;
+    height: 8rem;
+    border-radius: 9999px;
+    background: rgb(40 120 184 / 0.06);
+    content: '';
+  }
+  .mc-stat-label {
+    @apply text-sm font-medium text-base-content/65;
+  }
+  .mc-stat-value {
+    @apply mt-3 text-3xl font-semibold tracking-tight text-base-content;
+    font-variant-numeric: tabular-nums;
+  }
+  .mc-section-heading {
+    @apply text-base font-semibold tracking-tight text-base-content;
   }
   .mc-page-title {
     @apply text-2xl font-semibold tracking-tight text-base-content;
@@ -84,11 +117,23 @@ textarea {
   .mc-table {
     @apply w-full text-left text-sm;
   }
+  .mc-table thead {
+    @apply bg-base-200/60;
+  }
   .mc-table th {
     @apply border-b border-base-300 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-base-content/60;
   }
   .mc-table td {
     @apply border-b border-base-200 px-4 py-3 align-middle;
+  }
+  .mc-table tbody tr {
+    transition: background-color 120ms ease;
+  }
+  .mc-table tbody tr:hover {
+    @apply bg-base-200/40;
+  }
+  .mc-table tbody tr:last-child td {
+    @apply border-b-0;
   }
   .mc-link {
     @apply text-primary hover:underline;

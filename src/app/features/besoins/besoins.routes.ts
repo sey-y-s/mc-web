@@ -9,8 +9,13 @@ export const BESOINS_ROUTES: Routes = [
     loadComponent: () => import('./besoin-form.component').then((m) => m.BesoinFormComponent),
   },
   {
+    path: ':id/edit',
+    loadComponent: () =>
+      import('../organisation/besoin-edit.component').then((m) => m.BesoinEditComponent),
+  },
+  {
     path: ':id',
     loadComponent: () =>
-      import('./besoin-detail-page.component').then((m) => m.BesoinDetailPageComponent),
+      import('../organisation/besoin-detail.component').then((m) => m.BesoinDetailComponent),
   },
 ];

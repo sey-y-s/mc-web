@@ -4,18 +4,53 @@
 />
 <section class="mc-card p-6">
   <div class="grid gap-4 md:grid-cols-2">
-    <label
-      ><span class="mc-label">Besoin</span
-      ><select class="mc-select">
-        <option>Sélectionner un besoin</option>
-      </select></label
-    ><label
-      ><span class="mc-label">Filtre territorial</span
-      ><input class="mc-input" placeholder="Région / commune"
-    /></label>
+    <label>
+      <span class="mc-label">Besoin</span>
+      <select class="mc-select" [(ngModel)]="besoinId" (change)="rechercher()">
+        <option value="">Sélectionner un besoin</option>
+        @for (besoin of besoins; track besoin.id) {
+          <option [value]="besoin.id">{{ besoin.titre }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      <span class="mc-label">Filtre territorial</span>
+      <input class="mc-input" placeholder="Région / commune" [(ngModel)]="region" name="region" />
+    </label>
   </div>
-  <mc-empty-state
-    title="Moteur de matching à connecter"
-    message="TODO backend : endpoint de matching et détails du score. La logique doit rester dans le service backend."
-  />
+
+  @if (loading) {
+    <div class="mt-6 grid gap-4 md:grid-cols-2">
+      @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+        <div class="mc-card h-28 animate-pulse p-4">
+          <div class="h-4 w-2/3 rounded bg-base-300"></div>
+          <div class="mt-4 h-4 w-1/2 rounded bg-base-300"></div>
+        </div>
+      }
+    </div>
+  } @else if (error) {
+    <div class="alert alert-warning mt-6" role="status">{{ error }}</div>
+  } @else if (!resultats.length) {
+    <div class="alert alert-info mt-6">Aucun profil n’a été identifié pour ce besoin.</div>
+  } @else {
+    <div class="mt-6 grid gap-4 md:grid-cols-2">
+      @for (item of resultats; track item.talentId) {
+        <article class="mc-card p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-semibold">{{ item.talent?.pseudo ?? 'Profil anonymisé' }}</h3>
+              <p class="text-sm text-base-content/70">{{ item.talent?.metierNom ?? 'Métier non renseigné' }} · {{ item.talent?.localisation ?? 'Localisation inconnue' }}</p>
+            </div>
+            <span class="badge badge-primary">{{ item.score }}%</span>
+          </div>
+          <p class="mt-4 text-sm text-base-content/70">{{ item.explication ?? 'Correspondance calculée selon le moteur de matching.' }}</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            @for (competence of item.competencesCorrespondantes ?? []; track competence) {
+              <span class="badge badge-success badge-outline">{{ competence }}</span>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
 </section>

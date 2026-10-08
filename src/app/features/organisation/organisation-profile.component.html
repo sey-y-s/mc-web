@@ -1,0 +1,42 @@
+<mc-page-header
+  title="Profil de l’organisation"
+  description="Consulter et mettre à jour les informations de votre organisation."
+/>
+
+@if (loading) {
+  <div class="mc-card animate-pulse p-6" role="status">Chargement du profil…</div>
+} @else if (error && !organisation) {
+  <div class="alert alert-error" role="alert">{{ error }}</div>
+} @else if (organisation; as data) {
+  <section class="mc-card max-w-4xl p-6">
+    @if (error) {
+      <div class="alert alert-error mb-5" role="alert">{{ error }}</div>
+    }
+    @if (success) {
+      <div class="alert alert-success mb-5" role="status">{{ success }}</div>
+    }
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="block">
+        <span class="mc-label">Nom</span>
+        <input class="mc-input" [(ngModel)]="data.nom" name="nom" />
+      </label>
+      <label class="block">
+        <span class="mc-label">Statut</span>
+        <input class="mc-input" [value]="data.statut ?? 'Non renseigné'" disabled />
+      </label>
+      <label class="block md:col-span-2">
+        <span class="mc-label">E-mail du compte associé</span>
+        <input class="mc-input" [value]="data.utilisateurEmail ?? 'Non renseigné'" disabled />
+      </label>
+      <label class="block md:col-span-2">
+        <span class="mc-label">Description</span>
+        <textarea class="mc-input" rows="4" [(ngModel)]="data.description" name="description"></textarea>
+      </label>
+    </div>
+    <div class="mt-6 flex gap-3">
+      <button class="btn btn-primary" type="button" (click)="save()" [disabled]="saving">
+        {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+    </div>
+  </section>
+}

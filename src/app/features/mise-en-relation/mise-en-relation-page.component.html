@@ -6,19 +6,38 @@
   <div class="grid gap-3 md:grid-cols-3">
     <div class="rounded-md border border-base-300 p-4">
       <p class="text-xs text-base-content/50">En attente</p>
-      <p class="mt-1 text-2xl font-semibold">—</p>
+      <p class="mt-1 text-2xl font-semibold">{{ enAttente }}</p>
     </div>
     <div class="rounded-md border border-base-300 p-4">
       <p class="text-xs text-base-content/50">Acceptées</p>
-      <p class="mt-1 text-2xl font-semibold">—</p>
+      <p class="mt-1 text-2xl font-semibold">{{ acceptees }}</p>
     </div>
     <div class="rounded-md border border-base-300 p-4">
       <p class="text-xs text-base-content/50">Refusées</p>
-      <p class="mt-1 text-2xl font-semibold">—</p>
+      <p class="mt-1 text-2xl font-semibold">{{ refusees }}</p>
     </div>
   </div>
-  <mc-empty-state
-    title="API à brancher"
-    message="TODO backend : contrôleur DemandeMiseEnRelation et historique des demandes."
-  />
+  @if (error) {
+    <p class="mt-4 text-sm text-red-700" role="alert">{{ error }}</p>
+  } @else if (loading) {
+    <p class="mt-4 text-sm text-base-content/60">Chargement des demandes…</p>
+  } @else if (demandes.length === 0) {
+    <p class="mt-4 text-sm text-base-content/60">Aucune demande envoyée pour le moment.</p>
+  } @else {
+    <div class="mt-6 overflow-x-auto">
+      <table class="table w-full">
+        <thead><tr><th>Talent</th><th>Statut</th><th>Demande</th><th>Message</th></tr></thead>
+        <tbody>
+          @for (demande of demandes; track demande.id) {
+            <tr>
+              <td>{{ demande.destinataireNomComplet || demande.destinataireId }}</td>
+              <td><span class="badge">{{ demande.statut }}</span></td>
+              <td>{{ demande.dateDemande | date:'short' }}</td>
+              <td>{{ demande.message }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </section>

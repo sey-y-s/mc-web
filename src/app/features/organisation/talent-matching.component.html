@@ -1,0 +1,182 @@
+<mc-page-header
+  title="Matching talents"
+  description="Comparez les profils proposés et choisissez la suite à donner à chaque candidature."
+/>
+
+@if (loading) {
+  <div class="grid gap-4 md:grid-cols-2" aria-label="Chargement des correspondances">
+    @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+      <div class="mc-card h-48 animate-pulse p-5">
+        <div class="h-5 w-1/2 rounded bg-base-300"></div>
+        <div class="mt-4 h-4 w-1/3 rounded bg-base-300"></div>
+        <div class="mt-8 h-4 w-full rounded bg-base-300"></div>
+      </div>
+    }
+  </div>
+} @else if (error) {
+  <div class="alert alert-error" role="alert">
+    <span>{{ error }}</span>
+    <button class="btn btn-sm" type="button" (click)="charger()">Réessayer</button>
+  </div>
+} @else {
+  <section class="mc-card p-5">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <label class="form-control min-w-56 flex-1">
+        <span class="mc-label">Rechercher dans les profils</span>
+        <input
+          class="mc-input"
+          type="search"
+          placeholder="Nom anonymisé, métier ou compétence"
+          [(ngModel)]="filter"
+        />
+      </label>
+      <label class="form-control">
+        <span class="mc-label">Score minimum : {{ minimumScore }}%</span>
+        <input
+          class="range range-primary w-52"
+          type="range"
+          min="0"
+          max="100"
+          step="5"
+          [(ngModel)]="minimumScore"
+        />
+      </label>
+      <label class="form-control">
+        <span class="mc-label">Trier par score</span>
+        <select class="mc-select" [(ngModel)]="sortOrder">
+          <option value="desc">Du plus élevé au plus faible</option>
+          <option value="asc">Du plus faible au plus élevé</option>
+        </select>
+      </label>
+      <button class="btn btn-ghost" type="button" (click)="charger()" [disabled]="loading">
+        Actualiser
+      </button>
+    </div>
+    <p class="mt-4 text-sm text-base-content/60">
+      {{ resultatsFiltres.length }} profil(s) affiché(s) sur {{ items.length }} correspondance(s)
+    </p>
+  </section>
+
+  @if (actionError) {
+    <div class="alert alert-error mt-4" role="alert">{{ actionError }}</div>
+  }
+  @if (actionMessage) {
+    <div class="alert alert-success mt-4" role="status">{{ actionMessage }}</div>
+  }
+
+  @if (items.length === 0) {
+    <div class="alert alert-info mt-4">
+      Aucun résultat de matching n’a été retourné pour ce besoin.
+    </div>
+  } @else if (resultatsFiltres.length === 0) {
+    <div class="alert alert-info mt-4">
+      Aucun profil ne correspond aux filtres. Modifiez la recherche ou réduisez le score minimum.
+    </div>
+  } @else {
+    <section class="mt-4 grid gap-4 xl:grid-cols-2" aria-label="Profils correspondants">
+      @for (item of resultatsFiltres; track item.talentId) {
+        <article class="mc-card p-5">
+          <header class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-semibold">
+                {{ item.talent?.pseudo || 'Profil anonymisé' }}
+              </h2>
+              <p class="mt-1 text-sm text-base-content/60">
+                {{ item.talent?.metierNom || 'Métier non renseigné' }}
+                @if (item.talent?.localisation) {
+                  · {{ item.talent.localisation }}
+                }
+              </p>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-primary">{{ item.score }}%</div>
+              <span class="badge">{{ item.statut }}</span>
+            </div>
+          </header>
+
+          <div class="mt-4">
+            <div class="flex items-center justify-between text-sm">
+              <span>Correspondance</span>
+              <span>{{ item.score }}%</span>
+            </div>
+            <progress
+              class="progress progress-primary mt-2 w-full"
+              [value]="item.score"
+              max="100"
+              [attr.aria-label]="'Score de correspondance : ' + item.score + '%'"
+            ></progress>
+            <p class="mt-2 text-xs text-base-content/60">
+              {{ item.points }} point(s) de correspondance selon le moteur.
+            </p>
+          </div>
+
+          @if (item.explication) {
+            <p class="mt-4 rounded-lg bg-base-200 p-3 text-sm">{{ item.explication }}</p>
+          }
+
+          @if (item.competencesCorrespondantes?.length) {
+            <div class="mt-4">
+              <h3 class="text-sm font-semibold">Compétences correspondantes</h3>
+              <div class="mt-2 flex flex-wrap gap-2">
+                @for (competence of item.competencesCorrespondantes; track competence) {
+                  <span class="badge badge-success badge-outline">{{ competence }}</span>
+                }
+              </div>
+            </div>
+          }
+
+          @if (item.competencesManquantes?.length) {
+            <div class="mt-4">
+              <h3 class="text-sm font-semibold">Compétences non identifiées</h3>
+              <div class="mt-2 flex flex-wrap gap-2">
+                @for (competence of item.competencesManquantes; track competence) {
+                  <span class="badge badge-ghost">{{ competence }}</span>
+                }
+              </div>
+            </div>
+          }
+
+          <footer class="mt-5 flex flex-wrap gap-2 border-t border-base-300 pt-4">
+            <a class="btn btn-sm btn-ghost" [routerLink]="['/talents', item.talentId]">
+              Consulter le profil
+            </a>
+            <button
+              class="btn btn-sm btn-outline"
+              type="button"
+              (click)="suivre(item)"
+              [disabled]="
+                pendingActions.has('suivi:' + item.talentId) ||
+                completedActions.has('suivi:' + item.talentId)
+              "
+            >
+              {{
+                completedActions.has('suivi:' + item.talentId)
+                  ? 'Ajouté au suivi'
+                  : pendingActions.has('suivi:' + item.talentId)
+                    ? 'Enregistrement…'
+                    : 'Ajouter au suivi'
+              }}
+            </button>
+            <button
+              class="btn btn-sm btn-primary"
+              type="button"
+              (click)="demanderMiseEnRelation(item)"
+              [disabled]="
+                pendingActions.has('relation:' + item.talentId) ||
+                completedActions.has('relation:' + item.talentId)
+              "
+            >
+              {{
+                completedActions.has('relation:' + item.talentId)
+                  ? 'Demande envoyée'
+                  : pendingActions.has('relation:' + item.talentId)
+                    ? 'Envoi…'
+                    : 'Demander une mise en relation'
+              }}
+            </button>
+          </footer>
+        </article>
+      }
+    </section>
+  }
+}

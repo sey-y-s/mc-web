@@ -29,8 +29,8 @@
     </div>
     <div class="flex gap-3">
       <a routerLink="/besoins" class="btn btn-ghost rounded-md">Annuler</a
-      ><button class="btn btn-primary rounded-md" [disabled]="loading">
-        Enregistrer le brouillon
+      >            <button class="btn btn-primary rounded-md" [disabled]="!canSubmit">
+        {{ loading ? 'Chargement…' : 'Enregistrer le brouillon' }}
       </button>
     </div>
   </form>

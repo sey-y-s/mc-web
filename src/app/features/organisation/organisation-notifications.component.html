@@ -1,0 +1,24 @@
+<mc-page-header
+  title="Notifications"
+  description="Consulter les notifications de votre organisation."
+/>
+
+@if (loading) {
+  <div class="mc-card p-6 text-sm text-base-content/60" role="status">Chargement des notifications…</div>
+} @else if (error) {
+  <div class="alert alert-error" role="alert">{{ error }}</div>
+} @else if (items.length) {
+  <section class="space-y-3">
+    @for (item of items; track item.id) {
+      <div class="mc-card p-4">
+        <div class="flex items-center justify-between gap-3">
+          <strong>{{ item.titre }}</strong>
+          <span class="badge {{ item.lu ? 'badge-ghost' : 'badge-primary' }}">{{ item.lu ? 'Lue' : 'Nouvelle' }}</span>
+        </div>
+        <p class="mt-2 text-sm text-base-content/70">{{ item.message }}</p>
+      </div>
+    }
+  </section>
+} @else {
+  <div class="alert alert-info">Aucune notification pour le moment.</div>
+}

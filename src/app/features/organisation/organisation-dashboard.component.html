@@ -1,0 +1,79 @@
+<mc-page-header
+  title="Tableau de bord organisation"
+  description="Indicateurs clés de votre organisation."
+/>
+
+@if (loading) {
+  <div class="grid gap-4 md:grid-cols-4" aria-label="Chargement des indicateurs">
+    @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+      <div class="mc-card h-28 animate-pulse p-4">
+        <div class="h-4 w-2/3 rounded bg-base-300"></div>
+        <div class="mt-5 h-8 w-1/3 rounded bg-base-300"></div>
+      </div>
+    }
+  </div>
+} @else if (error) {
+  <div class="alert alert-error" role="alert">
+    <span>{{ error }}</span>
+    <button class="btn btn-sm" type="button" (click)="charger()">Réessayer</button>
+  </div>
+} @else if (metrics; as data) {
+  <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Indicateurs de l’organisation">
+    <div class="mc-card mc-stat-card mc-card-hover">
+      <div class="mc-stat-label">Besoins ouverts</div>
+      <div class="mc-stat-value">{{ data.besoinsOuverts }}</div>
+      <a class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline" routerLink="/besoins">
+        Consulter les besoins
+      </a>
+    </div>
+    <div class="mc-card mc-stat-card mc-card-hover">
+      <div class="mc-stat-label">Talents suivis</div>
+      <div class="mc-stat-value">{{ data.talentsSuivis }}</div>
+      <a
+        class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+        routerLink="/suivi-besoin-talent"
+      >
+        Ouvrir le suivi
+      </a>
+    </div>
+    <div class="mc-card mc-stat-card mc-card-hover">
+      <div class="mc-stat-label">Mises en relation</div>
+      <div class="mc-stat-value">{{ data.misesEnRelation }}</div>
+      <a
+        class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+        routerLink="/mises-en-relation"
+      >
+        Gérer les demandes
+      </a>
+    </div>
+    <div class="mc-card mc-stat-card mc-card-hover">
+      <div class="mc-stat-label">Notifications non lues</div>
+      <div class="mc-stat-value">{{ data.notificationsNonLues }}</div>
+      <a
+        class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+        routerLink="/notifications"
+      >
+        Voir les notifications
+      </a>
+    </div>
+  </section>
+
+  <section class="mc-card mt-6 p-6 md:p-7">
+    <h2 class="mc-section-heading">Actions rapides</h2>
+    <p class="mt-1 text-sm text-base-content/60">
+      Publiez un besoin ou trouvez les profils qui correspondent à vos recrutements.
+    </p>
+    <div class="mt-4 flex flex-wrap gap-3">
+      <a class="btn btn-primary" routerLink="/besoins/nouveau">Créer un besoin</a>
+      <a class="btn btn-outline" routerLink="/recherche-talents">Rechercher un talent</a>
+      <button class="btn btn-ghost" type="button" (click)="charger()" [disabled]="loading">
+        Actualiser les indicateurs
+      </button>
+    </div>
+  </section>
+} @else {
+  <div class="alert alert-warning" role="status">
+    Les indicateurs n’ont pas encore été chargés.
+    <button class="btn btn-sm" type="button" (click)="charger()">Charger</button>
+  </div>
+}
