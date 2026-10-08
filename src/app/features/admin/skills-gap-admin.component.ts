@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, signal } from '@angular/core';
 import { PageHeaderComponent } from '../../shared/components';
 import { SkillsGapService } from '../../core/services/skills-gap.service';
 import { SkillsGap } from '../../shared/models';
@@ -43,11 +43,12 @@ export class SkillsGapAdminComponent {
   loading = true;
   error = '';
 
-  constructor() {
+  constructor(private cdr: ChangeDetectorRef) {
     this.service.lister().subscribe({
       next: (items) => {
         this.indicateurs = items;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error: Error) => {
         this.error = error.message || 'Impossible de charger les indicateurs Skills-Gap.';

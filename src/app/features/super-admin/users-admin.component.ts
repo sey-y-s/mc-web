@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PageHeaderComponent } from '../../shared/components';
 import { AdminService, AdminUser } from '../../core/services/admin.service';
@@ -47,11 +47,12 @@ export class UsersAdminComponent {
   error = '';
   readonly pending = new Set<string>();
 
-  constructor() {
+  constructor(private cdr : ChangeDetectorRef) {
     this.service.users().subscribe({
       next: (users) => {
         this.users = users;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error: Error) => {
         this.error = error.message || 'Impossible de charger les utilisateurs.';

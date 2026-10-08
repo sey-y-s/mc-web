@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { PageHeaderComponent } from '../../shared/components';
 import { NotificationService } from '../../core/services/notification.service';
 import { Notification } from '../../shared/models';
@@ -17,7 +17,7 @@ export class NotificationsPageComponent {
   error = '';
   readonly pending = new Set<string>();
 
-  constructor() {
+  constructor(private cdr : ChangeDetectorRef) {
     this.charger();
   }
 
@@ -27,6 +27,7 @@ export class NotificationsPageComponent {
       next: (items) => {
         this.notifications = items;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error: Error) => {
         this.error = error.message || 'Impossible de charger les notifications.';
@@ -42,6 +43,7 @@ export class NotificationsPageComponent {
       next: () => {
         notification.lu = true;
         this.pending.delete(notification.id);
+        this.cdr.detectChanges();
       },
       error: (error: Error) => {
         this.error = error.message || 'Impossible de marquer cette notification comme lue.';

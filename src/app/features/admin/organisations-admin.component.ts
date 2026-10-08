@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PageHeaderComponent } from '../../shared/components';
 import { AdminService } from '../../core/services/admin.service';
@@ -48,10 +48,11 @@ export class OrganisationsAdminComponent {
   error = '';
   readonly pending = new Set<string>();
 
-  constructor() {
+  constructor(private cdr: ChangeDetectorRef) {
     this.service.organisations().subscribe({
       next: (items) => {
         this.organisations = items ?? [];
+        this.cdr.detectChanges();
       },
       error: (error: Error) => {
         this.error = error.message || 'Impossible de charger les organisations.';
@@ -72,6 +73,7 @@ export class OrganisationsAdminComponent {
       next: (updated) => {
         organisation.statut = updated.statut;
         this.pending.delete(organisation.id);
+        this.cdr.detectChanges();
       },
       error: (error: Error) => {
         organisation.statut = ancienStatut;

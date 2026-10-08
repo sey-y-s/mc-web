@@ -144,7 +144,7 @@ export const routes: Routes = [
       },
       {
         path: 'besoins',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
+        canActivate: [authGuard(professional)],
         loadChildren: () =>
           import('./features/besoins/besoins.routes').then((m) => m.BESOINS_ROUTES),
       },

@@ -36,16 +36,16 @@ export class BesoinFormComponent implements OnInit {
       return;
     }
 
-    this.organisationService.obtenirPourUtilisateur().subscribe({
-      next: (organisation) => {
-        this.organisationId = organisation.id;
-        this.loading = false;
-      },
-      error: (error: Error) => {
-        this.error = error.message || 'Impossible de charger l’organisation associée au compte.';
-        this.loading = false;
-      },
-    });
+    // this.organisationService.obtenirPourUtilisateur().subscribe({
+    //   next: (organisation) => {
+    //     this.organisationId = organisation.id;
+    //     this.loading = false;
+    //   },
+    //   error: (error: Error) => {
+    //     this.error = error.message || 'Impossible de charger l’organisation associée au compte.';
+    //     this.loading = false;
+    //   },
+    // });
   }
 
   submit() {

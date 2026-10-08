@@ -1,4 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, tap, of } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import {
   PageHeaderComponent,
@@ -7,7 +9,6 @@ import {
   StatusBadgeComponent,
 } from '../../shared/components';
 import { BesoinService } from '../../core/services/besoin.service';
-import { Besoin } from '../../shared/models';
 
 @Component({
   selector: 'app-besoins-page',
@@ -21,21 +22,22 @@ import { Besoin } from '../../shared/models';
   ],
   templateUrl: './besoins-page.component.html',
 })
-export class BesoinsPageComponent implements OnInit {
+export class BesoinsPageComponent {
   private readonly service = inject(BesoinService);
-  besoins: Besoin[] = [];
-  loading = true;
-  error = '';
-  ngOnInit() {
-    this.service.lister().subscribe({
-      next: (x) => {
-        this.besoins = x ?? [];
-        this.loading = false;
-      },
-      error: (e) => {
-        this.error = e?.error?.message ?? 'Les besoins ne sont pas encore exposés par le backend.';
-        this.loading = false;
-      },
-    });
-  }
+
+  loading = signal(true);
+  error = signal('');
+
+  // Conversion propre en Signal avec gestion du chargement et des erreurs
+  besoins = toSignal(
+    this.service.lister().pipe(
+      tap(() => this.loading.set(false)),
+      catchError((e) => {
+        this.error.set(e?.error?.message ?? 'Les besoins ne sont pas encore exposés par le backend.');
+        this.loading.set(false);
+        return of([]);
+      })
+    ),
+    { initialValue: [] }
+  );
 }
