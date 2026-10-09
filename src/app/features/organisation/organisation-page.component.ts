@@ -1,7 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { PageHeaderComponent } from '../../shared/components';
 import { OrganisationService } from '../../core/services/organisation.service';
-import { Organisation } from '../../shared/models';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -10,30 +10,17 @@ import { AuthService } from '../../core/auth/auth.service';
   imports: [PageHeaderComponent],
   templateUrl: './organisation-page.component.html',
 })
-export class OrganisationPageComponent implements OnInit {
+export class OrganisationPageComponent {
   private readonly service = inject(OrganisationService);
   private readonly auth = inject(AuthService);
 
-  organisation: Organisation | null = null;
-  loading = true;
-  error = '';
-
-  ngOnInit(): void {
-    if (!this.auth.getCurrentUser()?.id) {
-      this.error = 'Compte connecté introuvable. Veuillez vous reconnecter.';
-      this.loading = false;
-      return;
-    }
-
-    this.service.obtenirPourUtilisateur().subscribe({
-      next: (organisation) => {
-        this.organisation = organisation;
-        this.loading = false;
-      },
-      error: (error: Error) => {
-        this.error = error.message || 'Impossible de charger les informations de l’organisation.';
-        this.loading = false;
-      },
-    });
-  }
+  // Déclaration de la ressource asynchrone gérée par les Signals
+  organisationResource = rxResource({
+    stream: () => {
+      if (!this.auth.getCurrentUser()?.id) {
+        throw new Error('Compte connecté introuvable. Veuillez vous reconnecter.');
+      }
+      return this.service.obtenirPourUtilisateur();
+    },
+  });
 }

@@ -2,27 +2,64 @@ import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { Opportunite } from '../../shared/models';
 
+export type StatutOpportunite = 'BROUILLON' | 'PUBLIEE' | 'EXPIREE' | 'ARCHIVEE';
+export type TypeOpportunite =
+  | 'FORMATION_GRATUITE' | 'BOURSE' | 'PROGRAMME' | 'APPEL_CANDIDATURE'
+  | 'CONCOURS' | 'INSERTION' | 'ACCOMPAGNEMENT' | 'AUTRE';
+
+export interface OpportuniteRequest {
+  categorieId: string;
+  titre: string;
+  description: string;
+  statut: StatutOpportunite;
+  type: TypeOpportunite;
+  dateExpiration?: string | null; // AAAA-MM-JJ
+}
+
+export interface OpportuniteDetail extends Opportunite {
+  categorieId?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OpportuniteService {
   private readonly api = inject(ApiService);
 
-  lister() {
-    return this.api.get<Opportunite[]>('/api/opportunites');
+  // Public : uniquement les opportunités publiées et non expirées. 
+  listerPubliees() {
+    return this.api.get<OpportuniteDetail[]>('/api/opportunites');
   }
 
-  creer(body: Partial<Opportunite>) {
-    return this.api.post<Opportunite>('/api/opportunites', body);
+  // Super admin : toutes les opportunités, tous statuts. 
+  listerPourGestion() {
+    return this.api.get<OpportuniteDetail[]>('/api/opportunites/gestion');
   }
 
-  modifier(id: string, body: Partial<Opportunite>) {
-    return this.api.put<Opportunite>(`/api/opportunites/${id}`, body);
+  // Admin (lecture seule). 
+  listerPourAdmin() {
+    return this.api.get<OpportuniteDetail[]>('/api/admin/opportunites');
   }
 
-  publier(id: string) {
-    return this.api.patch<Opportunite>(`/api/opportunites/${id}/publier`, {});
+  creer(body: OpportuniteRequest) {
+    return this.api.post<OpportuniteDetail>('/api/opportunites', body);
   }
 
-  archiver(id: string) {
-    return this.api.patch<Opportunite>(`/api/opportunites/${id}/archiver`, {});
+  modifier(id: string, body: OpportuniteRequest) {
+    return this.api.put<OpportuniteDetail>(`/api/opportunites/${id}`, body);
+  }
+
+  // Publier ou archiver = un PUT complet avec le nouveau statut. 
+  changerStatut(item: OpportuniteDetail, statut: StatutOpportunite) {
+    return this.modifier(item.id, {
+      categorieId: item.categorieId ?? '',
+      titre: item.titre,
+      description: item.description ?? '',
+      statut,
+      type: item.type as TypeOpportunite,
+      dateExpiration: item.dateExpiration ?? null,
+    });
+  }
+
+  supprimer(id: string) {
+    return this.api.delete<void>(`/api/opportunites/${id}`);
   }
 }

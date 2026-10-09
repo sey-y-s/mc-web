@@ -2,11 +2,12 @@
   title="Mon organisation"
   description="Informations de l'organisation et statut de son compte professionnel."
 />
-@if (loading) {
+
+@if (organisationResource.isLoading()) {
   <div class="mc-card animate-pulse p-6" role="status">Chargement des informations de l’organisation…</div>
-} @else if (error) {
-  <div class="alert alert-error" role="alert">{{ error }}</div>
-} @else if (organisation; as data) {
+} @else if (organisationResource.error(); as err) {
+  <div class="alert alert-error" role="alert">{{ err.message || 'Impossible de charger les informations de l’organisation.' }}</div>
+} @else if (organisationResource.value(); as data) {
   <section class="mc-card max-w-3xl p-6">
     <div class="grid gap-5 sm:grid-cols-2">
       <div>

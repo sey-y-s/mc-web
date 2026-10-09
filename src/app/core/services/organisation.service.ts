@@ -36,7 +36,7 @@ export class OrganisationService {
   }
 
   obtenirPourUtilisateur() {
-    return this.api.get<OrganisationResponse>('/api/organisations/mine').pipe(
+    return this.api.get<OrganisationResponse>('/api/organisations/me').pipe(
       map((item) => this.toOrganisation(item)),
     );
   }

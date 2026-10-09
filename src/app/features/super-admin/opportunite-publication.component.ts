@@ -57,16 +57,16 @@ export class OpportunitePublicationComponent {
 
   private charger(): void {
     this.loading = true;
-    this.service.lister().subscribe({
-      next: (items) => {
-        this.opportunites = items;
-        this.loading = false;
-      },
-      error: (error: Error) => {
-        this.error = error.message || 'Impossible de charger les opportunités.';
-        this.loading = false;
-      },
-    });
+    // this.service.lister().subscribe({
+    //   next: (items) => {
+    //     this.opportunites = items;
+    //     this.loading = false;
+    //   },
+    //   error: (error: Error) => {
+    //     this.error = error.message || 'Impossible de charger les opportunités.';
+    //     this.loading = false;
+    //   },
+    // });
   }
 
   changerStatut(opportunite: Opportunite, action: 'publier' | 'archiver'): void {
@@ -74,21 +74,21 @@ export class OpportunitePublicationComponent {
     this.pending.add(opportunite.id);
     this.error = '';
     this.success = '';
-    const request = action === 'publier'
-      ? this.service.publier(opportunite.id)
-      : this.service.archiver(opportunite.id);
-    request.subscribe({
-      next: (updated) => {
-        Object.assign(opportunite, updated);
-        this.pending.delete(opportunite.id);
-        this.success = action === 'publier'
-          ? 'L’opportunité a été publiée.'
-          : 'L’opportunité a été archivée.';
-      },
-      error: (error: Error) => {
-        this.pending.delete(opportunite.id);
-        this.error = error.message || 'Impossible de modifier le statut de l’opportunité.';
-      },
-    });
+    // const request = action === 'publier'
+    //   ? this.service.publier(opportunite.id)
+    //   : this.service.archiver(opportunite.id);
+    // request.subscribe({
+    //   next: (updated) => {
+    //     Object.assign(opportunite, updated);
+    //     this.pending.delete(opportunite.id);
+    //     this.success = action === 'publier'
+    //       ? 'L’opportunité a été publiée.'
+    //       : 'L’opportunité a été archivée.';
+    //   },
+    //   error: (error: Error) => {
+    //     this.pending.delete(opportunite.id);
+    //     this.error = error.message || 'Impossible de modifier le statut de l’opportunité.';
+    //   },
+    // });
   }
 }

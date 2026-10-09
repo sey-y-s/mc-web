@@ -18,16 +18,16 @@ export class DashboardComponent implements OnInit {
   loading = true;
   error = '';
   ngOnInit(): void {
-    this.skillsGap.lister().subscribe({
-      next: (d) => {
-        this.data = d ?? [];
-        this.loading = false;
-      },
-      error: (e) => {
-        this.error = e?.error?.message ?? 'Les indicateurs ne sont pas encore disponibles.';
-        this.loading = false;
-      },
-    });
+    // this.skillsGap.lister().subscribe({
+    //   next: (d) => {
+    //     this.data = d ?? [];
+    //     this.loading = false;
+    //   },
+    //   error: (e) => {
+    //     this.error = e?.error?.message ?? 'Les indicateurs ne sont pas encore disponibles.';
+    //     this.loading = false;
+    //   },
+    // });
   }
   get totalDemand() {
     return this.data.reduce((s, x) => s + x.demandeEstimee, 0);
