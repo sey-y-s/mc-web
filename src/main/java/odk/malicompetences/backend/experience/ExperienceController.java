@@ -19,10 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 @Tag(name = "Expériences", description = "Gestion des expériences professionnelles et bénévoles des citoyens")
 @RestController
-@RequestMapping({
-        "/api/v1/citoyens/{citoyenId}/experiences",
-        "/api/citoyens/{citoyenId}/experiences"
-})
+@RequestMapping("/api/v1/citoyens/{citoyenId}/experiences")
 public class ExperienceController {
 
     private final ExperienceService experienceService;
