@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: malicompetences-backend
+
+  profiles:
+    default: ${DB_PROFILE:mysql}   # mysql par défaut ; DB_PROFILE=maria pour MariaDB
+
+  flyway:
+    enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: ${MEDIA_MAX_FILE_SIZE:10MB}
+      max-request-size: ${MEDIA_MAX_REQUEST_SIZE:11MB}
+
+server:
+  port: 8080
+
+app:
+  cors:
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*}
+  media:
+    storage-directory: ${MEDIA_STORAGE_DIRECTORY:uploads/portfolio}
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration: ${JWT_EXPIRATION:86400000}
+  institution:
+    enabled: ${INSTITUTION_API_ENABLED:false}
+    confidentiality-reviewed: ${INSTITUTION_CONFIDENTIALITY_REVIEWED:false}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
