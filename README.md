@@ -12,13 +12,6 @@ Frontend Angular 22, Tailwind CSS 4, DaisyUI 5 et Leaflet.
 
 Les citoyens et les évaluateurs conservent leurs parcours principaux sur mobile. Le gestionnaire de centre dispose d’un espace web distinct, sans rôle d’évaluateur ajouté aux comptes.
 
-## Identité visuelle
-
-Le portail conserve la palette MaliCompétences (vert profond, or discret et fond ivoire), avec Cabin pour l’interface et GFS Artemisia pour les titres. Les pages utilisent des composants partagés, une hiérarchie sobre et des confirmations en modal pour les actions sensibles.
-
-## API
-
-Le portail consomme les routes Spring Boot `/api` et `/api/v1` selon les contrôleurs existants. Le numéro RCCM est facultatif à l’inscription et modifiable depuis le profil organisation ; il est également visible par les administrateurs lors de l’examen d’un dossier. L’affectation d’un gestionnaire se fait depuis la fiche d’un centre et non via un changement manuel de rôle.
 
 ## Démarrage
 
@@ -27,4 +20,4 @@ npm install
 npm start
 ```
 
-Pour le développement local, exposer Spring Boot sur `http://localhost:8080` et adapter le proxy Angular si nécessaire. La carte utilise `public/geo/mali-regions.geojson` ; consulter `public/geo/README.md` pour les codes et précautions de licence.
+Avec Spring Boot sur `http://localhost:8080`
