@@ -22,19 +22,19 @@
     </label>
   </div>
   <div class="mt-4 flex justify-end">
-    <button class="btn btn-primary rounded-md" type="button" (click)="rechercher()" [disabled]="loading">
-      {{ loading ? 'Recherche…' : 'Rechercher' }}
+    <button class="btn btn-primary rounded-md" type="button" (click)="rechercher()" [disabled]="loading()">
+      {{ loading() ? 'Recherche…' : 'Rechercher' }}
     </button>
   </div>
 </section>
 <section class="mc-card mt-5 p-6">
-  @if (loading) {
+  @if (loading()) {
     <div class="rounded-xl bg-base-200/50 px-5 py-10 text-center" role="status">Recherche en cours…</div>
-  } @else if (error) {
-    <div class="alert alert-warning" role="status">{{ error }}</div>
-  } @else if (resultats.length) {
+  } @else if (error()) {
+    <div class="alert alert-warning text-gray-100" role="status">{{ error() }}</div>
+  } @else if (resultats().length) {
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      @for (talent of resultats; track talent.id) {
+      @for (talent of resultats(); track talent.id) {
         <article class="rounded-xl border border-base-300 bg-base-100 p-4">
           <div class="flex items-center justify-between gap-3">
             <h3 class="font-semibold">{{ talent.pseudo ?? `${talent.prenom ?? ''} ${talent.nom}`.trim() }}</h3>

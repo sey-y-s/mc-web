@@ -8,28 +8,15 @@ import { AuthService } from '../auth/auth.service';
 export class NotificationService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
-
-  lister() {
+  lister() { return this.fetch(false); }
+  listerNonLues() { return this.fetch(true); }
+  private fetch(unreadOnly: boolean) {
     const utilisateurId = this.auth.getCurrentUser()?.id;
-    if (!utilisateurId) {
-      return throwError(() => new Error('Utilisateur connecté introuvable.'));
-    }
-    return this.api
-      .get<Array<Notification & { destinataireId?: string; dateReception?: string }>>(
-        `/api/notifications/utilisateur/${utilisateurId}`,
-      )
-      .pipe(
-        map((items) =>
-          items.map((item) => ({
-            ...item,
-            id: item.destinataireId ?? item.id,
-            dateCreation: item.dateReception ?? item.dateCreation,
-          })),
-        ),
-      );
+    if (!utilisateurId) return throwError(() => new Error('Utilisateur connecté introuvable.'));
+    const path = `/api/notifications/utilisateur/${utilisateurId}${unreadOnly ? '/non-lues' : ''}`;
+    return this.api.get<Array<Notification & { dateReception?: string; dateLecture?: string }>>(path).pipe(
+      map((items) => (items ?? []).map((item) => ({ ...item, dateCreation: item.dateReception ?? item.dateCreation }))),
+    );
   }
-
-  marquerCommeLue(id: string) {
-    return this.api.patch<Notification>(`/api/notifications/${id}/marquer-lue`, {});
-  }
+  marquerCommeLue(id: string) { return this.api.patch<Notification>(`/api/notifications/${id}/marquer-lue`, {}); }
 }

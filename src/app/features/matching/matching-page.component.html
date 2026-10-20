@@ -6,20 +6,20 @@
   <div class="grid gap-4 md:grid-cols-2">
     <label>
       <span class="mc-label">Besoin</span>
-      <select class="mc-select" [(ngModel)]="besoinId" (change)="rechercher()">
+      <select class="mc-select" [ngModel]="currentBesoinId()" (ngModelChange)="selectedBesoinId.set($event)">
         <option value="">Sélectionner un besoin</option>
-        @for (besoin of besoins; track besoin.id) {
+        @for (besoin of besoins(); track besoin.id) {
           <option [value]="besoin.id">{{ besoin.titre }}</option>
         }
       </select>
     </label>
     <label>
       <span class="mc-label">Filtre territorial</span>
-      <input class="mc-input" placeholder="Région / commune" [(ngModel)]="region" name="region" />
+      <input class="mc-input" placeholder="Région / commune" [ngModel]="region()" (ngModelChange)="region.set($event)" name="region" />
     </label>
   </div>
 
-  @if (loading) {
+  @if (loading()) {
     <div class="mt-6 grid gap-4 md:grid-cols-2">
       @for (placeholder of [1, 2, 3, 4]; track placeholder) {
         <div class="mc-card h-28 animate-pulse p-4">
@@ -28,13 +28,13 @@
         </div>
       }
     </div>
-  } @else if (error) {
-    <div class="alert alert-warning mt-6" role="status">{{ error }}</div>
-  } @else if (!resultats.length) {
+  } @else if (error()) {
+    <div class="alert alert-warning text-gray-100 mt-6" role="status">{{ error() }}</div>
+  } @else if (!resultats().length) {
     <div class="alert alert-info mt-6">Aucun profil n’a été identifié pour ce besoin.</div>
   } @else {
     <div class="mt-6 grid gap-4 md:grid-cols-2">
-      @for (item of resultats; track item.talentId) {
+      @for (item of resultats(); track item.talentId) {
         <article class="mc-card p-5">
           <div class="flex items-center justify-between">
             <div>

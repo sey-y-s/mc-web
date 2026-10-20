@@ -1,9 +1,8 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { PageHeaderComponent } from '../../shared/components';
 import { OrganisationService } from '../../core/services/organisation.service';
-import { Organisation } from '../../shared/models';
-import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-organisation-profile',
@@ -11,51 +10,83 @@ import { AuthService } from '../../core/auth/auth.service';
   imports: [FormsModule, PageHeaderComponent],
   templateUrl: './organisation-profile.component.html',
 })
-export class OrganisationProfileComponent implements OnInit {
+export class OrganisationProfileComponent {
   private readonly service = inject(OrganisationService);
-  private readonly auth = inject(AuthService);
 
-  organisation: Organisation | null = null;
-  loading = true;
-  saving = false;
-  error = '';
-  success = '';
+  readonly organisationResource = rxResource({
+    stream: () => this.service.obtenirPourUtilisateur(),
+  });
 
-  ngOnInit(): void {
-    if (!this.auth.getCurrentUser()?.id) {
-      this.error = 'Compte connecté introuvable. Veuillez vous reconnecter.';
-      this.loading = false;
-      return;
-    }
+  readonly editNom = signal('');
+  readonly editDescription = signal('');
+  readonly editNumeroRccm = signal('');
 
-    this.service.obtenirPourUtilisateur().subscribe({
-      next: (organisation) => {
-        this.organisation = organisation;
-        this.loading = false;
-      },
-      error: (error: Error) => {
-        this.error = error.message || 'Impossible de charger les informations de l’organisation.';
-        this.loading = false;
-      },
+  constructor() {
+    effect(() => {
+      const org = this.organisationResource.value();
+      if (org) {
+        this.editNom.set(org.nom ?? '');
+        this.editDescription.set(org.description ?? '');
+        this.editNumeroRccm.set(org.numeroRccm ?? '');
+      }
     });
   }
 
-  save(): void {
-    if (!this.organisation) return;
+  readonly saving = signal(false);
+  readonly saveError = signal('');
+  readonly success = signal('');
 
-    this.saving = true;
-    this.error = '';
-    this.success = '';
-    this.service.modifier(this.organisation.id, this.organisation).subscribe({
-      next: (value) => {
-        this.organisation = value;
-        this.success = 'Les informations de l’organisation ont été enregistrées.';
-        this.saving = false;
-      },
-      error: (error: Error) => {
-        this.error = error.message || 'Impossible d’enregistrer les modifications.';
-        this.saving = false;
-      },
-    });
+  readonly champsManquants = computed(() => {
+    const org = this.organisationResource.value();
+    if (!org) return ['Nom', 'Description'];
+    const missing: string[] = [];
+    if (!this.editNom().trim()) missing.push('Nom de l’organisation');
+    if (!this.editDescription().trim()) missing.push('Description');
+    return missing;
+  });
+
+  readonly completion = computed(() => {
+    return Math.round(((2 - this.champsManquants().length) / 2) * 100);
+  });
+
+  readonly statutLabel = computed(() => {
+    switch (this.organisationResource.value()?.statut) {
+      case 'APPROUVEE': return 'Validée';
+      case 'EN_ATTENTE': return 'En attente de validation';
+      case 'REJETEE': return 'Refusée';
+      case 'SUSPENDUE': return 'Suspendue';
+      default: return 'Non renseigné';
+    }
+  });
+
+  errorMessage(): string {
+    const err = this.organisationResource.error() as { message?: string } | undefined;
+    return this.saveError() || err?.message || 'Impossible de charger le profil organisation.';
+  }
+
+  save(): void {
+    const org = this.organisationResource.value();
+    if (!org || this.saving() || !this.editNom().trim()) return;
+    this.saving.set(true);
+    this.saveError.set('');
+    this.success.set('');
+
+    this.service
+      .modifierMonProfil({
+        nom: this.editNom().trim(),
+        description: this.editDescription().trim(),
+        numeroRccm: this.editNumeroRccm().trim(),
+      })
+      .subscribe({
+        next: () => {
+          this.success.set('Le profil a été enregistré.');
+          this.saving.set(false);
+          this.organisationResource.reload();
+        },
+        error: (error: { message?: string }) => {
+          this.saveError.set(error.message || 'Impossible d’enregistrer le profil.');
+          this.saving.set(false);
+        },
+      });
   }
 }

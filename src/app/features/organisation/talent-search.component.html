@@ -1,56 +1,223 @@
 <mc-page-header
-  title="Rechercher un talent"
-  description="Filtrer par compétence, métier et localisation."
+  title="Recherche de talents"
+  description="Parcourez des profils anonymisés à partir de critères professionnels."
 />
 
-<section class="mc-card p-5 md:p-6">
-  <div class="grid items-end gap-4 md:grid-cols-4">
-    <label>
-      <span class="mc-label">Compétence</span>
-      <input class="mc-input" placeholder="Ex. Angular" [(ngModel)]="filters.competence" name="competence" />
-    </label>
-    <label>
-      <span class="mc-label">Métier</span>
-      <input class="mc-input" placeholder="Ex. Développeur" [(ngModel)]="filters.metier" name="metier" />
-    </label>
-    <label>
-      <span class="mc-label">Localisation</span>
-      <input class="mc-input" placeholder="Ville ou région" [(ngModel)]="filters.localisation" name="localisation" />
-    </label>
-    <button class="btn btn-primary w-full" type="button" (click)="search()" [disabled]="loading">
-      {{ loading ? 'Recherche…' : 'Rechercher des talents' }}
-    </button>
-  </div>
+@if (checkingAccess()) {
+  <div class="mc-card p-6" role="status">Vérification du statut de l’organisation…</div>
+}
 
-  @if (loading) {
-    <div class="mt-6 rounded-xl bg-base-200/50 px-5 py-10 text-center" role="status">Recherche en cours…</div>
-  } @else if (error) {
-    <div class="alert alert-warning mt-6" role="status">{{ error }}</div>
-  } @else if (resultats.length) {
-    <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      @for (talent of resultats; track talent.id) {
-        <article class="mc-card mc-card-hover p-5">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h2 class="font-semibold tracking-tight">{{ talent.pseudo ?? talent.nom }}</h2>
-              <p class="mt-1 text-sm text-base-content/60">{{ talent.metierNom || 'Métier non renseigné' }}</p>
-            </div>
-            <span class="badge badge-success badge-outline">{{ talent.scoreGlobal ?? 0 }}%</span>
-          </div>
-          <p class="mt-3 text-sm text-base-content/65">{{ talent.localisation || 'Localisation inconnue' }}</p>
-          <p class="mt-3 line-clamp-3 text-sm leading-6 text-base-content/75">{{ talent.description || 'Aucune description disponible.' }}</p>
-          <div class="mt-4 flex flex-wrap gap-2">
-            @for (competence of talent.competences ?? []; track competence.id) {
-              <span class="badge badge-ghost">{{ competence.nom }}</span>
-            }
-          </div>
-        </article>
-      }
+@if (blockedReason()) {
+  <div class="alert alert-warning text-gray-100" role="status">
+    <div>
+      <strong>Recherche indisponible</strong>
+      <p>{{ blockedReason() }}</p>
+      <p class="mt-1 text-sm">Statut actuel : {{ statutOrganisation() || 'inconnu' }}.</p>
+      <a class="btn btn-sm mt-3" routerLink="/app/organisation/profil">Consulter le profil</a>
+    </div>
+  </div>
+}
+
+@if (error()) {
+  <div class="alert alert-error" role="alert">
+    {{ error() }} <button class="btn btn-sm" type="button" (click)="reessayer()">Réessayer</button>
+  </div>
+}
+
+<!-- On n'affiche le formulaire et les résultats que si l'accès est autorisé et qu'il n'y a pas d'erreur critique de blocage -->
+@if (!checkingAccess() && !blockedReason() && !error()) {
+  <section class="mc-card p-5 md:p-6">
+    <div class="grid gap-4 md:grid-cols-3">
+      <label>
+        <span class="mc-label">Compétence</span>
+        <input
+          class="mc-input"
+          [(ngModel)]="filters.competence"
+          name="competence"
+          placeholder="Ex. soudure"
+        />
+      </label>
+
+      <label>
+        <span class="mc-label">Métier</span>
+        <input
+          class="mc-input"
+          [(ngModel)]="filters.metier"
+          name="metier"
+          placeholder="Ex. électricien"
+        />
+      </label>
+
+      <label>
+        <span class="mc-label">Recherche textuelle</span>
+        <input
+          class="mc-input"
+          [(ngModel)]="filters.q"
+          name="q"
+          placeholder="Pseudo ou compétence"
+        />
+      </label>
+
+      <label>
+        <span class="mc-label">Région</span>
+        <select
+          class="mc-select"
+          [(ngModel)]="filters.regionId"
+          name="regionId"
+          (ngModelChange)="onRegionChange($event)"
+        >
+          <option value="">Toutes les régions</option>
+          @for (r of regions(); track r.id) {
+            <option [value]="r.id">{{ r.nom }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span class="mc-label">Commune</span>
+        <select
+          class="mc-select"
+          [(ngModel)]="filters.communeId"
+          name="communeId"
+          [disabled]="!filters.regionId"
+        >
+          <option value="">Toutes les communes</option>
+          @for (c of communes(); track c.id) {
+            <option [value]="c.id">{{ c.nom }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span class="mc-label">Disponibilité</span>
+        <select class="mc-select" [(ngModel)]="filters.disponibilite" name="disponibilite">
+          <option value="">Toutes</option>
+          <option value="DISPONIBLE">Disponible</option>
+          <option value="OCCUPE">Occupé</option>
+          <option value="EN_APPRENTISSAGE">En apprentissage</option>
+          <option value="NON_DISPONIBLE">Non disponible</option>
+        </select>
+      </label>
+
+      <label>
+        <span class="mc-label">Niveau minimum</span>
+        <select class="mc-select" [(ngModel)]="filters.niveauMin" name="niveauMin">
+          <option value="">Tous les niveaux</option>
+          <option value="DEBUTANT">Débutant</option>
+          <option value="INTERMEDIAIRE">Intermédiaire</option>
+          <option value="EXPERT">Expert</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="mt-5 flex flex-wrap gap-3">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="loading()">
+        {{ loading() ? 'Recherche…' : 'Rechercher' }}
+      </button>
+      <button class="btn btn-ghost" type="button" (click)="resetFilters()">Réinitialiser</button>
+    </div>
+  </section>
+
+  @if (loading()) {
+    <div class="mc-card mt-5 p-8 text-center" role="status">Recherche en cours…</div>
+  } @else if (!resultats().length) {
+    <div class="mc-card mt-5 p-8 text-center">
+      <h2 class="font-semibold">Aucun talent retourné</h2>
+      <p class="mt-1 text-sm text-base-content/60">Modifiez les critères ou réessayez plus tard.</p>
     </div>
   } @else {
-    <div class="mt-6 rounded-xl border border-dashed border-base-300 bg-base-200/30 px-5 py-10 text-center">
-      <h2 class="font-semibold">Aucun talent trouvé</h2>
-      <p class="mt-1 text-sm text-base-content/60">Modifiez vos critères puis relancez la recherche.</p>
+    <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+      <p class="text-sm text-base-content/60">
+        {{ resultats().length }} profil(s) anonymisé(s) retourné(s)
+      </p>
+      <p class="text-sm text-base-content/60">Page {{ page() }} sur {{ pageCount() }}</p>
+    </div>
+
+    <section class="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (talent of visibleResults(); track talent.id) {
+        <article class="mc-card p-5">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="font-semibold">{{ talent.pseudo || 'Profil anonymisé' }}</h2>
+            </div>
+            <span
+              class="badge"
+              [class.badge-success]="talent.estDisponible"
+              [class.badge-ghost]="!talent.estDisponible"
+            >
+              {{ talent.disponibilite || 'Disponibilité non renseignée' }}
+            </span>
+          </div>
+
+          <p class="mt-3 text-sm">
+            {{ talent.metierNom || 'Métier non renseigné' }}
+            @if (talent.secteurNom) {
+              · {{ talent.secteurNom }}
+            }
+          </p>
+
+          <p class="mt-1 text-sm text-base-content/65">
+            {{ talent.regionNom || talent.localisation || 'Région non renseignée' }}
+            @if (talent.communeNom) {
+              · {{ talent.communeNom }}
+            }
+          </p>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            @for (skill of talent.competencesDetail ?? []; track skill.id) {
+              <span class="badge badge-outline">
+                {{ skill.nom }}
+                @if (skill.niveau) {
+                  · {{ skill.niveau }}
+                }
+              </span>
+            }
+          </div>
+
+          <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+            <div class="rounded-lg bg-base-200/60 p-2">
+              <p class="text-lg font-semibold">{{ talent.nbPreuves ?? '—' }}</p>
+              <p class="text-xs text-base-content/60">Preuves</p>
+            </div>
+            <div class="rounded-lg bg-base-200/60 p-2">
+              <p class="text-lg font-semibold">{{ talent.nbValidations ?? '—' }}</p>
+              <p class="text-xs text-base-content/60">Validations</p>
+            </div>
+            <div class="rounded-lg bg-base-200/60 p-2">
+              <p class="text-sm font-semibold">
+                {{ talent.aPortfolio === undefined ? '—' : talent.aPortfolio ? 'Oui' : 'Non' }}
+              </p>
+              <p class="text-xs text-base-content/60">Portfolio</p>
+            </div>
+          </div>
+
+          <a
+            class="btn btn-sm btn-outline mt-5"
+            [routerLink]="['/app/organisation/talents', talent.id]"
+          >
+            Consulter le profil anonymisé
+          </a>
+        </article>
+      }
+    </section>
+
+    <div class="mt-5 flex justify-end gap-2">
+      <button
+        class="btn btn-sm btn-outline"
+        type="button"
+        (click)="goPage(page() - 1)"
+        [disabled]="page() <= 1"
+      >
+        Précédent
+      </button>
+      <button
+        class="btn btn-sm btn-outline"
+        type="button"
+        (click)="goPage(page() + 1)"
+        [disabled]="page() >= pageCount()"
+      >
+        Suivant
+      </button>
     </div>
   }
-</section>
+}

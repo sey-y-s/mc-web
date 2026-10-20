@@ -4,15 +4,15 @@
 />
 <section class="mc-card p-5">
   <div class="mb-5 flex flex-wrap gap-2">
-    <button class="btn btn-sm rounded-md" [class.btn-primary]="filter === 'ALL'" [class.btn-ghost]="filter !== 'ALL'" type="button" (click)="filter = 'ALL'">Toutes</button>
-    <button class="btn btn-sm rounded-md" [class.btn-primary]="filter === 'EN_ATTENTE'" [class.btn-ghost]="filter !== 'EN_ATTENTE'" type="button" (click)="filter = 'EN_ATTENTE'">En attente</button>
-    <button class="btn btn-sm rounded-md" [class.btn-primary]="filter === 'APPROUVEE'" [class.btn-ghost]="filter !== 'APPROUVEE'" type="button" (click)="filter = 'APPROUVEE'">Approuvées</button>
-    <button class="btn btn-sm rounded-md" [class.btn-primary]="filter === 'SUSPENDUE'" [class.btn-ghost]="filter !== 'SUSPENDUE'" type="button" (click)="filter = 'SUSPENDUE'">Suspendues</button>
+    <button class="btn btn-sm rounded-md" [class.btn-primary]="filter() === 'ALL'" [class.btn-ghost]="filter() !== 'ALL'" type="button" (click)="filter.set('ALL')">Toutes</button>
+    <button class="btn btn-sm rounded-md" [class.btn-primary]="filter() === 'EN_ATTENTE'" [class.btn-ghost]="filter() !== 'EN_ATTENTE'" type="button" (click)="filter.set('EN_ATTENTE')">En attente</button>
+    <button class="btn btn-sm rounded-md" [class.btn-primary]="filter() === 'APPROUVEE'" [class.btn-ghost]="filter() !== 'APPROUVEE'" type="button" (click)="filter.set('APPROUVEE')">Approuvées</button>
+    <button class="btn btn-sm rounded-md" [class.btn-primary]="filter() === 'SUSPENDUE'" [class.btn-ghost]="filter() !== 'SUSPENDUE'" type="button" (click)="filter.set('SUSPENDUE')">Suspendues</button>
   </div>
-  @if (loading) {
+  @if (loading()) {
     <div class="py-8 text-center text-sm text-base-content/60" role="status">Chargement des organisations…</div>
-  } @else if (error) {
-    <div class="alert alert-error mb-4" role="alert">{{ error }}</div>
+  } @else if (error()) {
+    <div class="alert alert-error mb-4" role="alert">{{ error() }}</div>
   } @else {
   <div class="overflow-x-auto">
     <table class="mc-table">
@@ -25,7 +25,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (organisation of filteredOrganisations; track organisation.id) {
+        @for (organisation of filteredOrganisations(); track organisation.id) {
           <tr>
             <td class="font-medium">{{ organisation.nom }}</td>
             <td><span class="badge rounded-md">{{ organisation.statut ?? 'Non renseigné' }}</span></td>
@@ -33,7 +33,7 @@
             <td><button class="btn btn-xs rounded-md" type="button">Voir</button></td>
           </tr>
         }
-        @if (!filteredOrganisations.length) {
+        @if (!filteredOrganisations().length) {
           <tr>
             <td colspan="4" class="text-center text-base-content/60">Aucune organisation ne correspond à ce filtre.</td>
           </tr>

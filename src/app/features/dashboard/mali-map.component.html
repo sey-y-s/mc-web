@@ -1,1 +1,38 @@
-<div #map class="h-[440px] w-full"></div>
+<section aria-label="Carte territoriale du Mali" class="space-y-3 p-4">
+  <div #map class="h-110 w-full rounded-lg border border-slate-200" role="region" aria-label="Carte territoriale interactive du Mali, sans fond de rues externe"></div>
+  <p class="mc-muted text-sm" role="status" aria-live="polite">{{ status }}</p>
+  @if (institutionItems().length) {
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs" aria-label="Légende de la carte">
+      @if (mesure() === 'ECART') {
+        <span class="inline-flex items-center gap-2"><span class="inline-block h-3 w-3 rounded-sm bg-red-600"></span>Demande supérieure à l’offre</span>
+        <span class="inline-flex items-center gap-2"><span class="inline-block h-3 w-3 rounded-sm bg-green-700"></span>Offre supérieure à la demande</span>
+      } @else {
+        <span class="inline-flex items-center gap-2"><span class="inline-block h-3 w-3 rounded-sm bg-green-700"></span>Valeur plus élevée</span>
+        <span class="inline-flex items-center gap-2"><span class="inline-block h-3 w-3 rounded-sm bg-green-200"></span>Valeur plus faible</span>
+      }
+      <span class="inline-flex items-center gap-2"><span class="inline-block h-3 w-3 rounded-sm bg-slate-300"></span>Donnée non disponible</span>
+    </div>
+    <p class="text-xs text-base-content/60">La couleur représente une échelle relative aux valeurs visibles de la sélection courante. Le gris ne signifie jamais zéro.</p>
+  } @else {
+    <p class="text-xs text-base-content/60">Les contours sont chargés localement. Les indicateurs s’affichent lorsque l’API fournit des agrégats autorisés et associés au même code stable.</p>
+  }
+  <div class="overflow-x-auto">
+    <table class="table w-full" aria-label="Tableau équivalent des territoires représentés sur la carte">
+      <caption class="text-left text-sm">Les 19 régions et le district de Bamako — limites administratives HDX/OCHA, version locale validée structurellement</caption>
+      <thead><tr><th scope="col"><button type="button" class="link link-hover" (click)="sortRegions()" aria-label="Trier les territoires par nom">Territoire ↕</button></th><th scope="col">Niveau</th><th scope="col">Code stable</th><th scope="col">{{ mesure() === 'OFFRE' ? 'Offre' : mesure() === 'DEMANDE' ? 'Demande' : 'Écart' }}</th><th scope="col">Lecture</th></tr></thead>
+      <tbody>
+        @for (region of regions(); track region.codeStable) {
+          <tr>
+            <th scope="row">{{ region.name ?? region.nom ?? 'Nom absent' }}</th>
+            <td>{{ region.niveau === 'DISTRICT' ? 'District' : 'Région' }}</td>
+            <td><code>{{ region.codeStable ?? '—' }}</code></td>
+            <td>{{ valeur(region) }}</td>
+            <td class="max-w-xs whitespace-normal text-xs">{{ explication(region) }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="py-4 text-sm">Tableau indisponible : aucun GeoJSON local validé.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

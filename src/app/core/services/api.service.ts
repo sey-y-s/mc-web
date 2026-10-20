@@ -19,6 +19,10 @@ export class ApiService {
     return this.http.get<T>(this.url(path), options);
   }
 
+  getBlob(path: string, options?: { params?: ApiQueryParams | HttpParams }) {
+    return this.http.get(this.url(path), { ...options, responseType: 'blob' });
+  }
+
   post<T>(path: string, body: unknown) {
     return this.http.post<T>(this.url(path), body);
   }

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, map, switchMap, tap, throwError } from 'rxjs';
 import { API_CONFIG } from '../api/api.config';
 import { looksLikePhone, normalizeMaliPhone } from '../utils/phone';
 import { UserRole } from './user-role.enum';
@@ -20,6 +20,7 @@ export interface RegisterRequest {
   // Compte organisation
   nomOrganisation?: string;
   descriptionOrganisation?: string;
+  numeroRccm?: string;
   
   // Compte citoyen (inscription faite surtout sur mobile)
   nom?: string;
@@ -35,6 +36,7 @@ export interface SessionUser {
   id: string;
   role: UserRole;
   exp?: number;
+  actif?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -48,14 +50,32 @@ export class AuthService {
     const body: LoginRequest = { ...request, identifiant: this.normalizeIdentifier(request.identifiant) };
     return this.http
       .post<LoginResponse>(`${API_CONFIG.baseUrl}/auth/login`, body)
-      .pipe(tap((response) => this.storeToken(response.token)));
+      .pipe(
+        tap((response) => this.storeToken(response.token)),
+        switchMap((response) => this.me().pipe(
+          tap((profile) => {
+            this.storeProfile(profile);
+            if (!profile.actif) throw new Error('Ce compte est désactivé. Contactez un administrateur.');
+          }),
+          map(() => response),
+        )),
+        catchError((error) => {
+          localStorage.removeItem(this.tokenKey);
+          localStorage.removeItem(this.userKey);
+          return throwError(() => error);
+        }),
+      );
   }
 
   register(request: RegisterRequest): Observable<void> {
     return this.http.post<void>(`${API_CONFIG.baseUrl}/auth/register`, request);
   }
 
-  /** @param expired true quand la session a expiré : la page de connexion l'explique. */
+  me(): Observable<{ id: string; role: UserRole; actif: boolean }> {
+    return this.http.get<{ id: string; role: UserRole; actif: boolean }>(`${API_CONFIG.baseUrl}/auth/me`);
+  }
+
+  /** @param expired true quand la session a expiré */
   logout(expired = false): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
@@ -80,7 +100,7 @@ export class AuthService {
     const token = this.getToken();
     if (!token) return false;
     const user = this.getCurrentUser();
-    return !!user && (!user.exp || user.exp * 1000 > Date.now());
+    return !!user && user.actif !== false && (!user.exp || user.exp * 1000 > Date.now());
   }
 
   hasRole(roles: UserRole[]): boolean {
@@ -91,13 +111,22 @@ export class AuthService {
   /** Page d'arrivée après connexion, selon le rôle. */
   homeRoute(): string {
     const role = this.getCurrentUser()?.role as string | undefined;
-    return role === 'ADMIN' || role === 'SUPER_ADMIN' ? '/admin/dashboard' : '/dashboard';
+    if (role === 'SUPER_ADMIN' || role === 'ADMIN') return '/app/admin/tableau-de-bord';
+    if (role === 'ORGANISATION') return '/app/organisation/dashboard';
+    if (role === 'CENTRE_ADMIN') return '/app/centre-admin';
+    if (role === 'INSTITUTION') return '/app/institution/tableau-de-bord';
+    return '/app/dashboard';
   }
 
   private normalizeIdentifier(raw: string): string {
     const value = raw.trim();
     if (looksLikePhone(value)) return normalizeMaliPhone(value) ?? value;
     return value.toLowerCase();
+  }
+
+  private storeProfile(profile: { id: string; role: UserRole; actif: boolean }): void {
+    const current = this.getCurrentUser();
+    localStorage.setItem(this.userKey, JSON.stringify({ id: profile.id, role: profile.role, actif: profile.actif, exp: current?.exp }));
   }
 
   private storeToken(token: string): void {

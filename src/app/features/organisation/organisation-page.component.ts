@@ -14,7 +14,6 @@ export class OrganisationPageComponent {
   private readonly service = inject(OrganisationService);
   private readonly auth = inject(AuthService);
 
-  // Déclaration de la ressource asynchrone gérée par les Signals
   organisationResource = rxResource({
     stream: () => {
       if (!this.auth.getCurrentUser()?.id) {

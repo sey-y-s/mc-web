@@ -1,20 +1,24 @@
-# MaliCompétences — Web professionnel
+# MaliCompétences — Portail web professionnel
 
-Frontend Angular 22 / Tailwind CSS 4 / DaisyUI 5 / Leaflet.
+Frontend Angular 22, Tailwind CSS 4, DaisyUI 5 et Leaflet.
 
-## Périmètre
+## Espaces disponibles
 
-Le Web est réservé aux acteurs professionnels au départ : **Organisation, Admin et SuperAdmin**. Le Citoyen et l'Évaluateur ne sont pas exposés dans cette interface ; leurs parcours restent prévus pour le mobile / les futurs espaces dédiés.
+- **Organisation** : profil avec numéro RCCM, besoins, recherche et suivi des talents, demandes de mise en relation.
+- **Administration** : validations, organisations, centres, territoires, référentiel, tests numériques et suivi opérationnel.
+- **Super administration** : gestion des comptes, affectation des gestionnaires de centre et publication des opportunités.
+- **Gestionnaire de centre** : informations du centre, désignation des évaluateurs et activation/suspension de leurs accès.
+- **Institution** : tableaux de bord, carte territoriale et indicateurs agrégés soumis aux règles de confidentialité.
 
-Les rôles Institution/Observateur et Gestionnaire/Centre sont préparés dans la structure fonctionnelle mais ne sont pas ajoutés au JWT tant que le backend ne les expose pas.
+Les citoyens et les évaluateurs conservent leurs parcours principaux sur mobile. Le gestionnaire de centre dispose d’un espace web distinct, sans rôle d’évaluateur ajouté aux comptes.
 
-## Design
+## Identité visuelle
 
-La structure s'inspire directement de **Windster / Flowbite** : sidebar fixe, header compact, cartes sobres, tableaux, filtres et formulaires. La police Inter est utilisée comme dans l'écosystème Themesberg/Flowbite. L'identité MaliCompétences remplace toutefois les couleurs génériques par le bleu institutionnel et un accent or discret.
+Le portail conserve la palette MaliCompétences (vert profond, or discret et fond ivoire), avec Cabin pour l’interface et GFS Artemisia pour les titres. Les pages utilisent des composants partagés, une hiérarchie sobre et des confirmations en modal pour les actions sensibles.
 
-## Backend
+## API
 
-Les appels réellement disponibles dans le backend livré utilisent `/api/v1`. Les fonctions dont le backend ne possède pas encore de contrôleur sont visibles comme TODO et ne sont pas simulées comme des données réelles.
+Le portail consomme les routes Spring Boot `/api` et `/api/v1` selon les contrôleurs existants. Le numéro RCCM est facultatif à l’inscription et modifiable depuis le profil organisation ; il est également visible par les administrateurs lors de l’examen d’un dossier. L’affectation d’un gestionnaire se fait depuis la fiche d’un centre et non via un changement manuel de rôle.
 
 ## Démarrage
 
@@ -23,4 +27,4 @@ npm install
 npm start
 ```
 
-Backend attendu sur le même hôte via le proxy / API reverse-proxy. Pour un développement local classique, exposer Spring Boot sur `http://localhost:8080` et adapter le proxy Angular si nécessaire.
+Pour le développement local, exposer Spring Boot sur `http://localhost:8080` et adapter le proxy Angular si nécessaire. La carte utilise `public/geo/mali-regions.geojson` ; consulter `public/geo/README.md` pour les codes et précautions de licence.

@@ -11,7 +11,7 @@ export interface Organisation {
   utilisateurId?: string;
   utilisateurEmail?: string;
   nom: string;
-  numeroSiren?: string;
+  numeroRccm?: string;
   type?: string;
   statut?: 'EN_ATTENTE' | 'APPROUVEE' | 'REJETEE' | 'SUSPENDUE';
   email?: string;
@@ -70,13 +70,20 @@ export interface Talent {
   description?: string;
   pseudo?: string;
   estDisponible?: boolean;
+  regionId?: string;
+  regionNom?: string;
+  communeId?: string;
+  communeNom?: string;
+  nbValidations?: number;
+  nbPreuves?: number;
+  aPortfolio?: boolean;
+  competencesDetail?: Array<{ id: string; competenceId?: string; nom: string; niveau?: 'DEBUTANT' | 'INTERMEDIAIRE' | 'EXPERT'; validee?: boolean; aPreuve?: boolean }>;
 }
 
 export interface TalentSearchFilters {
-  competence?: string;
-  metier?: string;
-  localisation?: string;
-  disponibilite?: string;
+  competence?: string; metier?: string; localisation?: string; disponibilite?: string;
+  competenceId?: string; metierId?: string; regionId?: string; communeId?: string; niveauMin?: string;
+  page?: number; size?: number; q?: string;
 }
 
 export interface DemandeMiseEnRelation {
@@ -86,6 +93,9 @@ export interface DemandeMiseEnRelation {
   destinataireId: string;
   destinataireNomComplet?: string;
   suiviBesoinTalentId?: string;
+  talentPseudo?: string;
+  contactTelephone?: string;
+  contactEmail?: string;
   statut: 'EN_ATTENTE' | 'ACCEPTEE' | 'REFUSEE';
   message: string;
   dateDemande: string;
@@ -137,9 +147,11 @@ export interface SuiviBesoinTalent {
   id: string;
   besoinId: string;
   citoyenId: string;
+  pseudo?: string;
+  besoinTitre?: string;
+  noteInterne?: string;
   statut: 'A_L_ETUDE' | 'CONTACT_EN_COURS' | 'MISE_EN_RELATION' | 'ARCHIVE';
   scoreCorrespondance?: number;
-  noteInterne?: string;
   dateCreation: string;
   dateMiseAJour: string;
 }

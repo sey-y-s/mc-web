@@ -13,7 +13,7 @@ export interface OpportuniteRequest {
   description: string;
   statut: StatutOpportunite;
   type: TypeOpportunite;
-  dateExpiration?: string | null; // AAAA-MM-JJ
+  dateExpiration?: string; // AAAA-MM-JJ
 }
 
 export interface OpportuniteDetail extends Opportunite {
@@ -55,7 +55,7 @@ export class OpportuniteService {
       description: item.description ?? '',
       statut,
       type: item.type as TypeOpportunite,
-      dateExpiration: item.dateExpiration ?? null,
+      ...(item.dateExpiration ? { dateExpiration: item.dateExpiration } : {}),
     });
   }
 

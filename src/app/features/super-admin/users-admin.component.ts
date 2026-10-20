@@ -1,39 +1,119 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { PageHeaderComponent } from '../../shared/components';
 import { AdminService, AdminUser } from '../../core/services/admin.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { ConfirmationService } from '../../core/ui/confirmation.service';
 
 @Component({
   selector: 'app-users-admin',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent],
+  imports: [FormsModule, DatePipe, PageHeaderComponent],
   template: `
-    <mc-page-header title="Utilisateurs" description="Administrer les comptes utilisateurs et leurs rôles." />
-    <section class="mc-card p-6">
-      @if (error) { <p class="mb-4 text-sm text-red-700" role="alert">{{ error }}</p> }
-      @if (loading) {
-        <p class="text-sm text-slate-500">Chargement des utilisateurs…</p>
-      } @else if (users.length === 0) {
-        <p class="text-sm text-slate-500">Aucun compte utilisateur.</p>
+    <mc-page-header
+      title="Utilisateurs et rôles"
+      description="Gérer les rôles et l’état des comptes utilisateurs."
+    />
+    <section class="mc-card p-5 sm:p-6">
+      <p class="mb-4 rounded-md border border-base-300 bg-base-200/50 px-4 py-3 text-sm text-base-content/70">Le rôle Gestionnaire de centre se donne depuis la fiche d’un centre. Le compte doit déjà posséder le profil correspondant à son type.</p>
+      @if (usersResource.error() || actionError()) {
+        <p class="mb-4 text-sm text-red-700" role="alert">{{ errorMessage() }}</p>
+      }
+      @if (message()) {
+        <p class="mb-4 text-sm text-emerald-800" role="status">{{ message() }}</p>
+      }
+      <input
+        class="mc-input mb-4 max-w-md"
+        type="search"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event); page.set(1)"
+        placeholder="Rechercher par e-mail ou téléphone"
+        aria-label="Rechercher un utilisateur"
+      />
+      @if (usersResource.isLoading()) {
+        <p class="py-8 text-sm text-slate-500">Chargement des utilisateurs…</p>
+      } @else if (!filtered().length) {
+        <p class="py-8 text-sm text-slate-500">Aucun utilisateur correspondant.</p>
       } @else {
         <div class="overflow-x-auto">
-          <table class="table table-zebra w-full">
-            <thead><tr><th>Email / téléphone</th><th>Rôle</th><th>État</th><th>Créé le</th></tr></thead>
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>Compte</th>
+                <th>Rôle</th>
+                <th>État</th>
+                <th>Actions</th>
+                <th>Créé le</th>
+              </tr>
+            </thead>
             <tbody>
-              @for (user of users; track user.id) {
+              @for (u of pageItems(); track u.id) {
                 <tr>
-                  <td>{{ user.email || user.telephone }}</td>
                   <td>
-                    <select class="mc-input" [ngModel]="user.role" (ngModelChange)="changerRole(user, $event)" [disabled]="pending.has(user.id)" [attr.aria-label]="'Rôle de ' + (user.email || user.telephone)">
-                      @for (role of roles; track role) { <option [value]="role">{{ role }}</option> }
-                    </select>
+                    <div class="font-medium">{{ u.email || u.telephone }}</div>
+                    <div class="text-xs text-slate-500">{{ u.telephone }}</div>
                   </td>
-                  <td>{{ user.actif ? 'Actif' : 'Désactivé' }}</td>
-                  <td>{{ user.dateCreation }}</td>
+                  <td>
+                    @if (u.role === 'CENTRE_ADMIN') {
+                      <span class="badge badge-outline">Gestionnaire de centre</span>
+                      <p class="mt-1 max-w-52 text-xs text-base-content/60">Le rôle se gère depuis la fiche du centre.</p>
+                    } @else {
+                    <select
+                      class="mc-input min-w-40"
+                      [ngModel]="u.role"
+                      (ngModelChange)="changerRole(u, $event)"
+                      [disabled]="pending.has(u.id) || bloqueChangement(u)"
+                      [attr.aria-label]="'Rôle de ' + (u.email || u.telephone)"
+                    >
+                      @for (r of roles; track r) {
+                        <option [value]="r">{{ libelleRole(r) }}</option>
+                      }
+                    </select>
+                    }
+                    <!-- @if (bloqueChangement(u)) {
+                      <p class="mt-1 max-w-56 text-xs text-amber-800">
+                        Votre propre rôle Super Admin ne peut pas être retiré.
+                      </p>
+                    } -->
+                  </td>
+                  <td>{{ u.actif ? 'Actif' : 'Désactivé' }}</td>
+                  <td>
+                    <button
+                      class="btn btn-sm btn-secondary"
+                      type="button"
+                      [disabled]="pending.has(u.id) || bloqueChangement(u)"
+                      (click)="changerStatut(u)"
+                    >
+                      {{ u.actif ? 'Désactiver' : 'Réactiver' }}
+                    </button>
+                  </td>
+                  <td>{{ u.dateCreation | date: 'dd/MM/yyyy' }}</td>
                 </tr>
               }
             </tbody>
           </table>
+        </div>
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+          <span>{{ filtered().length }} compte(s) · Page {{ page() }} / {{ totalPages() }}</span>
+          <div class="flex gap-2">
+            <button
+              class="btn btn-sm btn-secondary"
+              type="button"
+              [disabled]="page() <= 1"
+              (click)="page.set(page() - 1)"
+            >
+              Précédent</button
+            ><button
+              class="btn btn-sm btn-secondary"
+              type="button"
+              [disabled]="page() >= totalPages()"
+              (click)="page.set(page() + 1)"
+            >
+              Suivant
+            </button>
+          </div>
         </div>
       }
     </section>
@@ -41,41 +121,115 @@ import { AdminService, AdminUser } from '../../core/services/admin.service';
 })
 export class UsersAdminComponent {
   private readonly service = inject(AdminService);
-  readonly roles: AdminUser['role'][] = ['CITOYEN', 'ORGANISATION', 'EVALUATEUR', 'ADMIN', 'SUPER_ADMIN'];
-  users: AdminUser[] = [];
-  loading = true;
-  error = '';
+  private readonly auth = inject(AuthService);
+  private readonly confirmation = inject(ConfirmationService);
+
+  readonly roles: AdminUser['role'][] = [
+    'CITOYEN',
+    'ORGANISATION',
+    'ADMIN',
+    'SUPER_ADMIN',
+    'INSTITUTION',
+  ];
+  readonly query = signal('');
+  readonly page = signal(1);
+  readonly pageSize = 10;
+  readonly message = signal('');
+  readonly actionError = signal('');
   readonly pending = new Set<string>();
 
-  constructor(private cdr : ChangeDetectorRef) {
-    this.service.users().subscribe({
-      next: (users) => {
-        this.users = users;
-        this.loading = false;
-        this.cdr.detectChanges();
+  readonly usersResource = rxResource({
+    stream: () => this.service.users(),
+    defaultValue: [] as AdminUser[],
+  });
+
+  readonly filtered = computed(() => {
+    const q = this.query().trim().toLocaleLowerCase();
+    const list = this.usersResource.value() ?? [];
+    return list.filter(
+      (u) =>
+        !q || `${u.email ?? ''} ${u.telephone ?? ''} ${u.role}`.toLocaleLowerCase().includes(q),
+    );
+  });
+
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.filtered().length / this.pageSize)),
+  );
+
+  readonly pageItems = computed(() => {
+    const p = Math.min(this.page(), this.totalPages());
+    return this.filtered().slice((p - 1) * this.pageSize, p * this.pageSize);
+  });
+
+  errorMessage(): string {
+    if (this.actionError()) return this.actionError();
+    const err = this.usersResource.error() as Error | undefined;
+    return err?.message || 'Impossible de charger les utilisateurs.';
+  }
+
+  libelleRole(role: AdminUser['role']): string {
+    return ({ CITOYEN: 'Citoyen', ORGANISATION: 'Organisation', ADMIN: 'Administrateur', SUPER_ADMIN: 'Super administrateur', INSTITUTION: 'Institution' } as Partial<Record<AdminUser['role'], string>>)[role] ?? role;
+  }
+
+  bloqueChangement(u: AdminUser): boolean {
+    return u.id === this.auth.getCurrentUser()?.id && u.role === 'SUPER_ADMIN';
+  }
+
+  async changerRole(u: AdminUser, role: AdminUser['role']): Promise<void> {
+    if (role === u.role || role === 'CENTRE_ADMIN' || this.pending.has(u.id)) return;
+    if (
+      u.id === this.auth.getCurrentUser()?.id &&
+      u.role === 'SUPER_ADMIN' &&
+      role !== 'SUPER_ADMIN'
+    ) {
+      this.actionError.set('Le rôle Super Admin ne peut pas être retiré.');
+      return;
+    }
+    const ok = await this.confirmation.confirm(`Le compte ${u.email || u.telephone} passera au rôle ${role}. Vérifiez que ce rôle correspond bien à son profil et à ses accès.`, { title: 'Modifier le rôle', confirmLabel: 'Modifier le rôle', danger: true });
+    if (!ok) return;
+    const old = u.role;
+    this.pending.add(u.id);
+    this.actionError.set('');
+    this.message.set('');
+    this.service.modifierRole(u.id, role).subscribe({
+      next: (saved) => {
+        u.role = saved.role;
+        this.pending.delete(u.id);
+        this.message.set('Le rôle a été modifié.');
+        this.usersResource.reload();
       },
-      error: (error: Error) => {
-        this.error = error.message || 'Impossible de charger les utilisateurs.';
-        this.loading = false;
+      error: (e: Error) => {
+        u.role = old;
+        this.pending.delete(u.id);
+        this.actionError.set(e.message || 'Impossible de modifier le rôle.');
       },
     });
   }
 
-  changerRole(user: AdminUser, role: AdminUser['role']): void {
-    if (role === user.role || this.pending.has(user.id)) return;
-    const ancienRole = user.role;
-    user.role = role;
-    this.pending.add(user.id);
-    this.error = '';
-    this.service.modifierRole(user.id, role).subscribe({
-      next: (updated) => {
-        user.role = updated.role;
-        this.pending.delete(user.id);
+  async changerStatut(u: AdminUser): Promise<void> {
+    if (
+      (u.id === this.auth.getCurrentUser()?.id && u.role === 'SUPER_ADMIN') ||
+      this.pending.has(u.id)
+    )
+      return;
+    const actif = !u.actif;
+    const ok = await this.confirmation.confirm(`${actif ? 'Réactiver' : 'Désactiver'} le compte ${u.email || u.telephone} ?`, { title: actif ? 'Réactiver le compte' : 'Désactiver le compte', confirmLabel: actif ? 'Réactiver' : 'Désactiver', danger: !actif });
+    if (!ok) return;
+    const old = u.actif;
+    this.pending.add(u.id);
+    this.actionError.set('');
+    this.message.set('');
+    this.service.modifierStatutUtilisateur(u.id, actif).subscribe({
+      next: (saved) => {
+        u.actif = saved.actif;
+        this.pending.delete(u.id);
+        this.message.set(`Le compte est maintenant ${u.actif ? 'actif' : 'désactivé'}.`);
+        this.usersResource.reload();
       },
-      error: (error: Error) => {
-        user.role = ancienRole;
-        this.pending.delete(user.id);
-        this.error = error.message || 'Impossible de modifier le rôle.';
+      error: (e: Error) => {
+        u.actif = old;
+        this.pending.delete(u.id);
+        this.actionError.set(e.message || 'Impossible de modifier le statut du compte.');
       },
     });
   }

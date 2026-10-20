@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { PageHeaderComponent, StatusBadgeComponent } from '../../shared/components';
 import { SkillsGapService } from '../../core/services/skills-gap.service';
 import { SkillsGap } from '../../shared/models';
@@ -11,23 +12,15 @@ import { MaliMapComponent } from './mali-map.component';
   imports: [PageHeaderComponent, StatusBadgeComponent, MaliMapComponent],
   templateUrl: './dashboard.component.html',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent {
   private readonly skillsGap = inject(SkillsGapService);
   readonly auth = inject(AuthService);
-  data: SkillsGap[] = [];
-  loading = true;
-  error = '';
-  ngOnInit(): void {
-    // this.skillsGap.lister().subscribe({
-    //   next: (d) => {
-    //     this.data = d ?? [];
-    //     this.loading = false;
-    //   },
-    //   error: (e) => {
-    //     this.error = e?.error?.message ?? 'Les indicateurs ne sont pas encore disponibles.';
-    //     this.loading = false;
-    //   },
-    // });
+  readonly dataResource = rxResource({ stream: () => this.skillsGap.lister() });
+  get data(): SkillsGap[] { return this.dataResource.value() ?? []; }
+  get loading(): boolean { return this.dataResource.isLoading(); }
+  get error(): string {
+    const err = this.dataResource.error() as { error?: { message?: string }; message?: string } | undefined;
+    return err ? (err.error?.message ?? err.message ?? 'Les indicateurs sont momentanément indisponibles.') : '';
   }
   get totalDemand() {
     return this.data.reduce((s, x) => s + x.demandeEstimee, 0);

@@ -1,7 +1,13 @@
 import { Injectable, inject } from '@angular/core';
-import { map, Observable, throwError } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ApiService } from './api.service';
-import { Organisation, OrganisationDashboardMetrics } from '../../shared/models';
+import { Organisation } from '../../shared/models';
+
+export interface OrganisationProfilRequest {
+  nom: string;
+  description: string;
+  numeroRccm: string;
+}
 
 interface OrganisationResponse {
   id: string;
@@ -9,58 +15,34 @@ interface OrganisationResponse {
   utilisateurEmail: string;
   nom: string;
   description: string | null;
+  numeroRccm?: string | null;
   statut: Organisation['statut'];
 }
 
-interface OrganisationRequest {
-  utilisateurId: string;
-  nom: string;
-  description: string | null;
-  statut?: Organisation['statut'];
-}
-
+/** Client strict du contrat OpenAPI actuellement disponible. */
 @Injectable({ providedIn: 'root' })
 export class OrganisationService {
   private readonly api = inject(ApiService);
 
-  lister() {
-    return this.api.get<OrganisationResponse[]>('/api/organisations').pipe(
-      map((items) => items.map((item) => this.toOrganisation(item))),
-    );
+  lister(): Observable<Organisation[]> {
+    return this.api.get<OrganisationResponse[]>('/api/organisations').pipe(map((items) => (items ?? []).map((item) => this.toOrganisation(item))));
   }
 
-  obtenir(id: string) {
-    return this.api.get<OrganisationResponse>(`/api/organisations/${id}`).pipe(
-      map((item) => this.toOrganisation(item)),
-    );
+  obtenir(id: string): Observable<Organisation> {
+    return this.api.get<OrganisationResponse>(`/api/organisations/${id}`).pipe(map((item) => this.toOrganisation(item)));
   }
 
-  obtenirPourUtilisateur() {
-    return this.api.get<OrganisationResponse>('/api/organisations/me').pipe(
-      map((item) => this.toOrganisation(item)),
-    );
+  obtenirPourUtilisateur(): Observable<Organisation> {
+    return this.api.get<OrganisationResponse>('/api/organisations/me').pipe(map((item) => this.toOrganisation(item)));
   }
 
-  dashboard(): Observable<OrganisationDashboardMetrics> {
-    return this.api.get<OrganisationDashboardMetrics>('/api/organisations/dashboard');
-  }
-
-  modifier(id: string, body: Partial<Organisation>) {
-    if (!body.utilisateurId || !body.nom) {
-      return throwError(
-        () => new Error("L’identifiant utilisateur et le nom sont requis par l’API Organisation."),
-      );
-    }
-
-    const request: OrganisationRequest = {
-      utilisateurId: body.utilisateurId,
-      nom: body.nom,
-      description: body.description ?? null,
-      statut: body.statut,
-    };
-    return this.api.put<OrganisationResponse>(`/api/organisations/${id}`, request).pipe(
-      map((item) => this.toOrganisation(item)),
-    );
+  /** Le backend déduit l'organisation du contexte authentifié : aucun ID d'organisation n'est envoyé. */
+  modifierMonProfil(body: OrganisationProfilRequest): Observable<Organisation> {
+    return this.api.put<OrganisationResponse>('/api/organisations/me', {
+      nom: body.nom.trim(),
+      description: body.description.trim(),
+      numeroRccm: body.numeroRccm.trim(),
+    }).pipe(map((item) => this.toOrganisation(item)));
   }
 
   private toOrganisation(item: OrganisationResponse): Organisation {
@@ -70,7 +52,8 @@ export class OrganisationService {
       utilisateurEmail: item.utilisateurEmail,
       email: item.utilisateurEmail,
       nom: item.nom,
-      description: item.description ?? undefined,
+      description: item.description ?? '',
+      numeroRccm: item.numeroRccm ?? '',
       statut: item.statut,
     };
   }

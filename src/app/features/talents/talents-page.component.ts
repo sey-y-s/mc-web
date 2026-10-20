@@ -1,6 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { of } from 'rxjs';
 import { PageHeaderComponent } from '../../shared/components';
 import { TalentService } from '../../core/services/talent.service';
 import { Talent, TalentSearchFilters } from '../../shared/models';
@@ -14,30 +16,32 @@ import { Talent, TalentSearchFilters } from '../../shared/models';
 export class TalentsPageComponent {
   private readonly service = inject(TalentService);
 
-  filters: TalentSearchFilters = {
+  readonly filters: TalentSearchFilters = {
     competence: '',
     metier: '',
     localisation: '',
     disponibilite: '',
   };
 
-  resultats: Talent[] = [];
-  error = '';
-  loading = false;
+  readonly activeFilters = signal<TalentSearchFilters | null>(null);
+
+  readonly talentsResource = rxResource({
+    params: () => this.activeFilters(),
+    stream: ({ params }) => {
+      if (!params) return of([] as Talent[]);
+      return this.service.rechercher(params);
+    },
+    defaultValue: [] as Talent[],
+  });
+
+  readonly resultats = computed(() => this.talentsResource.value() ?? []);
+  readonly loading = computed(() => this.talentsResource.isLoading());
+  readonly error = computed(() => {
+    const err = this.talentsResource.error() as { message?: string } | undefined;
+    return err?.message ?? '';
+  });
 
   rechercher(): void {
-    this.loading = true;
-    this.error = '';
-    this.service.rechercher(this.filters).subscribe({
-      next: (items) => {
-        this.resultats = items ?? [];
-        this.loading = false;
-      },
-      error: (error: Error) => {
-        this.resultats = [];
-        this.error = error.message || 'La recherche de talents a échoué.';
-        this.loading = false;
-      },
-    });
+    this.activeFilters.set({ ...this.filters });
   }
 }

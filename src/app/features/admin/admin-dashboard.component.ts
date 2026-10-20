@@ -1,38 +1,38 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { PageHeaderComponent } from '../../shared/components';
-import { AdminService } from '../../core/services/admin.service';
-
-interface AdminDashboardMetrics {
-  citoyens: number;
-  organisations: number;
-  validations: number;
-  tests: number;
-}
+import { AdminService, AdminDashboard } from '../../core/services/admin.service';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [PageHeaderComponent],
+  imports: [PageHeaderComponent, RouterLink],
   templateUrl: './admin-dashboard.component.html',
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent {
   private readonly service = inject(AdminService);
-  metrics: AdminDashboardMetrics = { citoyens: 0, organisations: 0, validations: 0, tests: 0 };
-  error = '';
 
-  ngOnInit(): void {
-    this.service.dashboard().subscribe({
-      next: (value) => {
-        this.metrics = {
-          citoyens: value['citoyens'] ?? 0,
-          organisations: value['organisations'] ?? 0,
-          validations: value['validations'] ?? 0,
-          tests: value['tests'] ?? 0,
-        };
-      },
-      error: (error: Error) => {
-        this.error = error.message || 'Impossible de charger les indicateurs globaux.';
-      },
-    });
+  readonly metricsResource = rxResource({
+    stream: () => this.service.dashboard(),
+  });
+
+  readonly cards = [
+    { key: 'citoyens', label: 'Citoyens', path: '/app/admin/citoyens', tone: 'neutral' },
+    { key: 'organisations', label: 'Organisations', path: '/app/admin/organisations', tone: 'gold' },
+    { key: 'validations', label: 'Validations', path: '/app/admin/validations', tone: 'neutral' },
+    { key: 'tests', label: 'Tests numériques', path: '/app/admin/tests-numeriques', tone: 'neutral' },
+    { key: 'besoins', label: 'Besoins', path: undefined, tone: 'neutral' },
+    { key: 'misesEnRelation', label: 'Mises en relation', path: undefined, tone: 'neutral' },
+  ] as const;
+
+  metric(key: keyof AdminDashboard): number | null {
+    const value = this.metricsResource.value()?.[key];
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  }
+
+  errorMessage(): string {
+    const err = this.metricsResource.error() as Error | undefined;
+    return err?.message || 'Impossible de charger les indicateurs administratifs.';
   }
 }

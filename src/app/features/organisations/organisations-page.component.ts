@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { PageHeaderComponent } from '../../shared/components';
 import { OrganisationService } from '../../core/services/organisation.service';
 import { Organisation } from '../../shared/models';
@@ -9,29 +10,27 @@ import { Organisation } from '../../shared/models';
   imports: [PageHeaderComponent],
   templateUrl: './organisations-page.component.html',
 })
-export class OrganisationsPageComponent implements OnInit {
+export class OrganisationsPageComponent {
   private readonly service = inject(OrganisationService);
 
-  organisations: Organisation[] = [];
-  filter: 'ALL' | 'EN_ATTENTE' | 'APPROUVEE' | 'SUSPENDUE' = 'ALL';
-  error = '';
-  loading = true;
+  readonly filter = signal<'ALL' | 'EN_ATTENTE' | 'APPROUVEE' | 'SUSPENDUE'>('ALL');
 
-  ngOnInit(): void {
-    this.service.lister().subscribe({
-      next: (items) => {
-        this.organisations = items ?? [];
-        this.loading = false;
-      },
-      error: (error: Error) => {
-        this.error = error.message || 'Impossible de charger les organisations.';
-        this.loading = false;
-      },
-    });
-  }
+  readonly organisationsResource = rxResource({
+    stream: () => this.service.lister(),
+    defaultValue: [] as Organisation[],
+  });
 
-  get filteredOrganisations(): Organisation[] {
-    if (this.filter === 'ALL') return this.organisations;
-    return this.organisations.filter((item) => item.statut === this.filter);
-  }
+  readonly organisations = computed(() => this.organisationsResource.value() ?? []);
+  readonly loading = computed(() => this.organisationsResource.isLoading());
+  readonly error = computed(() => {
+    const err = this.organisationsResource.error() as { message?: string } | undefined;
+    return err?.message ?? '';
+  });
+
+  readonly filteredOrganisations = computed(() => {
+    const f = this.filter();
+    const list = this.organisations();
+    if (f === 'ALL') return list;
+    return list.filter((item) => item.statut === f);
+  });
 }

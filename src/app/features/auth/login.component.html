@@ -1,17 +1,15 @@
-<div class="min-h-screen bg-base-200 px-4 py-10">
+<a class="skip-link" href="#auth-title">Aller au contenu principal</a>
+<div id="main-content" class="min-h-screen bg-base-200 px-4 py-10">
   <div class="mx-auto max-w-md">
-    <div class="mb-8 flex items-center gap-3">
-      <span
-        class="flex h-10 w-10 items-center justify-center rounded-md bg-primary font-bold text-primary-content"
-        >MC</span
-      >
-      <div>
-        <strong class="block">MaliCompétences</strong
-        ><span class="text-xs text-base-content/50">Espace professionnel</span>
-      </div>
+    <div class="mb-8 flex flex-col justify-center items-center gap-y-5">
+      <img class="w-24" src="/images/logo.png" alt="Logo MaliCompétences" />
+      <p class="text-center">
+        <strong class="block">MaliCompétences</strong>
+        <span class="text-xs text-base-content/50">Espace professionnel</span>
+      </p>
     </div>
     <section class="mc-card p-6 sm:p-8">
-      <h1 class="text-xl font-semibold">Connexion</h1>
+      <h1 id="auth-title" class="text-xl font-semibold">Connexion</h1>
       <p class="mc-muted mt-1">Accédez à votre espace professionnel.</p>
       @if (error()) {
         <div class="alert alert-error mt-5 rounded-md py-3 text-sm">{{ error() }}</div>

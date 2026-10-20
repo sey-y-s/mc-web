@@ -24,6 +24,7 @@ export class RegisterComponent {
     {
       nomOrganisation: ['', [Validators.required, Validators.maxLength(150)]],
       descriptionOrganisation: ['', [Validators.maxLength(500)]],
+      numeroRccm: ['', [Validators.maxLength(80)]],
       telephone: ['', [Validators.required, maliPhoneValidator]],
       email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
       password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(100)]],
@@ -59,6 +60,7 @@ export class RegisterComponent {
         role: 'ORGANISATION',
         nomOrganisation: v.nomOrganisation.trim(),
         descriptionOrganisation: v.descriptionOrganisation.trim() || undefined,
+        numeroRccm: v.numeroRccm.trim() || undefined,
         telephone: normalizeMaliPhone(v.telephone) ?? v.telephone.trim(),
         email: v.email.trim().toLowerCase(),
         password: v.password,

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { map, throwError } from 'rxjs';
+import { map } from 'rxjs';
 import { ApiService } from './api.service';
 import { Besoin, BesoinCompetence } from '../../shared/models';
 
@@ -42,7 +42,7 @@ export class BesoinService {
 
   lister() {
     return this.api.get<BesoinResponse[]>('/api/besoins').pipe(
-      map((items) => items.map((item) => this.toBesoin(item))),
+      map((items) => (items ?? []).map((item) => this.toBesoin(item))),
     );
   }
 
@@ -53,33 +53,22 @@ export class BesoinService {
   }
 
   creer(body: BesoinCreateRequest) {
-    return this.api.post<BesoinResponse>('/api/besoins', body).pipe(
-      map((item) => this.toBesoin(item)),
-    );
+    // Le schéma V1 rend organisationId obligatoire ; le serveur doit impérativement le recouper avec le principal authentifié.
+    return this.api.post<BesoinResponse>('/api/besoins', body).pipe(map((item) => this.toBesoin(item)));
   }
 
-  modifier(id: string, body: Partial<Besoin>) {
-    if (!body.organisationId || !body.titre || !body.statut) {
-      return throwError(
-        () => new Error("L’organisation, le titre et le statut sont nécessaires pour modifier un besoin."),
-      );
-    }
-    const request: BesoinCreateRequest = {
-      organisationId: body.organisationId,
-      titre: body.titre,
-      description: body.description ?? '',
-      statut: body.statut,
-      dateDebut: body.dateDebut ?? null,
-      dateFin: body.dateFin ?? null,
-      competences: (body.competences ?? []).map((competence) => ({
-        competenceId: competence.competenceId,
-        niveauMinimum: competence.niveau,
-        quantite: competence.quantite,
-      })),
-    };
-    return this.api.put<BesoinResponse>(`/api/besoins/${id}`, request).pipe(
-      map((item) => this.toBesoin(item)),
-    );
+  modifier(id: string, body: BesoinCreateRequest) {
+    return this.api.put<BesoinResponse>(`/api/v1/besoins/${id}`, body).pipe(map((item) => this.toBesoin(item)));
+  }
+
+  cloturer(id: string) {
+    return this.api.patch<BesoinResponse>(`/api/v1/besoins/${id}/cloture`, {}).pipe(map((item) => this.toBesoin(item)));
+  }
+
+  supprimer(id: string) { return this.api.delete<void>(`/api/v1/besoins/${id}`); }
+
+  tableauDeBordOrganisation() {
+    return this.api.get<{ statutOrganisation: string; besoinsBrouillon: number; besoinsOuverts: number; besoinsClotures: number }>('/api/v1/organisations/me/tableau-de-bord');
   }
 
   private toBesoin(item: BesoinResponse): Besoin {
@@ -92,7 +81,7 @@ export class BesoinService {
       dateCreation: item.dateCreation,
       dateDebut: item.dateDebut,
       dateFin: item.dateFin,
-      competences: item.competences.map((competence) => ({
+      competences: (item.competences ?? []).map((competence) => ({
         id: competence.id,
         besoinId: item.id,
         competenceId: competence.competenceId,
