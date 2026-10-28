@@ -1,0 +1,265 @@
+/* ==========================================================================
+   Étape 3 — composants en Tailwind pur (DaisyUI retiré)
+   Les classes déjà présentes dans tes templates (btn, mc-input, mc-card, alert, badge, table, modal…)
+   sont redéfinies ici : les 224 boutons et 134 champs existants changent de look sans toucher aux pages.
+   ========================================================================== */
+
+/* ---------- Jetons de compatibilité : bg-base-100, text-primary, border-base-300… ---------- */
+@theme inline {
+  --color-base-100: var(--mc-base-100);
+  --color-base-200: var(--mc-base-200);
+  --color-base-300: var(--mc-base-300);
+  --color-base-content: var(--mc-ink);
+  --color-neutral: var(--mc-ink);
+  --color-primary: var(--color-brand-600);
+  --color-primary-content: #ffffff;
+  --color-secondary: var(--color-ocre-600);
+  --color-info: var(--color-brand-600);
+  --color-success: var(--color-success-600);
+  --color-warning: var(--color-ocre-600);
+  --color-error: var(--color-error-600);
+}
+:root {
+  --mc-base-100: #ffffff;
+  --mc-base-200: #f6f7f9;
+  --mc-base-300: #e1e4ea;
+  --mc-ink: #151b2b;
+
+  /* Vert, jaune, rouge du drapeau du Mali. Décoration uniquement : jamais porteur de sens. */
+  --mali-vert: #14b53a;
+  --mali-jaune: #fcd116;
+  --mali-rouge: #ce1126;
+
+  /* Motifs inspirés du bogolan (étoffe teinte à la boue) : zigzag, losange, points, croix. */
+  --motif-bande: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='20' viewBox='0 0 36 20'%3E%3Cpath d='M0 9L9 1l9 8 9-8 9 8' fill='none' stroke='black' stroke-width='1.6'/%3E%3Ccircle cx='9' cy='15' r='1.5'/%3E%3Ccircle cx='27' cy='15' r='1.5'/%3E%3Cpath d='M16 14l4 4m0-4l-4 4' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E");
+  --motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M32 6l26 26-26 26L6 32z' fill='none' stroke='black' stroke-width='1.4'/%3E%3Cpath d='M32 22l10 10-10 10-10-10z' fill='none' stroke='black' stroke-width='1.2'/%3E%3Ccircle cx='32' cy='32' r='2.2'/%3E%3Cpath d='M0 0l8 8M64 0l-8 8M0 64l8-8M64 64l-8-8' stroke='black' stroke-width='1.2'/%3E%3Ccircle cx='0' cy='32' r='1.6'/%3E%3Ccircle cx='64' cy='32' r='1.6'/%3E%3C/svg%3E");
+}
+.dark {
+  --mc-base-100: #171e30;
+  --mc-base-200: #121827;
+  --mc-base-300: #2a3348;
+  --mc-ink: #e6e9f0;
+}
+
+/* ---------- Signature : barre vert-jaune-rouge, et motifs ---------- */
+@utility barre-mali {      /* horizontale, 3 px : à poser sur un titre ou un bloc de marque */
+  height: 3px;
+  width: 2.5rem;
+  background: linear-gradient(90deg, var(--mali-vert) 0 33.34%, var(--mali-jaune) 0 66.67%, var(--mali-rouge) 0);
+}
+@utility barre-mali-v {    /* verticale, à côté du nom */
+  width: 4px;
+  height: 2.25rem;
+  background: linear-gradient(180deg, var(--mali-vert) 0 33.34%, var(--mali-jaune) 0 66.67%, var(--mali-rouge) 0);
+}
+@utility motif-bogolan-bande {  /* ruban de 20 px ; la couleur se règle avec text-* */
+  height: 20px;
+  background-color: currentColor;
+  -webkit-mask-image: var(--motif-bande);
+  mask-image: var(--motif-bande);
+  -webkit-mask-size: 36px 20px;
+  mask-size: 36px 20px;
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+}
+@utility motif-bogolan-fond {   /* à plat sur un grand panneau, en filigrane */
+  background-color: currentColor;
+  -webkit-mask-image: var(--motif-fond);
+  mask-image: var(--motif-fond);
+  -webkit-mask-size: 64px 64px;
+  mask-size: 64px 64px;
+}
+
+/* Alias temporaires : anciens jetons vert/or encore utilisés par quelques écrans (7 occurrences).
+   À supprimer quand text-mc-green-950, bg-mc-green-50, bg-mc-green-100 et text-mc-gold-800 auront disparu. */
+@theme {
+  --color-mc-green-50: #eaf0fb;
+  --color-mc-green-100: #d6e2f7;
+  --color-mc-green-950: #0a1730;
+  --color-mc-gold-800: #5a3a0f;
+}
+
+@layer components {
+  /* Lien d'évitement (clavier) : invisible jusqu'au focus. Utilisé par 5 écrans hors shell. */
+  .skip-link {
+    @apply sr-only rounded-control bg-brand-600 px-4 py-3 font-semibold text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-99999;
+  }
+
+  /* ---------- Boutons : arête basse « tampon », sans pilule ni reflet ---------- */
+  .btn {
+    @apply relative inline-flex min-h-10 select-none items-center justify-center gap-2 rounded-control border border-gray-300 bg-white px-4 py-2 text-center text-sm font-semibold leading-5 text-gray-800 transition-colors hover:border-gray-400 hover:bg-gray-50;
+  }
+  .btn:disabled, .btn.btn-disabled { @apply pointer-events-none cursor-not-allowed opacity-50; }
+  .btn-xs { @apply min-h-7 px-2.5 py-0.5 text-xs; }
+  .btn-sm { @apply min-h-8 px-3 py-1 text-[13px]; }
+  .btn-lg { @apply min-h-12 px-6 text-base; }
+  .btn-square { @apply aspect-square px-0; }
+  .btn-primary {
+    @apply border-brand-600 bg-brand-600 text-white hover:border-brand-700 hover:bg-brand-700;
+    box-shadow: 0 2px 0 var(--color-brand-900);
+  }
+  .btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 0 var(--color-brand-900); }
+  .btn-secondary { @apply border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50; }
+  .btn-accent { @apply border-ocre-600 bg-ocre-600 text-white hover:bg-ocre-700; }
+  .btn-ghost { @apply border-transparent bg-transparent text-brand-700 hover:border-transparent hover:bg-brand-50; }
+  .btn-outline { @apply border-brand-600 bg-transparent text-brand-700 hover:border-brand-600 hover:bg-brand-50; }
+  .btn-error { @apply border-error-600 bg-error-600 text-white hover:border-error-700 hover:bg-error-700; }
+  .btn-success { @apply border-success-600 bg-success-600 text-white hover:border-success-700 hover:bg-success-700; }
+  .btn-outline.btn-error { @apply bg-transparent text-error-700 hover:bg-error-50; }
+
+  /* ---------- Champs : nets, 44 px de haut (doigt), focus bleu ---------- */
+  .mc-input, .mc-select, .input, .select, .textarea {
+    @apply block min-h-11 rounded-control border border-gray-300 bg-white px-3.5 py-2 text-sm leading-6 text-gray-900 transition-colors placeholder:text-gray-500 hover:border-gray-400 focus:border-brand-600 focus:shadow-focus-ring focus:outline-none focus-within:border-brand-600 focus-within:shadow-focus-ring;
+  }
+  .mc-input, .mc-select { @apply w-full; }
+  .input, .select { width: clamp(3rem, 20rem, 100%); }
+  .input:where(label) { @apply flex items-center gap-2; }
+  textarea.mc-input, .textarea { @apply min-h-24; }
+  .mc-input[aria-invalid='true'], .mc-select[aria-invalid='true'], .input[aria-invalid='true'] {
+    @apply border-error-600 shadow-[0_0_0_3px_rgb(192_52_42/0.18)];
+  }
+  .mc-input:disabled, .mc-select:disabled, .input:disabled, .select:disabled { @apply cursor-not-allowed bg-gray-100 text-gray-500; }
+  .mc-select, .select {
+    appearance: none;
+    padding-right: 2.25rem;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 1.2rem) 52%, calc(100% - 0.9rem) 52%;
+    background-size: 0.3rem 0.3rem, 0.3rem 0.3rem;
+    background-repeat: no-repeat;
+  }
+  .mc-label { @apply mb-1.5 block text-sm font-semibold text-gray-800; }
+
+  /* Case à cocher : un carré plein au centre, pas de coche. Bouton radio : un point. Interrupteur : rectangulaire. */
+  .checkbox, .radio {
+    @apply inline-grid size-5 shrink-0 cursor-pointer appearance-none place-content-center border-[1.5px] border-gray-400 bg-white transition-colors hover:border-gray-600;
+  }
+  .checkbox { @apply rounded-[5px]; }
+  .radio { @apply rounded-full; }
+  .checkbox::before, .radio::before { content: ''; @apply size-2.5 scale-0 bg-white transition-transform; }
+  .radio::before { @apply rounded-full; }
+  .checkbox::before { @apply rounded-[2px]; }
+  .checkbox:checked, .radio:checked { @apply border-brand-600 bg-brand-600; }
+  .checkbox:checked::before, .radio:checked::before { @apply scale-100; }
+  .checkbox:disabled, .radio:disabled, .toggle:disabled { @apply cursor-not-allowed opacity-50; }
+  .checkbox-sm, .radio-sm { @apply size-4; }
+  .checkbox-sm::before, .radio-sm::before { @apply size-2; }
+  .toggle {
+    @apply relative h-6 w-11 shrink-0 cursor-pointer appearance-none rounded-[6px] bg-gray-300 transition-colors;
+  }
+  .toggle::before { content: ''; @apply absolute left-[3px] top-[3px] size-[18px] rounded-[4px] bg-white shadow-theme-xs transition-transform; }
+  .toggle:checked { @apply bg-brand-600; }
+  .toggle:checked::before { transform: translateX(20px); }
+  .toggle-sm { @apply h-5 w-9; }
+  .toggle-sm::before { @apply size-[14px]; }
+  .toggle-sm:checked::before { transform: translateX(16px); }
+
+  /* ---------- Panneaux : bordure, pas d'ombre, pas de soulèvement ---------- */
+  .mc-card { @apply rounded-panel border border-base-300 bg-base-100; }
+  .mc-card-hover, a.mc-card { @apply transition-colors; }
+  .mc-card-hover:hover, a.mc-card:hover { @apply border-brand-300; }
+  .mc-section-heading { @apply font-display text-base font-semibold tracking-tight text-gray-900; }
+  .mc-page-title { @apply font-display text-title-lg font-semibold text-gray-900 sm:text-2xl; }
+  .mc-muted { @apply text-sm leading-6 text-gray-600; }
+  .mc-link { @apply text-brand-700 underline underline-offset-4 hover:text-brand-800; }
+  .mc-etape { animation: ouverture 0.2s ease-out both; }
+
+  /* ---------- Chiffres clés : une graduation de règle sous la valeur ---------- */
+  .mc-stat-card { @apply relative overflow-hidden p-5 pb-6; }
+  .mc-stat-card::after {
+    content: '';
+    @apply pointer-events-none absolute inset-x-5 bottom-0 h-1.5 opacity-70;
+    background: repeating-linear-gradient(90deg, var(--color-gray-300) 0 1px, transparent 1px 8px);
+  }
+  .mc-stat-label { @apply text-sm font-medium text-gray-600; }
+  .mc-stat-value { @apply mt-2 font-display text-3xl font-semibold tabular-nums tracking-tight text-gray-900; }
+  .mc-kpi { @apply relative overflow-hidden rounded-panel border border-base-300 bg-base-100 p-4; }
+  .mc-kpi-value { @apply mt-1 font-display text-[1.75rem] font-semibold leading-tight tabular-nums tracking-tight text-gray-900; }
+  .mc-kpi-text { @apply text-lg; }
+  .mc-kpi-hint { @apply mt-0.5 text-xs text-gray-600; }
+
+  /* Jauge graduée : dix cases, comme une échelle de maîtrise. */
+  .mc-kpi-bar, .progress {
+    @apply mt-2 block h-2 w-full overflow-hidden bg-gray-200;
+    appearance: none;
+    border: 0;
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 calc(10% - 2px), transparent calc(10% - 2px) 10%);
+    mask-image: repeating-linear-gradient(90deg, #000 0 calc(10% - 2px), transparent calc(10% - 2px) 10%);
+  }
+  .mc-kpi-bar span { @apply block h-full bg-brand-600; transform-origin: left; animation: mc-hbar-grow 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .progress::-webkit-progress-bar { background: transparent; }
+  .progress::-webkit-progress-value { background: var(--color-brand-600); }
+  .progress::-moz-progress-bar { background: var(--color-brand-600); }
+  .progress-primary::-webkit-progress-value { background: var(--color-brand-600); }
+  .mc-echelle { @apply inline-flex overflow-hidden rounded-[3px] ring-1 ring-gray-300; }
+  .mc-echelle-case { @apply h-3 w-6; }
+
+  /* ---------- Tableaux : en-têtes en casse normale, chiffres alignés ---------- */
+  .table, .mc-table { @apply w-full border-collapse text-left text-sm tabular-nums; }
+  .table thead, .mc-table thead { @apply bg-gray-50 dark:bg-white/5; }
+  .table th, .mc-table th { @apply border-b border-gray-200 px-4 py-3 text-left text-theme-xs font-semibold text-gray-600 dark:border-gray-800; }
+  .table td, .mc-table td { @apply border-b border-gray-100 px-4 py-3 align-middle dark:border-gray-800; }
+  .table tbody tr:hover, .mc-table tbody tr:hover { @apply bg-gray-50/70 dark:bg-white/[0.03]; }
+  .table tbody tr:last-child td, .mc-table tbody tr:last-child td { @apply border-b-0; }
+  .table-sm th, .table-sm td { @apply px-3 py-2; }
+
+  /* ---------- Badges : même vocabulaire que les états de compétence ---------- */
+  .badge { @apply inline-flex items-center gap-1 rounded-control border border-gray-300 bg-gray-100 px-2 py-0.5 text-theme-xs font-medium leading-5 text-gray-700; }
+  .badge-sm { @apply px-1.5 py-0 text-[11px]; }
+  .badge-outline, .badge-ghost { @apply bg-transparent; }
+  .badge-primary, .badge-info { @apply border-brand-300 bg-brand-50 text-brand-700; }
+  .badge-success { @apply border-success-600 bg-success-50 text-success-700; }
+  .badge-warning, .badge-accent, .badge-secondary { @apply border-ocre-300 bg-ocre-50 text-ocre-700; }
+  .badge-error { @apply border-error-300 bg-error-50 text-error-700; }
+  .badge-neutral { @apply border-gray-700 bg-gray-800 text-white; }
+
+  /* ---------- Alertes : un losange de la couleur de l'état, pas d'icône ---------- */
+  .alert { @apply relative flex items-start gap-3 rounded-control border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-6 text-gray-800; }
+  .alert:not(:has(> svg))::before {
+    content: '';
+    @apply mt-2 size-2 shrink-0 rotate-45 bg-current;
+  }
+  .alert-info { @apply border-brand-200 bg-brand-50 text-brand-800; }
+  .alert-success { @apply border-success-300 bg-success-50 text-success-800; }
+  .alert-warning { @apply border-ocre-300 bg-ocre-50 text-ocre-800; }
+  .alert-error { @apply border-error-300 bg-error-50 text-error-800; }
+
+  /* ---------- Fenêtres ---------- */
+  .modal {
+    @apply invisible fixed inset-0 z-99999 grid place-items-center bg-gray-950/50 p-4 opacity-0 transition-opacity;
+  }
+  .modal-open, .modal[open], .modal:target { @apply visible opacity-100; }
+  .modal-box { @apply max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-panel border border-base-300 bg-base-100 p-6 shadow-theme-lg; }
+  .modal-open .modal-box, .modal[open] .modal-box { animation: ouverture 0.16s ease-out both; }
+  .modal-action { @apply mt-6 flex flex-wrap justify-end gap-2; }
+  .modal-backdrop { @apply fixed inset-0 -z-1 cursor-default; }
+  .modal-bottom { @apply items-end p-0 sm:items-center sm:p-4; }
+  .modal-bottom .modal-box { @apply max-w-none rounded-b-none sm:max-w-lg sm:rounded-b-panel; }
+
+  /* ---------- Menus déroulants et listes de menu ---------- */
+  .dropdown { @apply relative inline-block; }
+  .dropdown-content { @apply invisible absolute left-0 top-full z-50 mt-1 min-w-48 rounded-panel border border-base-300 bg-base-100 p-1 opacity-0 shadow-theme-md; }
+  .dropdown-end .dropdown-content { @apply left-auto right-0; }
+  .dropdown:focus-within .dropdown-content, .dropdown.dropdown-open .dropdown-content, .dropdown[open] .dropdown-content {
+    @apply visible opacity-100;
+    animation: ouverture 0.14s ease-out both;
+  }
+  .menu { @apply flex flex-col gap-0.5 p-1 text-sm; }
+  .menu :where(a, button) { @apply flex w-full items-center gap-2 rounded-control px-3 py-2 text-left text-gray-700 hover:bg-gray-100; }
+
+  /* ---------- Chargement : un losange qui tourne ---------- */
+  .loading { @apply inline-block size-4 shrink-0 rotate-45 border-2 border-brand-600 border-t-transparent; animation: tourne 0.9s linear infinite; }
+  .loading-xs { @apply size-3; }
+  .loading-sm { @apply size-4; }
+  .loading-md { @apply size-5; }
+}
+@keyframes tourne { to { transform: rotate(405deg); } }
+
+/* Lisibilité : les textes secondaires gardent un contraste AA (4,5:1) sur fond clair. */
+.text-base-content\/40, .text-base-content\/45, .text-base-content\/50, .text-base-content\/55,
+.text-base-content\/60, .text-base-content\/65 {
+  color: color-mix(in oklab, var(--color-base-content) 74%, transparent);
+}
+.text-slate-400 { color: #64748b; }
+
+/* Plus d'apparition au défilement : la classe posée par main.ts reste sans effet. */
+.mc-observe { opacity: 1; transform: none; }

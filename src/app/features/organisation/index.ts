@@ -8,4 +8,4 @@ export * from './talent-detail.component';
 export * from './talent-matching.component';
 export * from './suivi-besoin-talent.component';
 export * from './mise-en-relation.component';
-export * from './organisation-notifications.component';
+export * from './carte-talents.component';

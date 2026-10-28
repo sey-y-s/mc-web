@@ -1,20 +1,13 @@
-<mc-page-header
-  title="Mon profil"
-  description="Compte utilisé pour accéder à l'espace professionnel."
-/>
+<mc-page-header title="Mon profil" description="Informations de votre compte." />
 <section class="mc-card max-w-2xl p-6">
-  <div class="grid gap-5 sm:grid-cols-2">
+  <dl class="grid gap-5 sm:grid-cols-2">
     <div>
-      <p class="text-xs uppercase tracking-wide text-base-content/50">Identifiant</p>
-      <p class="mt-1 font-medium">{{ 'session' }}</p>
+      <dt class="text-sm text-base-content/60">Rôle</dt>
+      <dd class="mt-1 font-medium">{{ user?.role ?? 'Non disponible' }}</dd>
     </div>
     <div>
-      <p class="text-xs uppercase tracking-wide text-base-content/50">Rôle</p>
-      <p class="mt-1 font-medium">Session JWT</p>
+      <dt class="text-sm text-base-content/60">État du compte</dt>
+      <dd class="mt-1 font-medium">{{ user?.actif === false ? 'Désactivé' : 'Actif' }}</dd>
     </div>
-  </div>
-  <div class="alert alert-warning mt-6 rounded-md text-sm">
-    TODO backend : endpoint /me pour retourner le profil complet sans décoder des informations
-    métier depuis le JWT.
-  </div>
+  </dl>
 </section>

@@ -1,1 +1,91 @@
-<div #map class="h-[440px] w-full"></div>
+<section aria-label="Carte territoriale du Mali" class="mc-card overflow-hidden">
+  <header class="flex flex-wrap items-end justify-between gap-3 border-b border-base-300 px-5 py-4">
+    <div class="min-w-0">
+      <div class="barre-mali mb-2" aria-hidden="true"></div>
+      <h3 class="mc-section-heading">{{ libelleMesure() }}, par territoire</h3>
+      <p class="mc-muted mt-0.5 text-theme-xs" role="status" aria-live="polite">{{ status }}</p>
+    </div>
+  </header>
+
+  <div class="grid xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div class="relative">
+      <div
+        #map
+        class="mc-carte-fond h-[26rem] w-full sm:h-[32rem] xl:h-[38rem]"
+        role="region"
+        aria-label="Carte territoriale interactive du Mali, sans fond de rues externe"
+      ></div>
+
+      <div class="absolute bottom-3 left-3 z-[1000] max-w-[calc(100%-1.5rem)] rounded-control border border-base-300 bg-base-100/95 px-3 py-2 text-xs text-gray-700 shadow-theme-sm" aria-label="Légende de la carte">
+        @if (aDesDonnees()) {
+          @if (mesure() === 'ECART') {
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-gray-800">Pénurie</span>
+              <span class="mc-echelle">
+                @for (couleur of echelleEcart; track couleur) { <span class="mc-echelle-case" [style.background]="couleur"></span> }
+              </span>
+              <span class="font-semibold text-gray-800">Excédent</span>
+            </div>
+          } @else {
+            <div class="flex items-center gap-2">
+              Plus faible
+              <span class="mc-echelle">
+                @for (couleur of echelleNiveau; track couleur) { <span class="mc-echelle-case" [style.background]="couleur"></span> }
+              </span>
+              Plus élevée
+            </div>
+          }
+          <div class="mt-1.5 flex items-center gap-2">
+            <span class="inline-block h-3 w-6 shrink-0 rounded-[2px] border border-dashed border-gray-400 bg-gray-50" aria-hidden="true"></span>
+            Pointillés : donnée non disponible ou masquée (jamais comptée comme zéro)
+          </div>
+        } @else {
+          <p class="max-w-xs">Les contours sont chargés localement. Les indicateurs s’affichent lorsque l’API fournit des agrégats autorisés pour le même code stable.</p>
+        }
+      </div>
+    </div>
+
+    <aside class="border-t border-base-300 p-5 xl:border-l xl:border-t-0">
+      <h3 class="mc-section-heading mb-3">{{ mesure() === 'ECART' ? 'Territoires les plus en pénurie' : 'Territoires en tête' }}</h3>
+      @if (classement().length) {
+        <mc-hbar-chart [categories]="classement()" [ariaLabel]="'Classement des territoires'" />
+      } @else {
+        <p class="mc-muted">Aucun territoire n’a encore de données.</p>
+      }
+    </aside>
+  </div>
+
+  <details class="border-t border-base-300 px-5 py-3">
+    <summary class="cursor-pointer py-1 text-sm font-semibold text-gray-900">Tableau détaillé des territoires</summary>
+    <div class="mt-3 overflow-x-auto">
+      <table class="table w-full" aria-label="Tableau équivalent des territoires représentés sur la carte">
+        <caption class="pb-2 text-left text-sm text-gray-600">{{ afficherTout() ? 'Les 19 régions et le district de Bamako' : 'Territoires avec des données' }}</caption>
+        <thead>
+          <tr>
+            <th scope="col"><button type="button" class="mc-link" (click)="sortRegions()" aria-label="Trier les territoires par nom">Territoire ↕</button></th>
+            <th scope="col">Niveau</th>
+            <th scope="col">{{ mesure() === 'OFFRE' ? 'Offre' : mesure() === 'DEMANDE' ? 'Demande' : 'Écart' }}</th>
+            <th scope="col">Lecture</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (region of regionsAffichees(); track region.codeStable) {
+            <tr>
+              <th scope="row" class="font-medium">{{ region.name ?? region.nom ?? 'Nom absent' }}</th>
+              <td>{{ region.niveau === 'DISTRICT' ? 'District' : 'Région' }}</td>
+              <td class="tabular-nums">{{ valeur(region) }}</td>
+              <td class="max-w-xs whitespace-normal text-xs">{{ explication(region) }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="py-4 text-sm">{{ regions().length ? 'Aucun territoire n’a encore de données.' : 'Tableau indisponible : aucun GeoJSON local validé.' }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (nombreSansDonnee() > 0) {
+      <button type="button" class="btn btn-ghost btn-sm mt-3" (click)="afficherTout.set(!afficherTout())" [attr.aria-expanded]="afficherTout()">
+        {{ afficherTout() ? 'Masquer les territoires sans données' : 'Afficher aussi les ' + nombreSansDonnee() + ' territoire(s) sans données' }}
+      </button>
+    }
+  </details>
+</section>

@@ -1,76 +1,278 @@
-<div class="min-h-screen bg-base-200 px-4 py-10">
-  <div class="mx-auto max-w-lg">
-    <div class="mb-8 flex items-center gap-3">
-      <span class="flex h-10 w-10 items-center justify-center rounded-md bg-primary font-bold text-primary-content">MC</span>
-      <div>
-        <strong class="block">MaliCompétences</strong>
-        <span class="text-xs text-base-content/50">Espace professionnel</span>
-      </div>
-    </div>
+<mc-auth-layout [large]="true">
+  <section>
+      <h1 id="auth-title" class="font-display text-2xl font-semibold tracking-tight text-gray-900">Créer un compte organisation</h1>
+      <p class="mc-muted mt-1 text-sm">Votre dossier est vérifié par l’administration avant l’accès à la recherche de talents. Comptez environ 5 minutes.</p>
 
-    <section class="mc-card p-6 sm:p-8">
-      <h1 class="text-xl font-semibold">Créer un compte organisation</h1>
-      <p class="mc-muted mt-1">L'accès citoyen reste sur l'application mobile.</p>
+      <!-- Étapes -->
+      <ol class="mt-6 grid grid-cols-5 gap-1 text-center text-xs" aria-label="Étapes de l'inscription">
+        @for (libelle of etapes; track libelle; let i = $index) {
+          <li>
+            <button type="button" class="flex w-full flex-col items-center gap-1.5 rounded-md p-1"
+                    [disabled]="i >= etape()" (click)="allerA(i)" [attr.aria-current]="i === etape() ? 'step' : null">
+              <span class="flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold"
+                    [class]="i < etape() ? 'border-primary bg-primary text-primary-content' : i === etape() ? 'border-primary text-primary' : 'border-base-300 text-base-content/50'">
+                {{ i < etape() ? '✓' : i + 1 }}
+              </span>
+              <span class="hidden sm:block" [class]="i === etape() ? 'font-semibold' : 'text-base-content/60'">{{ libelle }}</span>
+            </button>
+          </li>
+        }
+      </ol>
+      <p class="mt-2 text-center text-sm font-semibold sm:hidden">Étape {{ etape() + 1 }} / {{ etapes.length }} · {{ etapes[etape()] }}</p>
 
       @if (error()) {
         <div class="alert alert-error mt-5 rounded-md py-3 text-sm" role="alert">{{ error() }}</div>
       }
 
-      <form class="mt-6 space-y-5" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-        <label class="block">
-          <span class="mc-label">Nom de l'organisation</span>
-          <input class="mc-input" formControlName="nomOrganisation" autocomplete="organization"
-                 [attr.aria-invalid]="invalid('nomOrganisation')" />
-          @if (invalid('nomOrganisation', 'required')) { <small class="text-error">Le nom est obligatoire.</small> }
-          @if (invalid('nomOrganisation', 'maxlength')) { <small class="text-error">150 caractères maximum.</small> }
-        </label>
+      <form class="mt-6" [formGroup]="form" (ngSubmit)="etape() === etapes.length - 1 ? submit() : suivant()" novalidate>
 
-        <label class="block">
-          <span class="mc-label">Présentation <span class="font-normal text-base-content/40">(facultatif)</span></span>
-          <textarea class="mc-input" rows="3" formControlName="descriptionOrganisation"
-                    placeholder="Activité, secteur, zones d'intervention…"></textarea>
-          @if (invalid('descriptionOrganisation', 'maxlength')) { <small class="text-error">500 caractères maximum.</small> }
-        </label>
+        <!-- 1. Structure -->
+        @if (etape() === 0) {
+          <fieldset class="space-y-5 mc-etape">
+            <legend class="sr-only">Structure</legend>
+            <div>
+              <span class="mc-label">Nature juridique</span>
+              <div [class]="typeChoisi() ? 'mt-2 grid gap-3' : 'mt-2 grid gap-3 sm:grid-cols-2'" role="radiogroup" aria-label="Nature juridique">
+                @for (t of types; track t.code) {
+                  @if (!typeChoisi() || typeChoisi() === t.code) {
+                  <button type="button" role="radio" [attr.aria-checked]="form.controls.typeOrganisation.value === t.code"
+                          class="rounded-lg border p-3 text-left transition hover:border-primary"
+                          [class.border-primary]="form.controls.typeOrganisation.value === t.code"
+                          [class.bg-base-200]="form.controls.typeOrganisation.value === t.code"
+                          [class.border-base-300]="form.controls.typeOrganisation.value !== t.code"
+                          (click)="choisirType(t.code)">
+                    <span class="block font-semibold">{{ t.libelle }}</span>
+                    <span class="block text-xs text-base-content/75">{{ t.description }}</span>
+                  </button>
+                  }
+                }
+              </div>
+              @if (typeChoisi()) {
+                <button type="button" class="btn btn-ghost btn-xs mt-1" (click)="changerType()">⇄ Changer de nature juridique</button>
+              }
+              @if (invalid('typeOrganisation', 'required')) { <small class="text-error">Choisissez la nature juridique.</small> }
+            </div>
 
-        <label class="block">
-          <span class="mc-label">Téléphone</span>
-          <input class="mc-input" formControlName="telephone" type="tel" autocomplete="tel"
-                 placeholder="70 00 00 00" [attr.aria-invalid]="invalid('telephone')" />
-          @if (invalid('telephone', 'required')) { <small class="text-error">Le téléphone est obligatoire.</small> }
-          @if (invalid('telephone', 'maliPhone')) { <small class="text-error">8 chiffres (ex. 70 00 00 00).</small> }
-        </label>
+            @if (!typeChoisi()) {
+              <p class="text-sm text-base-content/60">Choisissez la nature juridique : seuls les champs et documents qui la concernent s’afficheront ensuite.</p>
+            } @else {
+            <div class="space-y-5 mc-etape">
 
-        <label class="block">
-          <span class="mc-label">E-mail</span>
-          <input class="mc-input" formControlName="email" type="email" autocomplete="email"
-                 [attr.aria-invalid]="invalid('email')" />
-          @if (invalid('email', 'required')) { <small class="text-error">L'e-mail est obligatoire.</small> }
-          @if (invalid('email', 'email')) { <small class="text-error">Adresse e-mail invalide.</small> }
-        </label>
+            <div class="grid gap-4 md:grid-cols-[2fr_1fr]">
+              <label class="block">
+                <span class="mc-label">Nom ou raison sociale *</span>
+                <input class="mc-input" formControlName="nomOrganisation" autocomplete="organization" [attr.aria-invalid]="invalid('nomOrganisation')" />
+                @if (invalid('nomOrganisation', 'required')) { <small class="text-error">Le nom est obligatoire.</small> }
+                @if (invalid('nomOrganisation', 'maxlength')) { <small class="text-error">150 caractères maximum.</small> }
+              </label>
+              <label class="block">
+                <span class="mc-label">Sigle</span>
+                <input class="mc-input" formControlName="sigle" placeholder="Ex. : SSE" />
+              </label>
+            </div>
 
-        <label class="block">
-          <span class="mc-label">Mot de passe</span>
-          <input class="mc-input" formControlName="password" type="password" autocomplete="new-password"
-                 [attr.aria-invalid]="invalid('password')" />
-          @if (invalid('password', 'required') || invalid('password', 'minlength')) {
-            <small class="text-error">Au moins 8 caractères.</small>
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="block">
+                <span class="mc-label">Forme juridique</span>
+                <input class="mc-input" formControlName="formeJuridique" list="formes-juridiques" placeholder="Choisir ou saisir" />
+                <datalist id="formes-juridiques">
+                  @for (f of definition()?.formes ?? []; track f) { <option [value]="f"></option> }
+                </datalist>
+              </label>
+              <label class="block">
+                <span class="mc-label">Secteur d’activité</span>
+                <input class="mc-input" formControlName="secteurActivite" placeholder="Ex. : énergie solaire, BTP, santé…" />
+              </label>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="block">
+                <span class="mc-label">Date de création</span>
+                <input class="mc-input" type="date" formControlName="dateCreation" [max]="aujourdhui" />
+                @if (invalid('dateCreation', 'futur')) { <small class="text-error">La date ne peut pas être dans le futur.</small> }
+              </label>
+              <label class="block">
+                <span class="mc-label">Effectif (salariés)</span>
+                <input class="mc-input" type="number" min="0" formControlName="effectif" inputmode="numeric" />
+                @if (invalid('effectif')) { <small class="text-error">Nombre invalide.</small> }
+              </label>
+            </div>
+
+            <label class="block">
+              <span class="mc-label">Présentation <span class="font-normal text-base-content/40">(facultatif)</span></span>
+              <textarea class="mc-input" rows="3" formControlName="descriptionOrganisation" placeholder="Activité, zones d'intervention, besoins en compétences…"></textarea>
+              @if (invalid('descriptionOrganisation', 'maxlength')) { <small class="text-error">500 caractères maximum.</small> }
+            </label>
+            </div>
+            }
+          </fieldset>
+        }
+
+        <!-- 2. Identité légale -->
+        @if (etape() === 1) {
+          <fieldset class="space-y-5 mc-etape">
+            <legend class="font-semibold">Numéros officiels — {{ definition()?.libelle }}</legend>
+            <p class="text-sm text-base-content/65">Ces numéros figurent sur les documents qui autorisent votre organisation à exercer au Mali. Ils seront vérifiés par l’administration.</p>
+            @for (champ of champsAffiches(); track champ) {
+              <label class="block">
+                <span class="mc-label">{{ libelleChamp(champ) }} @if (obligatoire(champ)) { * } @else { <span class="font-normal text-base-content/40">(si disponible)</span> }</span>
+                <input class="mc-input" [formControlName]="champ" autocomplete="off" [placeholder]="champs[champ].exemple" [attr.aria-invalid]="invalid(champ)" />
+                <small class="mt-1 block text-base-content/60">{{ champs[champ].aide }}</small>
+                @if (invalid(champ, 'required')) { <small class="text-error">Ce numéro est obligatoire pour ce type d’organisation.</small> }
+                @if (invalid(champ, 'maxlength')) { <small class="text-error">Numéro trop long.</small> }
+              </label>
+            }
+          </fieldset>
+        }
+
+        <!-- 3. Siège et responsable -->
+        @if (etape() === 2) {
+          <fieldset class="space-y-5 mc-etape">
+            <legend class="font-semibold">Siège</legend>
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="block">
+                <span class="mc-label">Région *</span>
+                <select class="mc-input" formControlName="regionId" [attr.aria-invalid]="invalid('regionId')">
+                  <option value="">Choisir la région</option>
+                  @for (r of regionsResource.value(); track r.id) { <option [value]="r.id">{{ r.nom }}</option> }
+                </select>
+                @if (invalid('regionId', 'required')) { <small class="text-error">Choisissez la région.</small> }
+              </label>
+              <label class="block">
+                <span class="mc-label">Commune *</span>
+                <select class="mc-input" formControlName="communeId" [attr.aria-invalid]="invalid('communeId')">
+                  <option value="">{{ form.controls.regionId.value ? 'Choisir la commune' : 'Choisissez d’abord la région' }}</option>
+                  @for (c of communesResource.value(); track c.id) { <option [value]="c.id">{{ c.nom }}</option> }
+                </select>
+                @if (invalid('communeId', 'required')) { <small class="text-error">Choisissez la commune.</small> }
+              </label>
+            </div>
+            <label class="block">
+              <span class="mc-label">Adresse</span>
+              <input class="mc-input" formControlName="adresse" autocomplete="street-address" placeholder="Quartier, rue, porte" />
+            </label>
+            <label class="block">
+              <span class="mc-label">Site web</span>
+              <input class="mc-input" formControlName="siteWeb" type="url" placeholder="www.exemple.ml" />
+              @if (invalid('siteWeb', 'site')) { <small class="text-error">Adresse de site invalide.</small> }
+            </label>
+
+            <h2 class="pt-2 font-semibold">Responsable légal</h2>
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="block">
+                <span class="mc-label">Nom et prénom *</span>
+                <input class="mc-input" formControlName="responsableNom" autocomplete="name" [attr.aria-invalid]="invalid('responsableNom')" />
+                @if (invalid('responsableNom', 'required')) { <small class="text-error">Le responsable est obligatoire.</small> }
+              </label>
+              <label class="block">
+                <span class="mc-label">Fonction</span>
+                <input class="mc-input" formControlName="responsableFonction" placeholder="Gérant, directeur, président…" />
+              </label>
+            </div>
+            <label class="block md:max-w-sm">
+              <span class="mc-label">Téléphone du responsable</span>
+              <input class="mc-input" formControlName="responsableTelephone" type="tel" placeholder="70 00 00 00" />
+              @if (invalid('responsableTelephone', 'maliPhone')) { <small class="text-error">8 chiffres (ex. 70 00 00 00).</small> }
+            </label>
+          </fieldset>
+        }
+
+        <!-- 4. Compte -->
+        @if (etape() === 3) {
+          <fieldset class="space-y-5 mc-etape">
+            <legend class="font-semibold">Identifiants de connexion</legend>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <label class="block">
+                <span class="mc-label">Téléphone *</span>
+                <input class="mc-input" formControlName="telephone" type="tel" autocomplete="tel" placeholder="70 00 00 00" [attr.aria-invalid]="invalid('telephone')" />
+                @if (invalid('telephone', 'required')) { <small class="text-error">Le téléphone est obligatoire.</small> }
+                @if (invalid('telephone', 'maliPhone')) { <small class="text-error">8 chiffres (ex. 70 00 00 00).</small> }
+              </label>
+              <label class="block">
+                <span class="mc-label">E-mail *</span>
+                <input class="mc-input" formControlName="email" type="email" autocomplete="email" [attr.aria-invalid]="invalid('email')" />
+                @if (invalid('email', 'required')) { <small class="text-error">L'e-mail est obligatoire.</small> }
+                @if (invalid('email', 'email')) { <small class="text-error">Adresse e-mail invalide.</small> }
+              </label>
+            </div>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <label class="block">
+                <span class="mc-label">Mot de passe *</span>
+                <input class="mc-input" formControlName="password" type="password" autocomplete="new-password" [attr.aria-invalid]="invalid('password')" />
+                @if (invalid('password', 'required') || invalid('password', 'minlength')) { <small class="text-error">Au moins 8 caractères.</small> }
+              </label>
+              <label class="block">
+                <span class="mc-label">Confirmation *</span>
+                <input class="mc-input" formControlName="confirmation" type="password" autocomplete="new-password" />
+                @if (passwordsDiffer) { <small class="text-error">Les mots de passe ne correspondent pas.</small> }
+              </label>
+            </div>
+            <label class="flex cursor-pointer items-start gap-3">
+              <input type="checkbox" class="checkbox checkbox-sm mt-0.5" formControlName="attestation" />
+              <span class="text-sm">J’atteste que les informations et documents fournis sont exacts, que je suis habilité(e) à représenter cette organisation, et j’accepte les conditions d’utilisation de MaliCompétences.</span>
+            </label>
+            @if (invalid('attestation', 'required')) { <small class="text-error">Cette attestation est nécessaire.</small> }
+          </fieldset>
+        }
+
+        <!-- 5. Pièces justificatives -->
+        @if (etape() === 4) {
+          <fieldset class="space-y-4">
+            <legend class="font-semibold">Pièces justificatives — {{ definition()?.libelle }}</legend>
+            <p class="text-sm text-base-content/65">PDF, JPG ou PNG, 10 Mo maximum par fichier. Vous pouvez aussi les ajouter plus tard depuis « Mon organisation » ; le dossier n’est examiné qu’une fois les pièces obligatoires fournies.</p>
+            <ul class="space-y-3">
+              @for (p of piecesListe(); track p.type) {
+                <li class="rounded-lg border border-base-300 p-3">
+                  <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="font-medium">{{ documents[p.type].libelle }}
+                        <span class="badge mc-badge-lisible badge-sm ml-1" [class.badge-warning]="p.obligatoire" [class.badge-ghost]="!p.obligatoire">{{ p.obligatoire ? 'Obligatoire' : 'Conseillé' }}</span>
+                      </p>
+                      <p class="text-xs text-base-content/60">{{ documents[p.type].aide }}</p>
+                      @if (pieces()[p.type]; as f) {
+                        <p class="mt-1 truncate text-sm text-success">✓ {{ f.name }} · {{ taille(f) }}</p>
+                      }
+                      @if (erreursPieces()[p.type]; as e) { <p class="mt-1 text-sm text-error" role="alert">{{ e }}</p> }
+                    </div>
+                    <div class="flex shrink-0 gap-2">
+                      <label class="btn btn-sm btn-outline">
+                        {{ pieces()[p.type] ? 'Remplacer' : 'Choisir le fichier' }}
+                        <input #fichier type="file" class="sr-only" [accept]="formats" (change)="choisirPiece(p.type, fichier)" />
+                      </label>
+                      @if (pieces()[p.type]) {
+                        <button type="button" class="btn btn-sm btn-ghost" (click)="retirerPiece(p.type)">Retirer</button>
+                      }
+                    </div>
+                  </div>
+                </li>
+              }
+            </ul>
+            @if (piecesManquantes() > 0) {
+              <p class="text-sm text-warning-content/80" role="status">{{ piecesManquantes() }} pièce(s) obligatoire(s) non encore jointe(s).</p>
+            } @else {
+              <p class="text-sm text-success" role="status">Toutes les pièces obligatoires sont jointes.</p>
+            }
+          </fieldset>
+        }
+
+        <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
+          @if (etape() > 0) {
+            <button type="button" class="btn btn-ghost" (click)="precedent()" [disabled]="loading()">← Précédent</button>
+          } @else {
+            <span></span>
           }
-        </label>
-
-        <label class="block">
-          <span class="mc-label">Confirmation du mot de passe</span>
-          <input class="mc-input" formControlName="confirmation" type="password" autocomplete="new-password" />
-          @if (passwordsDiffer) { <small class="text-error">Les mots de passe ne correspondent pas.</small> }
-        </label>
-
-        <button class="btn btn-primary w-full rounded-md" [disabled]="loading()">
-          {{ loading() ? 'Création…' : 'Créer le compte' }}
-        </button>
+          @if (etape() < etapes.length - 1) {
+            <button type="submit" class="btn btn-primary rounded-md px-6">Continuer →</button>
+          } @else {
+            <button type="submit" class="btn btn-primary rounded-md px-6" [disabled]="loading()">
+              {{ loading() ? (progression() || 'Création…') : 'Créer le compte et envoyer le dossier' }}
+            </button>
+          }
+        </div>
       </form>
 
       <p class="mt-6 text-center text-sm text-base-content/60">
-        <a routerLink="/auth/login" class="mc-link font-medium">Retour à la connexion</a>
+        Déjà inscrit ? <a routerLink="/auth/login" class="mc-link font-medium">Se connecter</a>
       </p>
     </section>
-  </div>
-</div>
+</mc-auth-layout>

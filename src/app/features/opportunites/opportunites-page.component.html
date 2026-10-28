@@ -1,32 +1,15 @@
-<mc-page-header
-  title="Opportunités"
-  description="Publication des formations gratuites, bourses, programmes et appels."
-/>
-<section class="mc-card p-5">
-  <div class="flex items-center justify-between">
-    <div>
-      <h2 class="font-semibold">Gestion éditoriale</h2>
-      <p class="mc-muted">Seul le SuperAdmin publie les opportunités.</p>
-    </div>
-    <button class="btn btn-primary rounded-md">Nouvelle opportunité</button>
+<a class="skip-link" href="#main-content">Aller au contenu principal</a>
+<main class="mx-auto max-w-6xl px-1 py-2" id="main-content">
+  <div class="mb-8 border-b border-base-300 pb-6">
+    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-mc-gold-800">Publications</p>
+    <h1 class="mc-page-title mt-3 text-3xl">Opportunités</h1>
+    <p class="mc-muted mt-2 max-w-2xl">Consultez les opportunités professionnelles publiées.</p>
   </div>
-  <div class="mt-5 grid gap-3 sm:grid-cols-4">
-    <div class="rounded-md border p-4">
-      <p class="text-xs text-base-content/50">Brouillons</p>
-      <strong>—</strong>
-    </div>
-    <div class="rounded-md border p-4">
-      <p class="text-xs text-base-content/50">Publiées</p>
-      <strong>—</strong>
-    </div>
-    <div class="rounded-md border p-4">
-      <p class="text-xs text-base-content/50">Expirées</p>
-      <strong>—</strong>
-    </div>
-    <div class="rounded-md border p-4">
-      <p class="text-xs text-base-content/50">Archivées</p>
-      <strong>—</strong>
-    </div>
-  </div>
-  <mc-empty-state title="API opportunités à exposer" />
-</section>
+  <section class="mc-card px-5 sm:px-8" aria-labelledby="opportunites-empty-title">
+    <mc-empty-state
+      title="Aucune opportunité publique disponible pour le moment"
+      message="Aucune opportunité publiée pour le moment."
+    />
+  </section>
+  <p class="mt-5 text-sm text-base-content/65">Vous disposez déjà d’un compte professionnel ? <a routerLink="/auth/login" class="mc-link font-semibold">Accéder à votre espace</a>.</p>
+</main>

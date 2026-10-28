@@ -22,22 +22,22 @@ export class TestNumeriqueService {
   private readonly api = inject(ApiService);
 
   lister() {
-    return this.api.get<AdminTestNumerique[]>('/api/admin/tests-numeriques');
+    return this.api.get<AdminTestNumerique[]>('/api/v1/admin/tests-numeriques');
   }
 
   creer(body: Partial<TestNumerique>) {
     if (!body.competenceId || !body.titre?.trim()) {
       return throwError(() => new Error('Une compétence et un titre sont obligatoires.'));
     }
-    return this.api.post<AdminTestNumerique>('/api/admin/tests-numeriques', this.toRequest(body));
+    return this.api.post<AdminTestNumerique>('/api/v1/admin/tests-numeriques', this.toRequest(body));
   }
 
   modifier(id: string, body: Partial<TestNumerique>) {
-    return this.api.put<AdminTestNumerique>(`/api/admin/tests-numeriques/${id}`, this.toRequest(body));
+    return this.api.put<AdminTestNumerique>(`/api/v1/admin/tests-numeriques/${id}`, this.toRequest(body));
   }
 
   supprimer(id: string) {
-    return this.api.delete<void>(`/api/admin/tests-numeriques/${id}`);
+    return this.api.delete<void>(`/api/v1/admin/tests-numeriques/${id}`);
   }
 
   private toRequest(body: Partial<TestNumerique>): TestRequest {

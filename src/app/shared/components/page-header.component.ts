@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'mc-page-header',
@@ -9,4 +9,5 @@ export class PageHeaderComponent {
   title = input.required<string>();
   description = input<string>('');
   actionLabel = input<string>('');
+  readonly action = output<void>();
 }

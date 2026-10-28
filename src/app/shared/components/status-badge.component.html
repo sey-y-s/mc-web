@@ -1,3 +1,13 @@
-<span class="badge badge-sm rounded-md border-base-300 bg-base-200 px-2.5 py-2 font-medium">{{
-  value()
-}}</span>
+<span class="inline-flex items-center gap-1.5 rounded-control px-2 py-0.5 text-theme-xs font-medium leading-5" [class]="classes()">
+  <!-- Losange : la forme change selon l'état (plein, pointillé, demi, barré, pointé). Pas d'icône standard. -->
+  <svg viewBox="0 0 16 16" class="size-3.5 shrink-0" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+    @switch (famille()) {
+      @case ('verifie') { <path d="M8 1.5l6.5 6.5L8 14.5 1.5 8z" fill="currentColor" /> }
+      @case ('en-cours') { <path d="M8 1.5l6.5 6.5L8 14.5 1.5 8z" fill="none" /><path d="M8 1.5L1.5 8 8 14.5z" fill="currentColor" stroke="none" /> }
+      @case ('rejete') { <path d="M8 1.5l6.5 6.5L8 14.5 1.5 8z" fill="none" /><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4" /> }
+      @case ('attention') { <path d="M8 1.5l6.5 6.5L8 14.5 1.5 8z" fill="none" /><circle cx="8" cy="8" r="1.4" fill="currentColor" stroke="none" /> }
+      @case ('brouillon') { <path d="M8 1.5l6.5 6.5L8 14.5 1.5 8z" fill="none" stroke-dasharray="2.6 2.4" /> }
+      @default { <path d="M8 5.5l2.5 2.5L8 10.5 5.5 8z" fill="currentColor" stroke="none" /> }
+    }
+  </svg>{{ value() | libelle }}
+</span>

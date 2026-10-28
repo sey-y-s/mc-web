@@ -1,28 +1,64 @@
-<mc-page-header
-  title="Profil talent"
-  description="Afficher les compétences, preuves, validations et disponibilité."
-/>
-
-@if (loading) {
-  <div class="mc-card animate-pulse p-6" role="status">Chargement du profil talent…</div>
-} @else if (error) {
-  <div class="alert alert-error" role="alert">{{ error }}</div>
-} @else if (talent; as data) {
-  <section class="mc-card p-6">
-    <div class="flex items-center justify-between">
+<mc-page-header title="Profil talent anonymisé" description="Les identifiants internes ne sont pas affichés ; seuls les pseudos et attributs professionnels anonymisés sont présentés." />
+@if (checkingAccess() || loading()) { <div class="mc-card p-6" role="status">Chargement du profil anonymisé…</div> }
+@if (blocked()) { <div class="alert alert-warning text-gray-100" role="status">{{ blocked() }} <a class="btn btn-sm ml-3" routerLink="/app/organisation/profil">Voir le statut organisation</a></div> }
+@if (error()) { <div class="alert alert-error" role="alert">{{ error() }}</div> }
+@if (talentResource.value(); as data) {
+  <section class="mc-card p-6 md:p-8">
+    <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-semibold">Profil talent</h2>
-        <p class="text-base-content/70">Informations anonymisées non disponibles via l’API actuelle.</p>
+        <p class="text-xs uppercase tracking-wide text-base-content/55">Profil pseudonymisé</p>
+        <h2 class="text-2xl font-semibold">{{ data.pseudo || 'Profil anonymisé' }}</h2>
       </div>
-      <span class="badge badge-primary">{{ data.estDisponible ? 'Disponible' : 'Indisponible' }}</span>
+      <span class="badge" [class.badge-success]="data.estDisponible" [class.badge-ghost]="!data.estDisponible">{{ data.disponibilite ? (data.disponibilite | libelle) : 'Disponibilité non renseignée' }}</span>
     </div>
-
-    <div class="mt-6 rounded-xl border border-base-300 p-4">
-      <h3 class="font-semibold">Compétences</h3>
-      <p class="mt-2 text-sm text-base-content/65">
-        Le backend permet actuellement de lire les informations de base du citoyen. Les compétences,
-        validations et éléments de portfolio ne sont pas inclus dans cette réponse.
-      </p>
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-xl border border-base-300 p-4">
+        <p class="text-sm text-base-content/60">Métier</p>
+        <p class="mt-1 font-medium">{{ data.metierNom || 'Non renseigné' }}</p>
+      </div>
+      <div class="rounded-xl border border-base-300 p-4">
+        <p class="text-sm text-base-content/60">Localisation générale</p>
+        <p class="mt-1 font-medium">{{ data.regionNom || data.localisation || 'Non renseignée' }}@if (data.communeNom) { · {{ data.communeNom }} }</p>
+      </div>
     </div>
+    <div class="mt-8">
+      <h3 class="mc-section-heading">Compétences et niveaux</h3>
+      @if (data.competencesDetail?.length) {
+        <ul class="mt-3 divide-y divide-base-300">
+          @for (skill of data.competencesDetail; track skill.id) {
+            <li class="flex flex-wrap items-center justify-between gap-3 py-3">
+              <div>
+                <p class="font-medium">{{ skill.nom }}</p>
+                <p class="text-xs text-base-content/60">{{ skill.niveau ? (skill.niveau | libelle) : 'Niveau non renseigné' }}</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                @if (skill.validee) { <span class="badge badge-success badge-outline">Validée</span> }
+                @if (skill.aPreuve) { <span class="badge badge-outline">Preuve déclarée</span> }
+                @if (skill.parcours === 'FORMEL') { <span class="badge badge-outline" title="Appris à l’école ou en formation">Secteur formel</span> }
+                @if (skill.parcours === 'INFORMEL') { <span class="badge badge-outline" title="Appris sur le terrain">Secteur informel</span> }
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="mt-2 text-sm text-base-content/60">Aucune compétence détaillée n’a été retournée.</p>
+      }
+    </div>
+    <div class="mt-8 grid gap-4 sm:grid-cols-3">
+      <div class="mc-card p-4">
+        <p class="text-sm text-base-content/60">Preuves déclarées</p>
+        <p class="mc-stat-value">{{ data.nbPreuves ?? '—' }}</p>
+      </div>
+      <div class="mc-card p-4">
+        <p class="text-sm text-base-content/60">Validations</p>
+        <p class="mc-stat-value">{{ data.nbValidations ?? '—' }}</p>
+      </div>
+      <div class="mc-card p-4">
+        <p class="text-sm text-base-content/60">Portfolio</p>
+        <p class="mt-2 font-semibold">{{ data.aPortfolio === undefined ? 'Information indisponible' : (data.aPortfolio ? 'Présent' : 'Absent') }}</p>
+      </div>
+    </div>
+    <p class="mt-5 text-sm text-base-content/60">Aucun détail de preuve n’est disponible pour ce profil.</p>
+    <a class="btn btn-ghost mt-5" routerLink="/app/organisation/talents">Retour à la recherche</a>
   </section>
 }

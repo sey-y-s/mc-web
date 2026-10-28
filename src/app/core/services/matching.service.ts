@@ -39,7 +39,7 @@ export class MatchingService {
   private readonly api = inject(ApiService);
 
   listerPourBesoin(besoinId: string) {
-    return this.api.get<MatchingResponse[]>(`/api/matching/besoins/${besoinId}`).pipe(
+    return this.api.get<MatchingResponse[]>(`/api/v1/matching/besoins/${besoinId}`).pipe(
       map((items) =>
         items.map((item): MatchingResult => ({
           ...item,

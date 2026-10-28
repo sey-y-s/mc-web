@@ -1,0 +1,189 @@
+<section class="mc-card p-5" aria-labelledby="titre-carte-mali">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <h2 id="titre-carte-mali" class="mc-section-heading">Carte des talents du Mali</h2>
+      <p class="mt-1 text-sm text-base-content/65">Tous les talents recensés, regroupés par localité. Données en direct, actualisées automatiquement.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      @if (derniereMiseAJour(); as d) {
+        <span class="text-xs text-base-content/60" aria-live="polite">Mis à jour à {{ d | date:'HH:mm:ss' }}</span>
+      }
+      <button class="btn btn-ghost btn-sm" type="button" (click)="actualiser()" [disabled]="carteResource.isLoading()">
+        {{ carteResource.isLoading() ? 'Chargement…' : 'Actualiser' }}
+      </button>
+      @if (compact) {
+        <a class="btn btn-primary btn-sm" routerLink="/app/carte-talents">Ouvrir la carte complète</a>
+      }
+    </div>
+  </div>
+
+  <!-- Chiffres clés -->
+  <div class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div class="mc-kpi">
+      <p class="mc-stat-label">Talents recensés</p>
+      <p class="mc-kpi-value">{{ data()?.totalTalents ?? '—' }}</p>
+      <p class="mc-kpi-hint">dans {{ data() ? nombreLocalites() : '—' }} localité(s)</p>
+    </div>
+    <div class="mc-kpi mc-kpi-or">
+      <p class="mc-stat-label">Disponibles</p>
+      <p class="mc-kpi-value">{{ data()?.totalDisponibles ?? '—' }}</p>
+      <p class="mc-kpi-hint">prêts pour une opportunité</p>
+    </div>
+    <div class="mc-kpi">
+      <p class="mc-stat-label">Compétence validée</p>
+      <p class="mc-kpi-value">{{ partValides() !== null ? partValides() + ' %' : '—' }}</p>
+      @if (partValides() !== null) {
+        <div class="mc-kpi-bar"><span [style.width.%]="partValides()"></span></div>
+      }
+    </div>
+    <div class="mc-kpi">
+      <p class="mc-stat-label">Région la plus fournie</p>
+      @if (regionEnTete(); as r) {
+        <p class="mc-kpi-value mc-kpi-text">{{ r.regionNom }}</p>
+        <p class="mc-kpi-hint">{{ r.nombreTalents }} talent(s)</p>
+      } @else {
+        <p class="mc-kpi-value">—</p>
+      }
+    </div>
+  </div>
+
+  <!-- Filtres (carte complète) -->
+  @if (!compact) {
+    <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-[1fr_1fr_auto_auto_auto]" role="group" aria-label="Filtres de la carte">
+      <label class="block">
+        <span class="mc-label">Compétence</span>
+        <select class="select select-bordered w-full" [value]="competenceId()" (change)="changerCompetence($any($event.target).value)">
+          <option value="">Toutes les compétences</option>
+          @for (c of competencesResource.value(); track c.id) {
+            <option [value]="c.id">{{ c.nom }}</option>
+          }
+        </select>
+      </label>
+      <label class="block">
+        <span class="mc-label">Région</span>
+        <select class="select select-bordered w-full" [value]="regionId()" (change)="changerRegion($any($event.target).value)">
+          <option value="">Tout le Mali</option>
+          @for (r of regionsResource.value(); track r.id) {
+            <option [value]="r.id">{{ r.nom }}</option>
+          }
+        </select>
+      </label>
+      <label class="flex cursor-pointer items-center gap-2 self-end pb-2">
+        <input type="checkbox" class="checkbox checkbox-sm" [checked]="disponiblesSeulement()" (change)="basculerDisponibles()" />
+        <span class="text-sm">Disponibles uniquement</span>
+      </label>
+      <label class="flex cursor-pointer items-center gap-2 self-end pb-2">
+        <input type="checkbox" class="toggle toggle-sm" [checked]="fond()" (change)="basculerFond()" />
+        <span class="text-sm">Fond détaillé</span>
+      </label>
+      <label class="flex cursor-pointer items-center gap-2 self-end pb-2">
+        <input type="checkbox" class="toggle toggle-sm" [checked]="autoActualisation()" (change)="basculerAuto()" />
+        <span class="text-sm">Actualisation auto</span>
+      </label>
+    </div>
+    @if (filtresActifs()) {
+      <button class="btn btn-ghost btn-xs mt-2" type="button" (click)="reinitialiser()">Effacer les filtres</button>
+    }
+  }
+
+  @if (carteResource.error()) {
+    <div class="alert alert-error mt-4" role="alert">
+      {{ erreur() }}
+      <button class="btn btn-sm" type="button" (click)="actualiser()">Réessayer</button>
+    </div>
+  }
+
+  <!-- Carte + liste des localités -->
+  <div class="mt-4 grid gap-4" [class]="compact ? 'xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]' : 'lg:grid-cols-[minmax(0,1fr)_320px]'">
+    <div class="relative min-w-0">
+      <div #carte class="mc-carte-fond w-full overflow-hidden rounded-xl border border-base-300"
+           [class]="compact ? 'h-[380px] sm:h-[500px]' : 'h-[420px] sm:h-[560px]'"
+           role="region" aria-label="Carte du Mali des talents par localité"></div>
+      @if (data() && !localites().length) {
+        <div class="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+          <p class="rounded-lg bg-base-100/90 px-4 py-3 text-center text-sm shadow">
+            Aucun talent localisé pour ces critères.
+            @if (filtresActifs()) { Essayez d’effacer les filtres. }
+          </p>
+        </div>
+      }
+    </div>
+
+    @if (compact) {
+      <aside class="min-w-0 space-y-5" aria-label="Statistiques de la carte">
+        @if (data()?.totalTalents) {
+          <div class="rounded-xl border border-base-300 p-4">
+            <h3 class="font-semibold">Disponibilité des talents</h3>
+            <div class="mt-3"><mc-donut-chart [segments]="segmentsDisponibilite()" centerLabel="talents" [size]="140" ariaLabel="Disponibilité des talents" /></div>
+          </div>
+          <div class="rounded-xl border border-base-300 p-4">
+            <h3 class="mb-3 font-semibold">Classement des régions</h3>
+            <mc-hbar-chart [categories]="categoriesRegions().slice(0, 5)" [series]="seriesRegions" ariaLabel="Talents par région" />
+          </div>
+        } @else {
+          <p class="text-sm text-base-content/60">{{ carteResource.isLoading() ? 'Chargement…' : 'Aucun talent recensé pour le moment.' }}</p>
+        }
+      </aside>
+    } @else {
+      <aside class="min-w-0" aria-labelledby="titre-localites">
+        <h3 id="titre-localites" class="font-semibold">Talents par localité</h3>
+        @if (!localites().length) {
+          <p class="mt-2 text-sm text-base-content/60">{{ carteResource.isLoading() ? 'Chargement…' : 'Aucune localité à afficher.' }}</p>
+        } @else {
+          <ul class="mt-2 max-h-[520px] divide-y divide-base-300 overflow-y-auto rounded-lg border border-base-300">
+            @for (l of localites(); track l.cle) {
+              <li>
+                <button type="button" class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left hover:bg-base-200"
+                        [class.bg-base-200]="selection() === l.cle" (click)="centrerSur(l)">
+                  <span class="min-w-0">
+                    <span class="block truncate font-medium">{{ l.communeNom }}</span>
+                    <span class="block truncate text-xs text-base-content/60">{{ l.regionNom || '—' }} · {{ l.nombreDisponibles }} disponible(s)</span>
+                  </span>
+                  <span class="badge badge-primary shrink-0 tabular-nums">{{ l.nombreTalents }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </aside>
+    }
+  </div>
+
+  <!-- Légende -->
+  <div class="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-base-content/70" aria-label="Légende de la carte">
+    <div class="flex items-center gap-2">
+      <span class="font-semibold text-base-content/80">Talents par région</span>
+      <span class="mc-echelle">
+        <span class="mc-echelle-case" [style.background]="sansTalent" title="Aucun talent"></span>
+        @for (p of paliers(); track p.min) {
+          <span class="mc-echelle-case" [style.background]="p.couleur" [attr.title]="p.min + ' à ' + p.max + ' talent(s)'"></span>
+        }
+      </span>
+      @if (paliers().length) {
+        <span class="tabular-nums">0 → {{ paliers()[paliers().length - 1].max }}</span>
+      }
+    </div>
+    <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-3 rounded-full" [style.background]="C.orFonce"></span>Localité avec talents disponibles</span>
+    <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-3 rounded-full" style="background:#245d78"></span>Localité sans talent disponible</span>
+    <span>Chiffre dans la pastille = nombre de talents{{ compact ? '' : ' · cliquez sur une région pour la filtrer' }}</span>
+  </div>
+
+  <!-- Statistiques (carte complète : sous la carte) -->
+  @if (!compact && data()?.totalTalents) {
+    <div class="mt-5 grid gap-5 border-t border-base-300 pt-5 lg:grid-cols-[1fr_1.5fr]">
+      <div>
+        <h3 class="font-semibold">Disponibilité des talents</h3>
+        <p class="mb-4 text-sm text-base-content/65">Part des talents prêts à saisir une opportunité.</p>
+        <mc-donut-chart [segments]="segmentsDisponibilite()" centerLabel="talents" [size]="160" ariaLabel="Disponibilité des talents" />
+      </div>
+      <div>
+        <h3 class="font-semibold">Classement des régions</h3>
+        <p class="mb-4 text-sm text-base-content/65">Les régions qui comptent le plus de talents recensés.</p>
+        <mc-hbar-chart [categories]="categoriesRegions()" [series]="seriesRegions" ariaLabel="Talents par région" />
+      </div>
+    </div>
+  }
+  @if (data()?.talentsSansLocalite) {
+    <p class="mt-1 text-xs text-base-content/60">{{ data()?.talentsSansLocalite }} talent(s) sans commune ni position ne figurent pas sur la carte.</p>
+  }
+</section>

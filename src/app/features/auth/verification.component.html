@@ -1,0 +1,62 @@
+<mc-auth-layout>
+  <section>
+      <h1 id="verif-title" class="font-display text-2xl font-semibold tracking-tight text-gray-900">Vérifiez votre compte</h1>
+      <p class="mc-muted mt-1">
+        Un code à 6 chiffres a été envoyé à {{ libelleCanal() }}. Saisissez-le pour ouvrir votre espace.
+      </p>
+
+      @if (contexte(); as ctx) {
+        @if (ctx.canaux.length > 1) {
+          <div class="mt-5 grid grid-cols-2 gap-2" role="group" aria-label="Contact à vérifier">
+            @for (c of ctx.canaux; track c) {
+              <button
+                type="button"
+                class="btn btn-sm rounded-md"
+                [class.btn-primary]="canal() === c"
+                [class.btn-outline]="canal() !== c"
+                [attr.aria-pressed]="canal() === c"
+                (click)="choisir(c)"
+              >
+                {{ c === 'EMAIL' ? 'E-mail' : 'Téléphone' }}
+              </button>
+            }
+          </div>
+          <p class="mc-muted mt-2 text-xs">Un seul des deux contacts suffit pour ouvrir votre compte.</p>
+        }
+      }
+
+      @if (error()) {
+        <div class="alert alert-error mt-5 rounded-md py-3 text-sm" role="alert">{{ error() }}</div>
+      }
+      @if (info()) {
+        <div class="alert alert-success mt-5 rounded-md py-3 text-sm" role="status">{{ info() }}</div>
+      }
+
+      <form class="mt-6 space-y-5" (ngSubmit)="valider()">
+        <label class="block">
+          <span class="mc-label">Code de vérification</span>
+          <input
+            class="mc-input text-center text-2xl tracking-[0.5em]"
+            name="code"
+            [ngModel]="code()"
+            (ngModelChange)="code.set($event)"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="6"
+            placeholder="······"
+            required
+          />
+        </label>
+        <button class="btn btn-primary w-full rounded-md" [disabled]="loading() || !codeValide()">
+          {{ loading() ? 'Vérification…' : 'Valider' }}
+        </button>
+      </form>
+
+      <div class="mt-5 flex items-center justify-between text-sm">
+        <button type="button" class="mc-link font-medium disabled:opacity-60" [disabled]="attente() > 0" (click)="renvoyer()">
+          {{ attente() > 0 ? 'Renvoyer le code dans ' + attente() + ' s' : 'Renvoyer le code' }}
+        </button>
+        <a routerLink="/auth/login" class="mc-link">Retour à la connexion</a>
+      </div>
+    </section>
+</mc-auth-layout>

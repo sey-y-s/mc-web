@@ -1,0 +1,83 @@
+/* Graphiques et cartes : reprise de l'ancien styles.css, sans les blocs mc-kpi / mc-echelle (redéfinis dans composants.css).
+   Couleurs vertes retirées : info-bulles en bleu nuit, fond de carte bleuté. */
+/* ------------------------------------------------------------------ */
+/* Graphiques (anneaux, histogrammes, classements)                     */
+/* ------------------------------------------------------------------ */
+.mc-donut { display: flex; flex-direction: column; align-items: center; gap: 1.1rem; }
+.mc-donut.mc-donut-row { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+.mc-donut-figure { position: relative; flex: none; }
+.mc-donut-figure svg { width: 100%; height: 100%; overflow: visible; }
+.mc-donut-arc { transition: stroke-width .2s ease; cursor: default; animation: mc-donut-in 1.1s cubic-bezier(.16,1,.3,1) both; }
+@keyframes mc-donut-in { from { stroke-dasharray: 0 252; } }
+.mc-donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; padding: 0 22%; }
+.mc-donut-value { font-size: 1.55rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; color: var(--color-base-content); font-variant-numeric: tabular-nums; }
+.mc-donut-caption { margin-top: .2rem; font-size: .72rem; line-height: 1.2; color: color-mix(in oklab, var(--color-base-content) 62%, transparent); }
+.mc-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; min-width: 12rem; flex: 1; }
+.mc-legend li { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: .55rem; font-size: .84rem; padding: .3rem .45rem; border-radius: .5rem; transition: background .15s; }
+.mc-legend li.is-actif, .mc-legend li:hover { background: var(--color-base-200); }
+.mc-legend-dot { width: .7rem; height: .7rem; border-radius: 9999px; flex: none; }
+.mc-legend-label { color: color-mix(in oklab, var(--color-base-content) 80%, transparent); }
+.mc-legend-value { font-weight: 650; font-variant-numeric: tabular-nums; }
+.mc-legend-pct { min-width: 3.4rem; text-align: right; font-size: .75rem; color: color-mix(in oklab, var(--color-base-content) 74%, transparent); font-variant-numeric: tabular-nums; }
+.mc-legend-inline { display: flex; flex-wrap: wrap; gap: .2rem 1rem; margin-bottom: .75rem; min-width: 0; }
+.mc-legend-inline li { display: inline-flex; padding: 0; gap: .4rem; font-size: .78rem; }
+.mc-legend-inline li:hover { background: none; }
+
+.mc-bars { position: relative; height: var(--mc-h, 220px); margin-left: 2.4rem; margin-top: 1.2rem; }
+.mc-bars-grid { position: absolute; inset: 0; }
+.mc-bars-line { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--color-base-300); }
+.mc-bars-line:first-child { border-top-style: solid; border-color: color-mix(in oklab, var(--color-base-content) 22%, transparent); }
+.mc-bars-line span { position: absolute; right: calc(100% + .5rem); top: -.55rem; font-size: .68rem; color: color-mix(in oklab, var(--color-base-content) 72%, transparent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mc-bars-plot { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 4%; padding: 0 2%; }
+.mc-bars-group { flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; min-width: 0; }
+.mc-bars-cols { height: 100%; width: 100%; max-width: 74px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; }
+.mc-bars-col { position: relative; flex: 1; max-width: 30px; min-height: 2px; border-radius: 6px 6px 2px 2px; transform-origin: bottom; animation: mc-bar-grow .9s cubic-bezier(.16,1,.3,1) both; transition: filter .15s; }
+.mc-bars-col:hover { filter: brightness(1.12); }
+.mc-bars-val { position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%); font-size: .66rem; font-weight: 650; white-space: nowrap; color: color-mix(in oklab, var(--color-base-content) 75%, transparent); font-variant-numeric: tabular-nums; }
+@keyframes mc-bar-grow { from { transform: scaleY(0); } }
+.mc-bars-labels { display: flex; gap: 4%; padding: .5rem 2% 0; margin-left: 2.4rem; }
+.mc-bars-label { flex: 1; min-width: 0; text-align: center; line-height: 1.2; margin: 0 -6px; }
+.mc-bars-label-main { hyphens: auto; overflow-wrap: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: .67rem; font-weight: 600; color: color-mix(in oklab, var(--color-base-content) 82%, transparent); }
+.mc-bars-label-hint { display: block; font-size: .66rem; color: color-mix(in oklab, var(--color-base-content) 72%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.mc-hbars { list-style: none; margin: 0; padding: 0; display: grid; gap: .85rem; }
+.mc-hbar-head { display: flex; justify-content: space-between; gap: .75rem; font-size: .84rem; margin-bottom: .3rem; }
+.mc-hbar-label { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mc-hbar-label small { font-weight: 400; color: color-mix(in oklab, var(--color-base-content) 72%, transparent); }
+.mc-hbar-total { font-weight: 700; font-variant-numeric: tabular-nums; }
+.mc-hbar-track { position: relative; display: flex; height: .62rem; border-radius: 9999px; background: var(--color-base-200); overflow: hidden; }
+.mc-hbar-fill { display: block; height: 100%; transform-origin: left; animation: mc-hbar-grow .9s cubic-bezier(.16,1,.3,1) both; }
+.mc-hbar-seg:first-child { border-radius: 9999px 0 0 9999px; }
+.mc-hbar-seg:last-child { border-radius: 0 9999px 9999px 0; }
+.mc-hbar-seg:only-child { border-radius: 9999px; }
+.mc-hbars-diverge .mc-hbar-fill { position: absolute; top: 0; bottom: 0; border-radius: 9999px; animation-name: mc-fade-in; }
+.mc-hbar-axis { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; background: color-mix(in oklab, var(--color-base-content) 30%, transparent); z-index: 1; }
+@keyframes mc-hbar-grow { from { transform: scaleX(0); } }
+@keyframes mc-fade-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .mc-donut-arc, .mc-bars-col, .mc-hbar-fill { animation: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Cartes du Mali                                                      */
+/* ------------------------------------------------------------------ */
+.mc-carte-fond, .mc-carte-fond.leaflet-container { background: linear-gradient(180deg, #f6f8fb 0%, #e9eef6 100%); }
+.mc-bulle { display: flex; align-items: center; justify-content: center; border-radius: 3px; transform: rotate(45deg); color: #fff; border: 2.5px solid #fff; box-shadow: 0 3px 10px rgba(10, 23, 48, .35); transition: transform .15s; }
+.mc-bulle > span { transform: rotate(-45deg); font: 700 12.5px/1 "Inter Variable", Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.mc-localite:hover .mc-bulle { transform: rotate(45deg) scale(1.12); }
+.leaflet-tooltip.mc-tip { padding: .55rem .75rem; border: 0; border-radius: .7rem; background: var(--color-brand-950); color: #fff; box-shadow: 0 10px 24px rgba(10, 23, 48, .28); font: 400 12.5px/1.45 "Inter Variable", Inter, system-ui, sans-serif; }
+.leaflet-tooltip.mc-tip::before { border-top-color: var(--color-brand-950); }
+.mc-tip-titre { display: block; font-weight: 700; font-size: 13.5px; margin-bottom: .15rem; }
+.mc-tip-ligne { display: block; opacity: .9; }
+.mc-tip-ligne b { color: var(--color-ocre-200); }
+mc-bar-chart, mc-hbar-chart, mc-donut-chart { display: block; min-width: 0; max-width: 100%; }
+.mc-card:has(> mc-bar-chart), .mc-card:has(mc-bar-chart), .mc-card:has(mc-hbar-chart), .mc-card:has(mc-donut-chart) { min-width: 0; }
+
+/* Leaflet : contrôles et fenêtres alignés sur le reste de l'interface */
+.leaflet-container { font-family: "Inter Variable", Inter, system-ui, sans-serif; }
+.leaflet-bar { border: 1px solid var(--color-gray-300) !important; border-radius: var(--radius-control) !important; box-shadow: none !important; overflow: hidden; }
+.leaflet-bar a { width: 32px !important; height: 32px !important; line-height: 32px !important; color: var(--color-gray-800) !important; border-bottom-color: var(--color-gray-300) !important; }
+.leaflet-bar a:hover { background: var(--color-gray-50) !important; color: var(--color-brand-700) !important; }
+.leaflet-popup-content-wrapper { border-radius: var(--radius-panel); box-shadow: var(--shadow-theme-md); color: var(--color-gray-800); }
+.leaflet-popup-content { margin: 12px 14px; line-height: 1.5; font-size: 13px; }
+.leaflet-control-attribution { font-size: 10px; background: rgb(255 255 255 / .8) !important; }

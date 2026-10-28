@@ -1,42 +1,153 @@
-<mc-page-header
-  title="Profil de l’organisation"
-  description="Consulter et mettre à jour les informations de votre organisation."
-/>
-
-@if (loading) {
-  <div class="mc-card animate-pulse p-6" role="status">Chargement du profil…</div>
-} @else if (error && !organisation) {
-  <div class="alert alert-error" role="alert">{{ error }}</div>
-} @else if (organisation; as data) {
-  <section class="mc-card max-w-4xl p-6">
-    @if (error) {
-      <div class="alert alert-error mb-5" role="alert">{{ error }}</div>
-    }
-    @if (success) {
-      <div class="alert alert-success mb-5" role="status">{{ success }}</div>
-    }
-    <div class="grid gap-5 md:grid-cols-2">
-      <label class="block">
-        <span class="mc-label">Nom</span>
-        <input class="mc-input" [(ngModel)]="data.nom" name="nom" />
-      </label>
-      <label class="block">
-        <span class="mc-label">Statut</span>
-        <input class="mc-input" [value]="data.statut ?? 'Non renseigné'" disabled />
-      </label>
-      <label class="block md:col-span-2">
-        <span class="mc-label">E-mail du compte associé</span>
-        <input class="mc-input" [value]="data.utilisateurEmail ?? 'Non renseigné'" disabled />
-      </label>
-      <label class="block md:col-span-2">
-        <span class="mc-label">Description</span>
-        <textarea class="mc-input" rows="4" [(ngModel)]="data.description" name="description"></textarea>
-      </label>
+<mc-page-header title="Profil de l’organisation" description="Consultez les informations de votre organisation." />
+@if (organisationResource.isLoading()) {
+  <div class="mc-card p-6" role="status">Chargement du profil…</div>
+} @else if (organisationResource.value(); as data) {
+  <section class="mc-card max-w-4xl p-6 md:p-8">
+    @if (saveError()) { <div class="alert alert-error mb-4" role="alert">{{ saveError() }}</div> }
+    @if (success()) { <div class="alert alert-success mb-4" role="status">{{ success() }}</div> }
+    <div class="mb-6 rounded-xl border border-base-300 p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div><p class="text-sm text-base-content/60">Statut de validation</p><h2 class="text-lg font-semibold">{{ statutLabel() }}</h2></div>
+        <span class="badge mc-badge-lisible text-amber-50" [class.badge-success]="data.statut === 'APPROUVEE'" [class.badge-warning]="data.statut === 'EN_ATTENTE'" [class.badge-error]="data.statut === 'REJETEE' || data.statut === 'SUSPENDUE'">{{ data.statut | libelle }}</span>
+      </div>
+      @if (data.statut === 'EN_ATTENTE') {
+        <p class="mt-3 text-sm">Vous pouvez préparer des besoins en brouillon. La recherche de talents et les demandes de mise en relation restent bloquées jusqu’à validation.</p>
+        <p class="mt-1 text-sm text-base-content/60">Votre organisation doit être validée avant d’accéder à cette fonctionnalité.</p>
+      } @else if (data.statut === 'REJETEE' || data.statut === 'SUSPENDUE') {
+        <p class="mt-3 text-sm">La recherche de talents et la mise en relation seront disponibles après validation de votre organisation.</p>
+      }
     </div>
-    <div class="mt-6 flex gap-3">
-      <button class="btn btn-primary" type="button" (click)="save()" [disabled]="saving">
-        {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
-      </button>
+    <div class="mb-6">
+      <div class="mb-2 flex items-center justify-between"><h2 class="font-semibold">Complétude du dossier</h2><span class="font-semibold tabular-nums">{{ completion() }}%</span></div>
+      <progress class="progress progress-primary w-full" [value]="completion()" max="100" [attr.aria-label]="'Dossier complété à ' + completion() + '%'"></progress>
+      @if (champsManquants().length) { <p class="mt-2 text-sm text-base-content/70">À compléter : {{ champsManquants().join(', ') }}.</p> }
+      @else { <p class="mt-2 text-sm text-success">Dossier complet : il peut être examiné par l’administration.</p> }
+    </div>
+
+    <h2 class="font-semibold">Présentation</h2>
+    <div class="mt-3 grid gap-5 md:grid-cols-2">
+      <label class="block"><span class="mc-label">Nom ou raison sociale *</span><input class="mc-input" [ngModel]="editNom()" (ngModelChange)="editNom.set($event)" name="nom" required maxlength="150" /></label>
+      <label class="block"><span class="mc-label">Sigle</span><input class="mc-input" [(ngModel)]="edit['sigle']" name="sigle" maxlength="30" /></label>
+      <label class="block"><span class="mc-label">E-mail du compte</span><input class="mc-input" [value]="data.utilisateurEmail || 'Non renseigné'" disabled /></label>
+      <label class="block"><span class="mc-label">Téléphone du compte</span><input class="mc-input" [value]="data.telephone || 'Non renseigné'" disabled /></label>
+      <label class="block md:col-span-2"><span class="mc-label">Présentation</span><textarea class="mc-input" rows="4" [ngModel]="editDescription()" (ngModelChange)="editDescription.set($event)" name="description" maxlength="5000"></textarea></label>
+    </div>
+
+    <h2 class="mt-8 font-semibold">Identité juridique</h2>
+    <div class="mt-3 grid gap-5 md:grid-cols-2">
+      <label class="block">
+        <span class="mc-label">Nature juridique *</span>
+        <select class="mc-input" [ngModel]="edit['typeOrganisation']" (ngModelChange)="changerType($event)" name="typeOrganisation">
+          <option value="">Choisir</option>
+          @for (t of types; track t.code) { <option [value]="t.code">{{ t.libelle }}</option> }
+        </select>
+      </label>
+      <label class="block">
+        <span class="mc-label">Forme juridique</span>
+        <input class="mc-input" [(ngModel)]="edit['formeJuridique']" name="formeJuridique" list="profil-formes" maxlength="80" />
+        <datalist id="profil-formes">@for (f of definition()?.formes ?? []; track f) { <option [value]="f"></option> }</datalist>
+      </label>
+      <label class="block"><span class="mc-label">Secteur d’activité</span><input class="mc-input" [(ngModel)]="edit['secteurActivite']" name="secteurActivite" maxlength="150" /></label>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block"><span class="mc-label">Date de création</span><input class="mc-input" type="date" [(ngModel)]="edit['dateCreation']" name="dateCreation" /></label>
+        <label class="block"><span class="mc-label">Effectif</span><input class="mc-input" type="number" min="0" [(ngModel)]="edit['effectif']" name="effectif" /></label>
+      </div>
+      @for (champ of champsAffiches(); track champ) {
+        <label class="block">
+          <span class="mc-label">{{ libelleChamp(champ) }} @if (obligatoire(champ)) { * }</span>
+          <input class="mc-input" [(ngModel)]="edit[champ]" [name]="champ" maxlength="150" [placeholder]="champs[champ].exemple" />
+          <small class="mt-1 block text-base-content/60">{{ champs[champ].aide }}</small>
+        </label>
+      }
+    </div>
+
+    <h2 class="mt-8 font-semibold">Siège et responsable</h2>
+    <div class="mt-3 grid gap-5 md:grid-cols-2">
+      <label class="block">
+        <span class="mc-label">Région *</span>
+        <select class="mc-input" [ngModel]="regionEditee()" (ngModelChange)="changerRegion($event)" name="regionId">
+          <option value="">Choisir la région</option>
+          @for (r of regionsResource.value(); track r.id) { <option [value]="r.id">{{ r.nom }}</option> }
+        </select>
+      </label>
+      <label class="block">
+        <span class="mc-label">Commune *</span>
+        <select class="mc-input" [(ngModel)]="edit['communeId']" name="communeId">
+          <option value="">{{ regionEditee() ? 'Choisir la commune' : 'Choisissez d’abord la région' }}</option>
+          @for (c of communesResource.value(); track c.id) { <option [value]="c.id">{{ c.nom }}</option> }
+        </select>
+      </label>
+      <label class="block"><span class="mc-label">Adresse</span><input class="mc-input" [(ngModel)]="edit['adresse']" name="adresse" maxlength="255" /></label>
+      <label class="block"><span class="mc-label">Site web</span><input class="mc-input" [(ngModel)]="edit['siteWeb']" name="siteWeb" maxlength="255" placeholder="www.exemple.ml" /></label>
+      <label class="block"><span class="mc-label">Responsable légal *</span><input class="mc-input" [(ngModel)]="edit['responsableNom']" name="responsableNom" maxlength="150" /></label>
+      <label class="block"><span class="mc-label">Fonction</span><input class="mc-input" [(ngModel)]="edit['responsableFonction']" name="responsableFonction" maxlength="100" /></label>
+      <label class="block"><span class="mc-label">Téléphone du responsable</span><input class="mc-input" type="tel" [(ngModel)]="edit['responsableTelephone']" name="responsableTelephone" maxlength="30" /></label>
+    </div>
+    <div class="mt-6 flex flex-wrap gap-3">
+      <button class="btn btn-primary" type="button" (click)="save()" [disabled]="saving() || !editNom().trim()">{{ saving() ? 'Enregistrement…' : 'Enregistrer le profil' }}</button>
+      <button class="btn btn-ghost" type="button" (click)="organisationResource.reload()" [disabled]="saving()">Annuler les modifications</button>
     </div>
   </section>
+
+  <section class="mc-card mt-6 max-w-4xl p-6 md:p-8" aria-labelledby="titre-pieces">
+    <h2 id="titre-pieces" class="font-semibold">Pièces justificatives</h2>
+    <p class="mt-1 text-sm text-base-content/60">Documents officiels qui autorisent votre organisation à exercer au Mali. PDF, JPG ou PNG, 10 Mo maximum. Ils ne sont visibles que par vous et l’administration.</p>
+    @if (docErreur()) { <div class="alert alert-error mt-4" role="alert">{{ docErreur() }}</div> }
+    @if (docMessage()) { <div class="alert alert-success mt-4" role="status">{{ docMessage() }}</div> }
+    @if (!data.typeOrganisation) {
+      <p class="mt-4 text-sm">Choisissez d’abord la nature juridique ci-dessus et enregistrez : la liste des pièces attendues s’affichera.</p>
+    } @else {
+      <ul class="mt-4 space-y-3">
+        @for (p of piecesAttendues(); track p.type) {
+          <li class="rounded-lg border border-base-300 p-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="font-medium">{{ documents[p.type].libelle }}
+                  <span class="badge mc-badge-lisible badge-sm ml-1" [class.badge-warning]="p.niveau === 'Obligatoire'" [class.badge-ghost]="p.niveau !== 'Obligatoire'">{{ p.niveau }}</span>
+                </p>
+                <p class="text-xs text-base-content/60">{{ documents[p.type].aide }}</p>
+              </div>
+              <label class="btn btn-sm btn-outline shrink-0" [class.btn-disabled]="docBusy() === p.type">
+                {{ docBusy() === p.type ? 'Envoi…' : documentsDe(p.type).length ? 'Ajouter une version' : 'Déposer le fichier' }}
+                <input #fichier type="file" class="sr-only" [accept]="formats" [disabled]="docBusy() === p.type" (change)="deposer(p.type, fichier)" />
+              </label>
+            </div>
+            @for (doc of documentsDe(p.type); track doc.id) {
+              <div class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md bg-base-200 px-3 py-2 text-sm">
+                <span class="min-w-0 truncate">{{ doc.nomFichier }} · {{ doc.dateDepot | date:'dd/MM/yyyy' }}</span>
+                <span class="flex items-center gap-2">
+                  <span class="badge mc-badge-lisible badge-sm" [class.badge-success]="doc.statut === 'VALIDE'" [class.badge-error]="doc.statut === 'REJETE'" [class.badge-warning]="doc.statut === 'EN_ATTENTE'">{{ libelleStatutDoc(doc.statut) }}</span>
+                  <button type="button" class="btn btn-xs btn-ghost" (click)="ouvrir(doc)">Voir</button>
+                  @if (doc.statut !== 'VALIDE') { <button type="button" class="btn btn-xs btn-ghost text-error" (click)="supprimer(doc)">Supprimer</button> }
+                </span>
+                @if (doc.statut === 'REJETE' && doc.commentaire) { <p class="w-full text-xs text-error">Motif : {{ doc.commentaire }}</p> }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="mc-card mt-6 max-w-4xl p-6 md:p-8" aria-labelledby="titre-localisation">
+    <h2 id="titre-localisation" class="font-semibold">Localisation de l’organisation</h2>
+    <p class="mt-1 text-sm text-base-content/60">Elle sert de lieu par défaut à vos demandes pour recenser les talents les plus proches. Elle n’est jamais affichée aux citoyens.</p>
+    @if (positionError()) { <div class="alert alert-error mt-4" role="alert">{{ positionError() }}</div> }
+    @if (positionMessage()) { <div class="alert alert-success mt-4" role="status">{{ positionMessage() }}</div> }
+    <div class="mt-4">
+      @if (positionResource.isLoading() && !positionResource.value()) {
+        <div class="h-80 animate-pulse rounded-lg bg-base-300" role="status" aria-label="Chargement de la position"></div>
+      } @else {
+        <mc-position-picker
+          [latitude]="positionResource.value()?.latitude ?? null"
+          [longitude]="positionResource.value()?.longitude ?? null"
+          [busy]="positionSaving()"
+          ariaLabel="Carte de localisation de l’organisation"
+          (enregistrer)="enregistrerPosition($event)"
+          (effacer)="effacerPosition()" />
+      }
+    </div>
+  </section>
+} @else {
+  <div class="alert alert-error" role="alert">{{ errorMessage() }} <button class="btn btn-sm" type="button" (click)="organisationResource.reload()">Réessayer</button></div>
 }

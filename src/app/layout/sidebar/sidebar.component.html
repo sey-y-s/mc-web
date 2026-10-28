@@ -1,34 +1,39 @@
-<aside class="w-64 shrink-0 border-r border-base-300 bg-white">
-  <div class="sticky top-0 h-screen overflow-y-auto px-3 pb-5 pt-4">
-    <a routerLink="/dashboard" class="mb-7 flex items-center gap-3 px-2">
-      <span
-        class="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-content"
-        >MC</span
-      >
-      <span
-        ><strong class="block text-sm">MaliCompétences</strong
-        ><span class="text-xs text-base-content/50">Espace professionnel</span></span
-      >
-    </a>
-    @for (section of sections(); track section) {
-      <div class="mb-5">
-        <p
-          class="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-base-content/45"
-        >
-          {{ section }}
-        </p>
-        <nav class="space-y-0.5">
-          @for (item of bySection(section); track item.path) {
+<div class="flex h-full flex-col" aria-label="Navigation de l’espace professionnel">
+  <a
+    routerLink="/app"
+    (click)="onNavigate()"
+    class="flex items-center gap-3 border-b border-gray-200 px-5 py-4 dark:border-gray-800"
+    aria-label="MaliCompétences, accueil de l’espace"
+  >
+    <span class="barre-mali-v shrink-0" aria-hidden="true"></span>
+    <span class="flex flex-col gap-0.5">
+      <span class="font-display text-title-sm font-semibold leading-6 tracking-tight text-gray-900 dark:text-white">MaliCompétences</span>
+      <span class="text-theme-xs text-gray-500 dark:text-gray-400">{{ espace }}</span>
+    </span>
+  </a>
+
+  <div class="custom-scrollbar flex-1 overflow-y-auto px-3 py-4">
+    @for (groupe of groupes(); track groupe.titre) {
+      <section class="mb-5">
+        <h2 class="px-3 pb-1.5 font-sans text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ groupe.titre }}</h2>
+        <nav class="space-y-0.5" [attr.aria-label]="groupe.titre">
+          @for (item of groupe.entrees; track item.path) {
             <a
               [routerLink]="item.path"
-              routerLinkActive="bg-primary/10 text-primary font-semibold"
-              [routerLinkActiveOptions]="{ exact: true }"
-              class="block rounded-md px-3 py-2 text-sm text-base-content/70 hover:bg-base-200 hover:text-base-content"
-              >{{ item.label }}</a
-            >
+              (click)="onNavigate()"
+              routerLinkActive
+              #lien="routerLinkActive"
+              [routerLinkActiveOptions]="{ exact: exact(item) }"
+              ariaCurrentWhenActive="page"
+              class="menu-item"
+              [class.menu-item-active]="lien.isActive"
+              [class.menu-item-inactive]="!lien.isActive"
+            >{{ item.label }}</a>
           }
         </nav>
-      </div>
+      </section>
     }
   </div>
-</aside>
+
+  <div class="motif-bogolan-bande mx-5 mb-4 shrink-0 text-gray-200 dark:text-gray-800" aria-hidden="true"></div>
+</div>

@@ -1,26 +1,42 @@
-<mc-page-header
-  title="Notifications"
-  description="Événements liés aux validations, besoins, mises en relation et opportunités."
-/>
+<mc-page-header title="Notifications" description="Consultez vos notifications et suivez les dernières activités." />
 <section class="mc-card p-6">
-  @if (error) { <p class="mb-4 text-sm text-red-700" role="alert">{{ error }}</p> }
-  @if (loading) {
-    <p class="text-sm text-slate-500">Chargement des notifications…</p>
-  } @else if (notifications.length === 0) {
-    <p class="text-sm text-slate-500">Aucune notification à afficher.</p>
+  @if (notificationsResource.error() || actionError()) {
+    <div class="alert alert-error mb-4" role="alert">
+      {{ errorMessage() }}
+      <button class="btn btn-sm" type="button" (click)="notificationsResource.reload()">Réessayer</button>
+    </div>
+  }
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <label class="flex items-center gap-2 text-sm">
+      <input type="checkbox" class="checkbox checkbox-sm" [ngModel]="filterUnread()" (ngModelChange)="filterUnread.set($event)" />
+      Afficher uniquement les non-lues
+    </label>
+    <button class="btn btn-sm btn-ghost" type="button" (click)="notificationsResource.reload()" [disabled]="notificationsResource.isLoading()">Actualiser</button>
+  </div>
+  @if (notificationsResource.isLoading()) {
+    <p role="status">Chargement des notifications…</p>
+  } @else if (filtered().length === 0) {
+    <div class="rounded-xl border border-dashed border-base-300 p-8 text-center">
+      <h2 class="font-semibold">Aucune notification</h2>
+      <p class="mt-1 text-sm text-base-content/60">Aucune notification ne correspond à ce filtre.</p>
+    </div>
   } @else {
-    <ul class="divide-y divide-base-200">
-      @for (notification of notifications; track notification.id) {
+    <ul class="divide-y divide-base-300">
+      @for (notification of filtered(); track notification.id) {
         <li class="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 class="font-semibold">{{ notification.titre }}</h2>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="font-semibold">{{ notification.titre }}</h2>
+              @if (!notification.lu) {
+                <span class="badge badge-warning">Non lue</span>
+              }
+            </div>
             <p class="mt-1 text-sm text-base-content/70">{{ notification.message }}</p>
-            <p class="mt-2 text-xs text-base-content/50">{{ notification.dateCreation | date:'short' }}</p>
+            <p class="mt-2 text-xs text-base-content/50">{{ notification.dateCreation | date:'short' }} · {{ notification.type | libelle }}</p>
+            <a class="mc-link mt-2 inline-block" [routerLink]="destination(notification.type)">Ouvrir l’espace concerné</a>
           </div>
-          @if (notification.lu) {
-            <span class="badge badge-ghost">Lue</span>
-          } @else {
-            <button class="btn btn-sm btn-outline" [disabled]="pending.has(notification.id)" (click)="marquerLue(notification)">
+          @if (!notification.lu) {
+            <button class="btn btn-sm btn-outline shrink-0" [disabled]="pending.has(notification.id)" (click)="marquerLue(notification)">
               {{ pending.has(notification.id) ? 'Mise à jour…' : 'Marquer comme lue' }}
             </button>
           }
@@ -28,4 +44,5 @@
       }
     </ul>
   }
+  <p class="mt-4 text-xs text-base-content/55">Vous pouvez marquer chaque notification comme lue depuis sa ligne.</p>
 </section>

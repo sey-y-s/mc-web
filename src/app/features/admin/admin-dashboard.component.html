@@ -1,21 +1,111 @@
-<mc-page-header title="Dashboard admin" description="Indicateurs globaux et état de la plateforme." />
+<mc-page-header
+  title="Contrôle opérationnel"
+  description="Vue d’ensemble de l’activité de la plateforme."
+/>
+@if (metricsResource.isLoading()) {
+  <section class="mc-card p-6" role="status">Chargement des indicateurs…</section>
+} @else if (metricsResource.error()) {
+  <section class="mc-card border border-red-200 p-6" role="alert">
+    <p class="font-semibold">Les indicateurs sont indisponibles.</p>
+    <p class="mt-2 text-sm">{{ errorMessage() }}</p>
+    <button class="btn btn-secondary mt-4" (click)="metricsResource.reload()">Réessayer</button>
+  </section>
+} @else if (metricsResource.value()) {
+  <section
+    class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+    aria-label="Statistiques administratives"
+  >
+    @for (card of cards; track card.key) {
+      @if (card.path) {
+        <a class="mc-card mc-card-hover block p-5" [routerLink]="card.path">
+          <div class="flex items-start justify-between gap-4">
+            <span class="text-sm font-medium text-slate-600">{{ card.label }}</span>
+            <span class="text-emerald-800" aria-hidden="true">↗</span>
+          </div>
+          @if (metric(card.key) !== null) {
+            <p class="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
+              {{ metric(card.key) }}
+            </p>
+          } @else {
+            <p class="mt-4 text-sm text-slate-500">Indicateur non fourni</p>
+          }
+          <span class="mt-3 inline-block text-sm font-semibold text-emerald-900">
+            Consulter <span aria-hidden="true">→</span>
+          </span>
+        </a>
+      } @else {
+        <div class="mc-card block p-5">
+          <div class="text-sm font-medium text-slate-600">{{ card.label }}</div>
+          @if (metric(card.key) !== null) {
+            <p class="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
+              {{ metric(card.key) }}
+            </p>
+          } @else {
+            <p class="mt-4 text-sm text-slate-500">Indicateur non fourni</p>
+          }
+          <p class="mt-3 text-xs text-slate-500">
+            Aucun élément à traiter pour le moment.
+          </p>
+        </div>
+      }
+    }
+  </section>
+  <div class="mt-6 grid gap-4 xl:grid-cols-[1.5fr_1fr]">
+    <section class="mc-card p-6" aria-labelledby="titre-repartition">
+      <h2 id="titre-repartition" class="text-lg font-semibold text-slate-950">Activité de la plateforme</h2>
+      <p class="mt-1 text-sm text-slate-600">Validations, tests, besoins publiés et mises en relation.</p>
+      <mc-bar-chart [categories]="categoriesActivite()" [series]="serieActivite" [height]="230" ariaLabel="Activité de la plateforme" />
+    </section>
+    <section class="mc-card p-6" aria-labelledby="titre-comptes">
+      <h2 id="titre-comptes" class="text-lg font-semibold text-slate-950">Comptes inscrits</h2>
+      <p class="mt-1 text-sm text-slate-600">Citoyens et organisations présents sur la plateforme.</p>
+      <div class="mt-5">
+        <mc-donut-chart [segments]="segmentsComptes()" centerLabel="comptes" [legendSide]="false" [size]="180" ariaLabel="Comptes inscrits" />
+      </div>
+    </section>
+  </div>
+  <section class="mc-card mt-4 p-6" aria-labelledby="titre-ratios">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 id="titre-ratios" class="text-lg font-semibold text-slate-950">Indicateurs clés</h2>
+      <span class="flex items-center gap-2 text-xs text-slate-500">Mis à jour à {{ derniereMiseAJour() | date:'HH:mm' }}
+        <button class="btn btn-ghost btn-sm" type="button" (click)="actualiser()">Actualiser</button></span>
+    </div>
+    <dl class="mt-4 grid gap-4 sm:grid-cols-3">
+      <div class="mc-kpi">
+        <dt class="mc-stat-label">Besoins publiés par organisation</dt>
+        <dd class="mc-kpi-value">{{ ratio('besoins', 'organisations') ?? '—' }}</dd>
+      </div>
+      <div class="mc-kpi mc-kpi-or">
+        <dt class="mc-stat-label">Mises en relation par besoin</dt>
+        <dd class="mc-kpi-value">{{ ratio('misesEnRelation', 'besoins') ?? '—' }}</dd>
+      </div>
+      <div class="mc-kpi">
+        <dt class="mc-stat-label">Validations par citoyen</dt>
+        <dd class="mc-kpi-value">{{ ratio('validations', 'citoyens') ?? '—' }}</dd>
+      </div>
+    </dl>
+  </section>
 
-<section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Indicateurs globaux">
-  @if (error) { <p class="col-span-full text-sm text-red-700" role="alert">{{ error }}</p> }
-  <div class="mc-card mc-stat-card mc-card-hover">
-    <div class="mc-stat-label">Citoyens</div>
-    <div class="mc-stat-value">{{ metrics.citoyens }}</div>
+  <div class="mt-6">
+    <mc-carte-mali-talents [compact]="true" />
   </div>
-  <div class="mc-card mc-stat-card mc-card-hover">
-    <div class="mc-stat-label">Organisations</div>
-    <div class="mc-stat-value">{{ metrics.organisations }}</div>
-  </div>
-  <div class="mc-card mc-stat-card mc-card-hover">
-    <div class="mc-stat-label">Validations</div>
-    <div class="mc-stat-value">{{ metrics.validations }}</div>
-  </div>
-  <div class="mc-card mc-stat-card mc-card-hover">
-    <div class="mc-stat-label">Tests numériques</div>
-    <div class="mc-stat-value">{{ metrics.tests }}</div>
-  </div>
-</section>
+
+  <section class="mt-6 mc-card p-6">
+    <h2 class="text-lg font-semibold text-slate-950">À traiter</h2>
+    <p class="mt-1 text-sm text-slate-600">
+      Consultez les listes opérationnelles ci-dessous.
+    </p>
+    <div class="mt-4 flex flex-wrap gap-3">
+      <a class="btn btn-secondary" routerLink="/app/admin/organisations">Organisations</a>
+      <a class="btn btn-secondary" routerLink="/app/admin/validations">Validations</a>
+      <a class="btn btn-secondary" routerLink="/app/admin/centres">Centres</a>
+      <a class="btn btn-secondary" routerLink="/app/carte-talents">Carte des talents</a>
+      <a class="btn btn-secondary" routerLink="/app/admin/territoires">Territoires</a>
+      <a class="btn btn-secondary" routerLink="/app/admin/skills-gap">Skills-Gap</a>
+    </div>
+  </section>
+} @else {
+  <section class="mc-card p-6">
+    <p class="text-sm text-slate-600">Aucun indicateur à afficher pour le moment.</p>
+  </section>
+}

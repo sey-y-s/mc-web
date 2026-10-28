@@ -11,17 +11,43 @@ export interface Organisation {
   utilisateurId?: string;
   utilisateurEmail?: string;
   nom: string;
-  numeroSiren?: string;
+  numeroRccm?: string;
   type?: string;
   statut?: 'EN_ATTENTE' | 'APPROUVEE' | 'REJETEE' | 'SUSPENDUE';
+  motifStatut?: string | null;
   email?: string;
-  telephone?: string;
-  adresse?: string;
+  telephone?: string | null;
+  adresse?: string | null;
   ville?: string;
   pays?: string;
   description?: string;
   logoUrl?: string;
-  dateCreation?: string;
+  // Identité juridique (droit malien)
+  typeOrganisation?: string | null;
+  typeOrganisationLibelle?: string | null;
+  sigle?: string | null;
+  formeJuridique?: string | null;
+  secteurActivite?: string | null;
+  dateCreation?: string | null;
+  effectif?: number | null;
+  nif?: string | null;
+  numeroInps?: string | null;
+  numeroRecepisse?: string | null;
+  numeroAccordCadre?: string | null;
+  referenceActe?: string | null;
+  communeId?: string | null;
+  communeNom?: string | null;
+  regionId?: string | null;
+  regionNom?: string | null;
+  siteWeb?: string | null;
+  responsableNom?: string | null;
+  responsableFonction?: string | null;
+  responsableTelephone?: string | null;
+  documentsObligatoires?: string[];
+  documentsConseilles?: string[];
+  documentsManquants?: string[];
+  nombreDocuments?: number;
+  dossierComplet?: boolean;
 }
 
 export interface BesoinCompetence {
@@ -55,6 +81,10 @@ export interface Besoin {
   dateFin?: string | null;
   dateCreation: string;
   competences?: BesoinCompetence[];
+  regionId?: string | null;
+  regionNom?: string | null;
+  communeId?: string | null;
+  communeNom?: string | null;
 }
 
 export interface Talent {
@@ -70,13 +100,20 @@ export interface Talent {
   description?: string;
   pseudo?: string;
   estDisponible?: boolean;
+  regionId?: string;
+  regionNom?: string;
+  communeId?: string;
+  communeNom?: string;
+  nbValidations?: number;
+  nbPreuves?: number;
+  aPortfolio?: boolean;
+  competencesDetail?: Array<{ id: string; competenceId?: string; nom: string; niveau?: 'DEBUTANT' | 'INTERMEDIAIRE' | 'EXPERT'; validee?: boolean; aPreuve?: boolean; parcours?: 'FORMEL' | 'INFORMEL' | null }>;
 }
 
 export interface TalentSearchFilters {
-  competence?: string;
-  metier?: string;
-  localisation?: string;
-  disponibilite?: string;
+  competence?: string; metier?: string; localisation?: string; disponibilite?: string;
+  competenceId?: string; metierId?: string; regionId?: string; communeId?: string; niveauMin?: string;
+  page?: number; size?: number; q?: string;
 }
 
 export interface DemandeMiseEnRelation {
@@ -86,6 +123,9 @@ export interface DemandeMiseEnRelation {
   destinataireId: string;
   destinataireNomComplet?: string;
   suiviBesoinTalentId?: string;
+  talentPseudo?: string;
+  contactTelephone?: string;
+  contactEmail?: string;
   statut: 'EN_ATTENTE' | 'ACCEPTEE' | 'REFUSEE';
   message: string;
   dateDemande: string;
@@ -137,9 +177,11 @@ export interface SuiviBesoinTalent {
   id: string;
   besoinId: string;
   citoyenId: string;
+  pseudo?: string;
+  besoinTitre?: string;
+  noteInterne?: string;
   statut: 'A_L_ETUDE' | 'CONTACT_EN_COURS' | 'MISE_EN_RELATION' | 'ARCHIVE';
   scoreCorrespondance?: number;
-  noteInterne?: string;
   dateCreation: string;
   dateMiseAJour: string;
 }
@@ -167,6 +209,13 @@ export interface Opportunite {
   datePublication?: string;
   dateExpiration?: string;
   categorieNom?: string;
+  /** Localité concernée (vide = tout le Mali). */
+  regionId?: string | null;
+  regionNom?: string | null;
+  communeId?: string | null;
+  communeNom?: string | null;
+  localite?: string | null;
+  nombreCandidatures?: number;
 }
 
 export interface Notification {

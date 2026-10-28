@@ -1,364 +1,289 @@
 import { Routes } from '@angular/router';
-import { ShellComponent } from './layout/shell/shell.component';
+import { ShellComponent } from './layout/shell/shell.component'
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { UserRole } from './core/auth/user-role.enum';
 
-const professional = [UserRole.ORGANISATION, UserRole.ADMIN, UserRole.SUPER_ADMIN];
+const professional = [UserRole.ORGANISATION, UserRole.CENTRE_ADMIN, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.INSTITUTION];
 const admins = [UserRole.ADMIN, UserRole.SUPER_ADMIN];
 const superAdmins = [UserRole.SUPER_ADMIN];
+const organisation = [UserRole.ORGANISATION];
 
 export const routes: Routes = [
+  
+  { path: '', redirectTo: 'auth', pathMatch: 'full' },
+  {
+    path: 'opportunites',
+    title: 'Opportunités — MaliCompétences',
+    loadComponent: () => import('./features/opportunites/opportunites-page.component').then((m) => m.OpportunitesPageComponent),
+  },
   {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
   {
     path: '403',
-    loadComponent: () =>
-      import('./features/placeholder/forbidden.component').then((m) => m.ForbiddenComponent),
+    title: 'Accès refusé — MaliCompétences',
+    loadComponent: () => import('./features/placeholder/forbidden.component').then((m) => m.ForbiddenComponent),
   },
   {
-    path: '',
+    path: '404',
+    title: 'Page introuvable — MaliCompétences',
+    loadComponent: () => import('./features/placeholder/not-found.component').then((m) => m.NotFoundComponent),
+  },
+  {
+    path: 'app',
     component: ShellComponent,
     canActivate: [authGuard(professional)],
+    canActivateChild: [authGuard(professional)],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      
+      { path: 'centre-admin', title: 'Espace gestionnaire de centre — MaliCompétences', canActivate: [roleGuard([UserRole.CENTRE_ADMIN])], loadComponent: () => import('./features/centre-admin/centre-admin-workspace.component').then((m) => m.CentreAdminWorkspaceComponent) },
+      { path: 'institution/tableau-de-bord', title: 'Tableau de bord institutionnel — MaliCompétences', canActivate: [roleGuard([UserRole.INSTITUTION])], loadComponent: () => import('./features/institution/institution-dashboard.component').then((m) => m.InstitutionDashboardComponent) },
+      { path: 'institution/skills-gap', title: 'Skills-Gap institutionnel — MaliCompétences', canActivate: [roleGuard([UserRole.INSTITUTION])], loadComponent: () => import('./features/institution/institution-skills-gap.component').then((m) => m.InstitutionSkillsGapComponent) },
+      { path: 'institution/carte', title: 'Carte territoriale — MaliCompétences', canActivate: [roleGuard([UserRole.INSTITUTION])], loadComponent: () => import('./features/institution/institution-map-page.component').then((m) => m.InstitutionMapPageComponent) },
+      { path: 'organisation/tableau-de-bord', title: 'Tableau de bord Organisation — MaliCompétences', canActivate: [roleGuard(organisation)], loadComponent: () => import('./features/organisation/organisation-dashboard.component').then((m) => m.OrganisationDashboardComponent) },
+      { path: 'organisation/profil', title: 'Profil de l’organisation — MaliCompétences', canActivate: [roleGuard(organisation)], loadComponent: () => import('./features/organisation/organisation-profile.component').then((m) => m.OrganisationProfileComponent) },
+      { path: 'organisation/suivi', title: 'Suivi des talents — MaliCompétences', canActivate: [roleGuard(organisation)], loadComponent: () => import('./features/organisation/suivi-besoin-talent.component').then((m) => m.SuiviBesoinTalentComponent) },
+      { path: 'organisation/relations', title: 'Mises en relation — MaliCompétences', canActivate: [roleGuard(organisation)], loadComponent: () => import('./features/organisation/mise-en-relation.component').then((m) => m.MiseEnRelationComponent) },
+      { path: 'organisation/notifications', title: 'Notifications — MaliCompétences', canActivate: [roleGuard(organisation)], loadComponent: () => import('./features/notifications/notifications-page.component').then((m) => m.NotificationsPageComponent) },
+      { path: 'organisation/besoins/:id/modifier', title: 'Modifier un besoin — MaliCompétences', canActivate: [roleGuard(organisation)], loadComponent: () => import('./features/organisation/besoin-edit.component').then((m) => m.BesoinEditComponent) },
+      { path: 'organisation/dashboard', pathMatch: 'full', redirectTo: 'organisation/tableau-de-bord' },
+      { path: 'organisation/profile', pathMatch: 'full', redirectTo: 'organisation/profil' },
+      { path: 'organisation/suivi-besoin-talent', pathMatch: 'full', redirectTo: 'organisation/suivi' },
+      { path: 'organisation/suivi-talents', pathMatch: 'full', redirectTo: 'organisation/suivi' },
+      { path: 'organisation/mises-en-relation', pathMatch: 'full', redirectTo: 'organisation/relations' },
+      { path: 'organisation/mises-en-relation/gestion', pathMatch: 'full', redirectTo: 'organisation/relations' },
+      { path: 'organisation/recherche-talents', pathMatch: 'full', redirectTo: 'organisation/talents' },
+      { path: 'notifications/organisation', pathMatch: 'full', redirectTo: 'organisation/notifications' },
+      { path: 'organisation/matching', pathMatch: 'full', redirectTo: 'organisation/besoins' },
+      { path: 'organisation/besoins/:id/edit', pathMatch: 'full', redirectTo: 'organisation/besoins/:id/modifier' },
+      {
+        path: 'carte-talents',
+        title: 'Carte des talents — MaliCompétences',
+        canActivate: [roleGuard([UserRole.ORGANISATION, UserRole.ADMIN, UserRole.SUPER_ADMIN])],
+        loadComponent: () => import('./features/carte/carte-talents-page.component').then((m) => m.CarteTalentsPageComponent),
+      },
       {
         path: 'dashboard',
-        canActivate: [authGuard(professional)],
-        loadComponent: () =>
-          import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+        title: 'Vue d’ensemble — MaliCompétences',
+        loadComponent: () => import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
-      {
-        path: 'organisation',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/organisation-page.component').then(
-            (m) => m.OrganisationPageComponent,
-          ),
-      },
-      {
-        path: 'organisation/dashboard',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/organisation-dashboard.component').then(
-            (m) => m.OrganisationDashboardComponent,
-          ),
-      },
-      {
-        path: 'organisation/profile',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/organisation-profile.component').then(
-            (m) => m.OrganisationProfileComponent,
-          ),
-      },
+      // « Mon organisation » en lecture seule faisait doublon avec le profil modifiable.
+      { path: 'organisation', pathMatch: 'full', redirectTo: 'organisation/profil' },
       {
         path: 'organisation/besoins/nouveau',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/besoin-create.component').then(
-            (m) => m.BesoinCreateComponent,
-          ),
+        title: 'Créer un besoin — MaliCompétences',
+        canActivate: [roleGuard(organisation)],
+        loadComponent: () => import('./features/organisation/besoin-create.component').then((m) => m.BesoinCreateComponent),
       },
       {
         path: 'organisation/besoins/:id',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/besoin-detail.component').then(
-            (m) => m.BesoinDetailComponent,
-          ),
+        title: 'Détail du besoin — MaliCompétences',
+        canActivate: [roleGuard(organisation)],
+        loadComponent: () => import('./features/organisation/besoin-detail.component').then((m) => m.BesoinDetailComponent),
       },
       {
-        path: 'organisation/besoins/:id/edit',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/besoin-edit.component').then(
-            (m) => m.BesoinEditComponent,
-          ),
+        path: 'organisation/besoins',
+        title: 'Besoins — MaliCompétences',
+        canActivate: [roleGuard(organisation)],
+        loadComponent: () => import('./features/besoins/besoins-page.component').then((m) => m.BesoinsPageComponent),
       },
       {
-        path: 'talents',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/talent-search.component').then(
-            (m) => m.TalentSearchComponent,
-          ),
+        path: 'organisation/talents/:id',
+        title: 'Profil talent — MaliCompétences',
+        canActivate: [roleGuard(organisation)],
+        loadComponent: () => import('./features/organisation/talent-detail.component').then((m) => m.TalentDetailComponent),
       },
       {
-        path: 'talents/:id',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/talent-detail.component').then(
-            (m) => m.TalentDetailComponent,
-          ),
+        path: 'organisation/talents',
+        title: 'Recherche de talents — MaliCompétences',
+        canActivate: [roleGuard(organisation)],
+        loadComponent: () => import('./features/organisation/talent-search.component').then((m) => m.TalentSearchComponent),
       },
       {
-        path: 'matching/:besoinId',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/talent-matching.component').then(
-            (m) => m.TalentMatchingComponent,
-          ),
+        path: 'organisation/besoins/:id/carte',
+        title: 'Carte des talents — MaliCompétences',
+        canActivate: [roleGuard(organisation)],
+        loadComponent: () => import('./features/organisation/carte-talents.component').then((m) => m.CarteTalentsComponent),
       },
       {
-        path: 'suivi-besoin-talent',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/suivi-besoin-talent.component').then(
-            (m) => m.SuiviBesoinTalentComponent,
-          ),
-      },
-      {
-        path: 'mises-en-relation',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/mise-en-relation/mise-en-relation-page.component').then(
-            (m) => m.MiseEnRelationPageComponent,
-          ),
-      },
-      {
-        path: 'mises-en-relation/gestion',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/mise-en-relation.component').then(
-            (m) => m.MiseEnRelationComponent,
-          ),
+        path: 'organisation/matching/:besoinId',
+        title: 'Correspondances — MaliCompétences',
+        canActivate: [roleGuard(organisation)],
+        loadComponent: () => import('./features/organisation/talent-matching.component').then((m) => m.TalentMatchingComponent),
       },
       {
         path: 'notifications',
-        canActivate: [authGuard(professional)],
-        loadComponent: () =>
-          import('./features/notifications/notifications-page.component').then(
-            (m) => m.NotificationsPageComponent,
-          ),
+        title: 'Notifications — MaliCompétences',
+        loadComponent: () => import('./features/notifications/notifications-page.component').then((m) => m.NotificationsPageComponent),
       },
+      // Ancien espace « besoins » en double : redirigé vers les pages de l'organisation.
+      { path: 'besoins', pathMatch: 'full', redirectTo: 'organisation/besoins' },
+      { path: 'besoins/nouveau', pathMatch: 'full', redirectTo: 'organisation/besoins/nouveau' },
+      { path: 'besoins/:id/edit', pathMatch: 'full', redirectTo: 'organisation/besoins/:id/modifier' },
+      { path: 'besoins/:id', pathMatch: 'full', redirectTo: 'organisation/besoins/:id' },
       {
-        path: 'notifications/organisation',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/organisation/organisation-notifications.component').then(
-            (m) => m.OrganisationNotificationsComponent,
-          ),
-      },
-      {
-        path: 'besoins',
-        canActivate: [authGuard(professional)],
-        loadChildren: () =>
-          import('./features/besoins/besoins.routes').then((m) => m.BESOINS_ROUTES),
-      },
-      {
-        path: 'matching',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/matching/matching-page.component').then(
-            (m) => m.MatchingPageComponent,
-          ),
-      },
-      {
-        path: 'recherche-talents',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/talents/talents-page.component').then((m) => m.TalentsPageComponent),
-      },
-      {
-        path: 'suivi-talents',
-        canActivate: [authGuard([UserRole.ORGANISATION])],
-        loadComponent: () =>
-          import('./features/suivi/suivi-page.component').then((m) => m.SuiviPageComponent),
-      },
-      {
-        path: 'validations',
+        path: 'admin/tableau-de-bord',
+        title: 'Contrôle opérationnel — MaliCompétences',
         canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/validations-admin.component').then(
-            (m) => m.ValidationsAdminComponent,
-          ),
+        loadComponent: () => import('./features/admin/admin-dashboard.component').then((m) => m.AdminDashboardComponent),
+      },
+      { path: 'admin/dashboard', pathMatch: 'full', redirectTo: 'admin/tableau-de-bord' },
+      {
+        path: 'admin/opportunites', title: 'Opportunités — lecture seule', canActivate: [roleGuard(admins)],
+        loadComponent: () => import('./features/admin/opportunites-admin.component').then((m) => m.OpportunitesAdminComponent),
       },
       {
-        path: 'tests-numeriques',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/tests-numeriques-admin.component').then(
-            (m) => m.TestsNumeriquesAdminComponent,
-          ),
+        path: 'admin/territoires', title: 'Territoires — MaliCompétences', canActivate: [roleGuard(admins)],
+        loadComponent: () => import('./features/admin/territoires-admin.component').then((m) => m.TerritoiresAdminComponent),
       },
       {
-        path: 'referentiel',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/referentiel-admin.component').then(
-            (m) => m.ReferentielAdminComponent,
-          ),
-      },
-      {
-        path: 'opportunites',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/opportunites-admin.component').then(
-            (m) => m.OpportunitesAdminComponent,
-          ),
-      },
-      {
-        path: 'skills-gap',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/skills-gap-admin.component').then(
-            (m) => m.SkillsGapAdminComponent,
-          ),
-      },
-      {
-        path: 'institution',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/institution/institution-page.component').then(
-            (m) => m.InstitutionPageComponent,
-          ),
-      },
-      {
-        path: 'citoyens',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/citoyens-admin.component').then(
-            (m) => m.CitoyensAdminComponent,
-          ),
-      },
-      {
-        path: 'audit/consultations',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/audit/audit-page.component').then((m) => m.AuditPageComponent),
-      },
-      {
-        path: 'organisations',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/organisations-admin.component').then(
-            (m) => m.OrganisationsAdminComponent,
-          ),
-      },
-      {
-        path: 'centres',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/centres-admin.component').then((m) => m.CentresAdminComponent),
-      },
-      {
-        path: 'admin/dashboard',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/admin-dashboard.component').then(
-            (m) => m.AdminDashboardComponent,
-          ),
+        path: 'admin/notifications', title: 'Notifications administratives — MaliCompétences', canActivate: [roleGuard(admins)],
+        loadComponent: () => import('./features/admin/notifications-admin.component').then((m) => m.NotificationsAdminComponent),
       },
       {
         path: 'admin/citoyens',
+        title: 'Gestion des citoyens — MaliCompétences',
         canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/citoyens-admin.component').then(
-            (m) => m.CitoyensAdminComponent,
-          ),
+        loadComponent: () => import('./features/admin/citoyens-admin.component').then((m) => m.CitoyensAdminComponent),
       },
       {
         path: 'admin/organisations',
+        title: 'Gestion des organisations — MaliCompétences',
         canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/organisations-admin.component').then(
-            (m) => m.OrganisationsAdminComponent,
-          ),
+        loadComponent: () => import('./features/admin/organisations-admin.component').then((m) => m.OrganisationsAdminComponent),
       },
       {
         path: 'admin/centres',
+        title: 'Gestion des centres — MaliCompétences',
         canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/centres-admin.component').then(
-            (m) => m.CentresAdminComponent,
-          ),
+        loadComponent: () => import('./features/admin/centres-admin.component').then((m) => m.CentresAdminComponent),
+      },
+      {
+        path: 'admin/contestations',
+        title: 'Contestations — MaliCompétences',
+        canActivate: [roleGuard(admins)],
+        loadComponent: () => import('./features/admin/contestations-admin.component').then((m) => m.ContestationsAdminComponent),
       },
       {
         path: 'admin/validations',
+        title: 'Validations — MaliCompétences',
         canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/validations-admin.component').then(
-            (m) => m.ValidationsAdminComponent,
-          ),
+        loadComponent: () => import('./features/admin/validations-admin.component').then((m) => m.ValidationsAdminComponent),
       },
       {
         path: 'admin/tests-numeriques',
+        title: 'Tests numériques — MaliCompétences',
         canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/tests-numeriques-admin.component').then(
-            (m) => m.TestsNumeriquesAdminComponent,
-          ),
+        loadComponent: () => import('./features/admin/tests-numeriques-admin.component').then((m) => m.TestsNumeriquesAdminComponent),
+      },
+      {
+        path: 'admin/regles-validation',
+        title: 'Règles de validation — MaliCompétences',
+        canActivate: [roleGuard(admins)],
+        loadComponent: () => import('./features/admin/regles-validation-admin.component').then((m) => m.ReglesValidationAdminComponent),
       },
       {
         path: 'admin/referentiel',
+        title: 'Référentiel — MaliCompétences',
         canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/referentiel-admin.component').then(
-            (m) => m.ReferentielAdminComponent,
-          ),
-      },
-      {
-        path: 'admin/opportunites',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/opportunites-admin.component').then(
-            (m) => m.OpportunitesAdminComponent,
-          ),
+        loadComponent: () => import('./features/admin/referentiel-admin.component').then((m) => m.ReferentielAdminComponent),
       },
       {
         path: 'admin/skills-gap',
+        title: 'Skills-Gap — MaliCompétences',
         canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/skills-gap-admin.component').then(
-            (m) => m.SkillsGapAdminComponent,
-          ),
+        loadComponent: () => import('./features/admin/skills-gap-admin.component').then((m) => m.SkillsGapAdminComponent),
       },
       {
         path: 'admin/audit',
-        canActivate: [roleGuard(admins)],
-        loadComponent: () =>
-          import('./features/admin/audit-admin.component').then((m) => m.AuditAdminComponent),
+        title: 'Audit — MaliCompétences',
+        canActivate: [roleGuard(superAdmins)],
+        loadComponent: () => import('./features/admin/audit-admin.component').then((m) => m.AuditAdminComponent),
       },
       {
-        path: 'administration/utilisateurs',
-        canActivate: [roleGuard(superAdmins)],
-        loadComponent: () =>
-          import('./features/super-admin/users-admin.component').then(
-            (m) => m.UsersAdminComponent,
-          ),
+        path: 'admin/audit/consultations',
+        title: 'Consultations d’audit — MaliCompétences',
+        canActivate: [roleGuard(admins)],
+        loadComponent: () => import('./features/audit/audit-page.component').then((m) => m.AuditPageComponent),
+      },
+      {
+        path: 'admin/institution',
+        title: 'Institution — MaliCompétences',
+        canActivate: [roleGuard(admins)],
+        loadComponent: () => import('./features/institution/institution-page.component').then((m) => m.InstitutionPageComponent),
       },
       {
         path: 'super-admin/utilisateurs',
+        title: 'Utilisateurs — MaliCompétences',
         canActivate: [roleGuard(superAdmins)],
-        loadComponent: () =>
-          import('./features/super-admin/users-admin.component').then((m) => m.UsersAdminComponent),
-      },
-      {
-        path: 'super-admin/parametres',
-        canActivate: [roleGuard(superAdmins)],
-        loadComponent: () =>
-          import('./features/super-admin/platform-settings.component').then(
-            (m) => m.PlatformSettingsComponent,
-          ),
+        loadComponent: () => import('./features/super-admin/users-admin.component').then((m) => m.UsersAdminComponent),
       },
       {
         path: 'super-admin/opportunites',
+        title: 'Publication des opportunités — MaliCompétences',
         canActivate: [roleGuard(superAdmins)],
-        loadComponent: () =>
-          import('./features/super-admin/opportunite-publication.component').then(
-            (m) => m.OpportunitePublicationComponent,
-          ),
+        loadComponent: () => import('./features/super-admin/opportunite-publication.component').then((m) => m.OpportunitePublicationComponent),
       },
       {
         path: 'profil',
-        canActivate: [authGuard(professional)],
-        loadComponent: () =>
-          import('./features/profil/profil-page.component').then((m) => m.ProfilPageComponent),
+        title: 'Mon profil — MaliCompétences',
+        loadComponent: () => import('./features/profil/profil-page.component').then((m) => m.ProfilPageComponent),
       },
     ],
   },
-  { path: '**', redirectTo: 'auth/login' },
+
+  // Redirections de compatibilité : elles ne remplacent jamais les gardes des routes cibles.
+  { path: 'dashboard', pathMatch: 'full', redirectTo: 'app/dashboard' },
+  { path: 'organisation', pathMatch: 'full', redirectTo: 'app/organisation' },
+  { path: 'organisation/dashboard', redirectTo: 'app/organisation/dashboard' },
+  { path: 'organisation/profile', redirectTo: 'app/organisation/profile' },
+  { path: 'organisation/besoins/nouveau', redirectTo: 'app/organisation/besoins/nouveau' },
+  { path: 'organisation/besoins/:id/edit', redirectTo: 'app/organisation/besoins/:id/edit' },
+  { path: 'organisation/besoins/:id', redirectTo: 'app/organisation/besoins/:id' },
+  { path: 'organisation/besoins', redirectTo: 'app/organisation/besoins' },
+  { path: 'talents/:id', redirectTo: 'app/organisation/talents/:id' },
+  { path: 'talents', redirectTo: 'app/organisation/talents' },
+  { path: 'matching/:besoinId', redirectTo: 'app/organisation/matching/:besoinId' },
+  { path: 'matching', redirectTo: 'app/organisation/matching' },
+  { path: 'suivi-besoin-talent', redirectTo: 'app/organisation/suivi-besoin-talent' },
+  { path: 'mises-en-relation/gestion', redirectTo: 'app/organisation/mises-en-relation/gestion' },
+  { path: 'mises-en-relation', redirectTo: 'app/organisation/mises-en-relation' },
+  { path: 'notifications/organisation', redirectTo: 'app/notifications/organisation' },
+  { path: 'notifications', redirectTo: 'app/notifications' },
+  { path: 'besoins/nouveau', redirectTo: 'app/organisation/besoins/nouveau' },
+  { path: 'besoins/:id/edit', redirectTo: 'app/organisation/besoins/:id/edit' },
+  { path: 'besoins/:id', redirectTo: 'app/organisation/besoins/:id' },
+  { path: 'besoins', redirectTo: 'app/organisation/besoins' },
+  { path: 'recherche-talents', redirectTo: 'app/organisation/recherche-talents' },
+  { path: 'suivi-talents', redirectTo: 'app/organisation/suivi-talents' },
+  { path: 'validations', redirectTo: 'app/admin/validations' },
+  { path: 'tests-numeriques', redirectTo: 'app/admin/tests-numeriques' },
+  { path: 'referentiel', redirectTo: 'app/admin/referentiel' },
+  { path: 'skills-gap', redirectTo: 'app/admin/skills-gap' },
+  { path: 'institution', redirectTo: 'app/admin/institution' },
+  { path: 'citoyens', redirectTo: 'app/admin/citoyens' },
+  { path: 'audit/consultations', redirectTo: 'app/admin/audit/consultations' },
+  { path: 'organisations', redirectTo: 'app/admin/organisations' },
+  { path: 'centres', redirectTo: 'app/admin/centres' },
+  { path: 'admin/dashboard', redirectTo: 'app/admin/tableau-de-bord' },
+  { path: 'admin/tableau-de-bord', redirectTo: 'app/admin/tableau-de-bord' },
+  { path: 'admin/citoyens', redirectTo: 'app/admin/citoyens' },
+  { path: 'admin/organisations', redirectTo: 'app/admin/organisations' },
+  { path: 'admin/centres', redirectTo: 'app/admin/centres' },
+  { path: 'admin/validations', redirectTo: 'app/admin/validations' },
+  { path: 'admin/tests-numeriques', redirectTo: 'app/admin/tests-numeriques' },
+  { path: 'admin/referentiel', redirectTo: 'app/admin/referentiel' },
+  { path: 'admin/opportunites', redirectTo: 'app/admin/opportunites' },
+  { path: 'admin/skills-gap', redirectTo: 'app/admin/skills-gap' },
+  { path: 'admin/audit', redirectTo: 'app/admin/audit' },
+  { path: 'administration/utilisateurs', redirectTo: 'app/super-admin/utilisateurs' },
+  { path: 'super-admin/utilisateurs', redirectTo: 'app/super-admin/utilisateurs' },
+  { path: 'super-admin/opportunites', redirectTo: 'app/super-admin/opportunites' },
+  { path: 'centre-admin', redirectTo: 'app/centre-admin' },
+  { path: 'profil', redirectTo: 'app/profil' },
+  { path: 'carte-talents', redirectTo: 'app/carte-talents' },
+  { path: '**', redirectTo: '404' },
 ];

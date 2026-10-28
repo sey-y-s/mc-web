@@ -1,17 +1,29 @@
-<div class="flex min-h-screen bg-base-200">
-  <div class="hidden lg:block"><app-sidebar /></div>
-  <div class="drawer lg:hidden">
-    <input id="mc-drawer" type="checkbox" class="drawer-toggle" />
-    <div class="drawer-content min-h-screen">
-      <app-header />
-      <main class="p-4 sm:p-6"><router-outlet /></main>
-    </div>
-    <div class="drawer-side z-40">
-      <label for="mc-drawer" class="drawer-overlay"></label><app-sidebar />
-    </div>
-  </div>
-  <div class="hidden min-w-0 flex-1 lg:block">
-    <app-header />
-    <main class="mx-auto max-w-[1440px] p-5 sm:p-7"><router-outlet /></main>
+<a
+  href="#main-content"
+  class="sr-only rounded-control bg-brand-600 px-4 py-3 font-semibold text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-99999"
+>Aller au contenu principal</a>
+
+<div class="min-h-screen">
+  @if (navigationOpen()) {
+    <div class="fixed inset-0 z-40 bg-gray-950/50 lg:hidden" (click)="closeMobileNavigation()" aria-hidden="true"></div>
+  }
+
+  <aside
+    class="fixed inset-y-0 left-0 z-50 w-72 border-r border-gray-200 bg-white transition-transform duration-200 ease-out dark:border-gray-800 dark:bg-gray-900 lg:w-64 lg:translate-x-0"
+    [class.-translate-x-full]="!navigationOpen()"
+  >
+    <app-sidebar id="mc-navigation" (navigateRequested)="closeMobileNavigation()" />
+  </aside>
+
+  <div class="flex min-h-screen min-w-0 flex-col lg:pl-64">
+    <app-header [navigationOpen]="navigationOpen()" (toggleNavigation)="toggleMobileNavigation()" />
+    <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-360 flex-1 px-4 py-6 focus:outline-none sm:px-6 lg:px-8">
+      <router-outlet />
+    </main>
+    <footer class="border-t border-gray-200 px-4 py-4 text-xs text-gray-500 dark:border-gray-800 sm:px-6 lg:px-8">
+      MaliCompétences · Espace professionnel
+    </footer>
   </div>
 </div>
+
+<mc-confirmation-dialog />

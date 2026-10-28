@@ -1,50 +1,67 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { PageHeaderComponent, StatusBadgeComponent } from '../../shared/components';
 import { BesoinService } from '../../core/services/besoin.service';
-import { Besoin } from '../../shared/models';
+import { OrganisationService } from '../../core/services/organisation.service';
+import { ConfirmationService } from '../../core/ui/confirmation.service';
+import { LibellePipe } from '../../shared/libelle.pipe';
 
 @Component({
   selector: 'app-besoin-detail',
   standalone: true,
-  imports: [DatePipe, RouterLink, PageHeaderComponent, StatusBadgeComponent],
+  imports: [LibellePipe, DatePipe, RouterLink, PageHeaderComponent, StatusBadgeComponent],
   templateUrl: './besoin-detail.component.html',
 })
-export class BesoinDetailComponent implements OnInit {
+export class BesoinDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(BesoinService);
+  private readonly confirmation = inject(ConfirmationService);
+  private readonly organisations = inject(OrganisationService);
 
-  besoin: Besoin | null = null;
-  loading = true;
-  error = '';
-  private besoinId = '';
+  readonly id = signal(this.route.snapshot.paramMap.get('id') ?? '');
+  readonly clotureEnCours = signal(false);
+  readonly message = signal('');
+  readonly clotureError = signal('');
 
-  ngOnInit(): void {
-    this.besoinId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.charger();
+  readonly orgResource = rxResource({
+    stream: () => this.organisations.obtenirPourUtilisateur(),
+  });
+
+  readonly besoinResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params }) => this.service.obtenir(params),
+  });
+
+  readonly organisationApprouvee = computed(() => {
+    return this.orgResource.value()?.statut === 'APPROUVEE';
+  });
+
+  errorMessage(): string {
+    if (this.clotureError()) return this.clotureError();
+    const err = this.besoinResource.error() as
+      | { error?: { message?: string }; message?: string }
+      | undefined;
+    return err?.error?.message ?? err?.message ?? 'Impossible de charger ce besoin.';
   }
 
-  charger(): void {
-    if (!this.besoinId) {
-      this.error = 'Identifiant du besoin manquant.';
-      this.loading = false;
-      return;
-    }
-
-    this.loading = true;
-    this.error = '';
-    this.besoin = null;
-    this.service.obtenir(this.besoinId).subscribe({
-      next: (besoin) => {
-        this.besoin = besoin;
-        this.loading = false;
+  async cloturer(): Promise<void> {
+    const b = this.besoinResource.value();
+    if (!b || this.clotureEnCours()) return;
+    const ok = await this.confirmation.confirm('Clôturer définitivement ce besoin ? Il ne sera plus ouvert aux candidatures.', { title: 'Clôturer le besoin', confirmLabel: 'Clôturer', danger: true });
+    if (!ok || this.clotureEnCours()) return;
+    this.clotureEnCours.set(true);
+    this.clotureError.set('');
+    this.service.cloturer(b.id).subscribe({
+      next: () => {
+        this.message.set('Le besoin a été clôturé.');
+        this.clotureEnCours.set(false);
+        this.besoinResource.reload();
       },
-      error: (error) => {
-        this.error =
-          error?.error?.message ??
-          'Impossible de charger ce besoin. Vérifiez votre connexion et réessayez.';
-        this.loading = false;
+      error: (e) => {
+        this.clotureError.set(e?.error?.message ?? e?.message ?? 'Impossible de clôturer le besoin.');
+        this.clotureEnCours.set(false);
       },
     });
   }

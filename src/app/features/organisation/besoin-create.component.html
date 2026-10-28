@@ -1,60 +1,23 @@
-<mc-page-header
-  title="Créer un besoin"
-  description="Définir les compétences, le niveau, la quantité et les dates."
-/>
-
-@if (loading) {
-  <div class="mc-card p-6" role="status">Chargement des informations nécessaires…</div>
-} @else {
-<section class="mc-card max-w-4xl p-6">
-  @if (error) {
-    <div class="alert alert-error mb-5" role="alert">{{ error }}</div>
-  }
-  <div class="grid gap-5 md:grid-cols-2">
-    <label class="block md:col-span-2">
-      <span class="mc-label">Titre</span>
-      <input class="mc-input" [(ngModel)]="titre" name="titre" required maxlength="200" />
-    </label>
-    <label class="block md:col-span-2">
-      <span class="mc-label">Description</span>
-      <textarea class="mc-input" rows="4" [(ngModel)]="description" name="description"></textarea>
-    </label>
-    <label class="block">
-      <span class="mc-label">Compétence recherchée</span>
-      <select class="mc-select" [(ngModel)]="competenceId" name="competenceId">
-        <option value="">Aucune compétence précise</option>
-        @for (item of competences; track item.id) {
-          <option [value]="item.id">{{ item.nom }}</option>
-        }
-      </select>
-    </label>
-    <label class="block">
-      <span class="mc-label">Niveau</span>
-      <select class="mc-input" [(ngModel)]="niveau" name="niveau">
-        <option value="DEBUTANT">Débutant</option>
-        <option value="INTERMEDIAIRE">Intermédiaire</option>
-        <option value="EXPERT">Expert</option>
-        <option value="EXPERT">Expert</option>
-      </select>
-    </label>
-    <label class="block">
-      <span class="mc-label">Quantité</span>
-      <input class="mc-input" type="number" min="1" [(ngModel)]="quantite" name="quantite" />
-    </label>
-    <label class="block">
-      <span class="mc-label">Date de début</span>
-      <input class="mc-input" type="date" [(ngModel)]="dateDebut" name="dateDebut" />
-    </label>
-    <label class="block">
-      <span class="mc-label">Date de fin</span>
-      <input class="mc-input" type="date" [(ngModel)]="dateFin" name="dateFin" />
-    </label>
-  </div>
-  <div class="mt-6 flex gap-3">
-    <button class="btn btn-primary" type="button" (click)="save()" [disabled]="saving || !titre.trim()">
-      {{ saving ? 'Création…' : 'Créer le besoin' }}
-    </button>
-    <button class="btn btn-ghost" type="button" (click)="cancel()">Retour</button>
-  </div>
-</section>
+<mc-page-header title="Préparer un besoin" description="Enregistrez un brouillon ou publiez un besoin si votre organisation est validée." />
+@if (loading()) { <div class="mc-card p-6" role="status">Chargement du profil et du référentiel…</div> } @else {
+  <section class="mc-card max-w-4xl p-6 md:p-8">
+    @if (error()) { <div class="alert alert-error mb-5" role="alert">{{ error() }}</div> }
+    @if (statutOrganisation() !== 'APPROUVEE') { <div class="alert alert-warning text-gray-100 mb-5" role="status"><div><strong>Organisation non validée ({{ statutOrganisation() || 'statut inconnu' }}).</strong><p class="text-gray-200">Vous pouvez enregistrer un brouillon, mais pas publier, rechercher des talents ni demander une mise en relation. Votre organisation doit être validée avant de publier un besoin.</p></div></div> }
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="block md:col-span-2"><span class="mc-label">Titre * (150 caractères maximum)</span><input class="mc-input" [(ngModel)]="titre" name="titre" maxlength="150" required /></label>
+      <label class="block md:col-span-2"><span class="mc-label">Description</span><textarea class="mc-input" rows="4" [(ngModel)]="description" name="description"></textarea></label>
+      <label class="block"><span class="mc-label">Date de début</span><input class="mc-input" type="date" [(ngModel)]="dateDebut" name="dateDebut" [min]="aujourdHui" /></label>
+      <label class="block"><span class="mc-label">Date de fin</span><input class="mc-input" type="date" [(ngModel)]="dateFin" name="dateFin" [min]="dateDebut || aujourdHui" /></label>
+    </div>
+    <div class="mt-6"><app-zone-besoin [(regionId)]="zoneRegionId" [(communeId)]="zoneCommuneId" /></div>
+    <div class="mt-8"><div class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="mc-section-heading">Compétences requises</h2><p class="mt-1 text-sm text-base-content/60">La publication nécessite au moins une compétence distincte.</p></div><button class="btn btn-sm btn-outline" type="button" (click)="ajouterCompetence()">Ajouter une compétence</button></div>
+      <div class="mt-4 space-y-3">@for (line of lignes; track $index; let i = $index) { <div class="grid gap-3 rounded-xl border border-base-300 p-4 md:grid-cols-[2fr_1fr_1fr_auto]">
+        <label><span class="mc-label">Compétence</span><select class="mc-select" [(ngModel)]="line.competenceId" [name]="'competence-' + i"><option value="">Choisir une compétence</option>@for (item of referentiel(); track item.id) { <option [value]="item.id">{{ item.nom }}</option> }</select></label>
+        <label><span class="mc-label">Niveau minimum</span><select class="mc-select" [(ngModel)]="line.niveau" [name]="'niveau-' + i"><option value="DEBUTANT">Débutant</option><option value="INTERMEDIAIRE">Intermédiaire</option><option value="EXPERT">Expert</option></select></label>
+        <label><span class="mc-label">Quantité</span><input class="mc-input" type="number" min="1" step="1" [(ngModel)]="line.quantite" [name]="'quantite-' + i" /></label>
+        <div class="flex items-end"><button class="btn btn-ghost" type="button" (click)="retirerCompetence(i)" [disabled]="lignes.length === 1" [attr.aria-label]="'Retirer la compétence ' + (i + 1)">Retirer</button></div>
+      </div> }</div>
+    </div>
+    <div class="mt-8 flex flex-wrap gap-3"><button class="btn btn-outline" type="button" (click)="enregistrer('BROUILLON')" [disabled]="saving || !titre.trim()">{{ saving ? 'Enregistrement…' : 'Enregistrer le brouillon' }}</button><button class="btn btn-primary" type="button" (click)="enregistrer('OUVERT')" [disabled]="saving || !peutPublier()">Publier le besoin</button><button class="btn btn-ghost" type="button" (click)="cancel()">Annuler</button></div>
+  </section>
 }

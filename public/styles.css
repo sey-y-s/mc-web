@@ -1,0 +1,254 @@
+/* ==========================================================================
+   MaliCompétences — base TailAdmin allégée + identité propre (étape 1)
+   - Plus aucune bibliothèque de démo (calendrier, carrousel, éditeur de code, cartes vectorielles).
+   - Les noms de tokens TailAdmin (brand-*, gray-*, success-*, shadow-theme-*) sont conservés :
+     les composants repris de TailAdmin changent de look sans être réécrits.
+   - Polices hébergées avec l'application : aucun appel à Google Fonts (bande passante, vie privée).
+   ========================================================================== */
+
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+@import "./composants.css";
+@import "./graphiques.css";
+
+/* Corps de texte : Inter, déjà validée pour le bambara (ɛ ɔ ɲ). Latin + latin étendu seulement. */
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* Titres et grands chiffres : Bricolage Grotesque (npm i @fontsource-variable/bricolage-grotesque).
+   Si un glyphe manque (ɛ ɔ ɲ ŋ), le navigateur retombe sur Inter : à tester avec la page de contrôle. */
+@import "@fontsource-variable/bricolage-grotesque";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-*: initial;
+  --font-sans: "Inter Variable", Inter, "Noto Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Inter Variable", Inter, "Noto Sans", sans-serif;
+  --font-outfit: var(--font-sans); /* alias : les composants TailAdmin qui disent font-outfit suivent la nouvelle police */
+
+  --breakpoint-*: initial;
+  --breakpoint-2xsm: 375px;
+  --breakpoint-xsm: 425px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  --breakpoint-3xl: 2000px;
+
+  /* Échelle typographique : titres plus resserrés que TailAdmin, corps lisible sur petit écran. */
+  --text-title-lg: 22px;
+  --text-title-lg--line-height: 30px;
+  --text-title-sm: 18px;
+  --text-title-sm--line-height: 26px;
+  --text-theme-sm: 14px;
+  --text-theme-sm--line-height: 20px;
+  --text-theme-xs: 12px;
+  --text-theme-xs--line-height: 16px;
+
+  --color-current: currentColor;
+  --color-transparent: transparent;
+  --color-white: #ffffff;
+  --color-black: #0d111c;
+
+  /* Bleu MaliCompétences — remplace l'indigo #465fff de TailAdmin. brand-600 est la couleur d'action. */
+  --color-brand-25: #f4f7fd;
+  --color-brand-50: #eaf0fb;
+  --color-brand-100: #d6e2f7;
+  --color-brand-200: #b0c8ef;
+  --color-brand-300: #7fa3e3;
+  --color-brand-400: #4f7cd3;
+  --color-brand-500: #2a5dbe;
+  --color-brand-600: #1b4aa0;
+  --color-brand-700: #153b83;
+  --color-brand-800: #122f68;
+  --color-brand-900: #10264f;
+  --color-brand-950: #0a1730;
+
+  /* Ocre (terre, bogolan) : sert une seule idée — « à surveiller / à revalider ». Jamais décoratif. */
+  --color-ocre-50: #fbf5e8;
+  --color-ocre-100: #f5e6c3;
+  --color-ocre-200: #ebcd8a;
+  --color-ocre-300: #e0b055;
+  --color-ocre-400: #d39a31;
+  --color-ocre-500: #b97e1a;
+  --color-ocre-600: #98630f;
+  --color-ocre-700: #764c0e;
+  --color-ocre-800: #5a3a0f;
+  --color-ocre-900: #3f280c;
+
+  /* Neutres légèrement bleutés, accordés au bleu de marque. */
+  --color-gray-25: #fbfbfd;
+  --color-gray-50: #f6f7f9;
+  --color-gray-100: #eef0f4;
+  --color-gray-200: #e1e4ea;
+  --color-gray-300: #cdd2dc;
+  --color-gray-400: #9aa3b5;
+  --color-gray-500: #657089;
+  --color-gray-600: #4a546b;
+  --color-gray-700: #343d52;
+  --color-gray-800: #222a3c;
+  --color-gray-900: #151b2b;
+  --color-gray-950: #0d111c;
+  --color-gray-dark: #171e30;
+
+  /* États : succès, erreur, information gardés lisibles (AA sur blanc pour les -700). */
+  --color-success-50: #ecf7f1;
+  --color-success-100: #cfeedd;
+  --color-success-300: #7fcaa2;
+  --color-success-500: #2a9a63;
+  --color-success-600: #1f7a4d;
+  --color-success-700: #195f3d;
+  --color-success-800: #134a30;
+  --color-error-50: #fdf1ef;
+  --color-error-100: #fbdcd7;
+  --color-error-300: #f0a49a;
+  --color-error-500: #de4b3b;
+  --color-error-600: #c0342a;
+  --color-error-700: #9c2a21;
+  --color-error-800: #7a221b;
+  /* Avertissement = ocre : une seule couleur pour « attention ». */
+  --color-warning-50: var(--color-ocre-50);
+  --color-warning-100: var(--color-ocre-100);
+  --color-warning-300: var(--color-ocre-300);
+  --color-warning-500: var(--color-ocre-500);
+  --color-warning-600: var(--color-ocre-600);
+  --color-warning-700: var(--color-ocre-700);
+
+  /* Formes : deux rayons seulement. Contrôles nets, panneaux un peu plus doux. Plus de pilules partout. */
+  --radius-control: 0.5rem;
+  --radius-panel: 0.75rem;
+
+  /* Élévation : surtout des bordures ; l'ombre est réservée aux éléments qui flottent. */
+  --shadow-theme-xs: 0 1px 1px 0 rgb(21 27 43 / 0.04);
+  --shadow-theme-sm: 0 1px 2px 0 rgb(21 27 43 / 0.06);
+  --shadow-theme-md: 0 6px 16px -4px rgb(21 27 43 / 0.12);
+  --shadow-theme-lg: 0 14px 28px -8px rgb(21 27 43 / 0.16);
+  --shadow-theme-xl: 0 22px 40px -12px rgb(21 27 43 / 0.2);
+  --shadow-focus-ring: 0 0 0 3px rgb(42 93 190 / 0.28);
+
+  --z-index-1: 1;
+  --z-index-9: 9;
+  --z-index-99: 99;
+  --z-index-999: 999;
+  --z-index-9999: 9999;
+  --z-index-99999: 99999;
+}
+
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
+
+  body {
+    @apply relative z-1 bg-gray-50 font-sans text-gray-800 antialiased dark:bg-gray-950 dark:text-gray-200;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    letter-spacing: -0.015em;
+  }
+  /* Chiffres alignés dans les tableaux et indicateurs. */
+  table, .tabular { font-variant-numeric: tabular-nums; }
+
+  /* Focus clavier toujours visible, même couleur partout. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+  }
+}
+
+/* Respect des préférences : animations réduites, ou préférence « économie de données » (CA14).
+   Le service de préférences pose data-eco="true" sur <html>. */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html[data-eco="true"] *, html[data-eco="true"] ::before, html[data-eco="true"] ::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ---------- Menu latéral (noms TailAdmin conservés) ---------- */
+@utility menu-item {
+  @apply relative flex w-full items-center gap-3 rounded-control px-3 py-2 text-sm font-medium;
+}
+@utility menu-item-active {
+  @apply bg-brand-50 font-semibold text-brand-700 dark:bg-brand-500/[0.14] dark:text-brand-300;
+  box-shadow: inset 3px 0 0 var(--color-brand-600); /* repère d'emplacement : la barre dit « vous êtes ici » */
+}
+@utility menu-item-inactive {
+  @apply text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200;
+}
+@utility menu-item-icon-active { @apply text-brand-600 dark:text-brand-300; }
+@utility menu-item-icon-inactive { @apply text-gray-400 group-hover:text-gray-600 dark:text-gray-500; }
+@utility menu-item-icon-size { & svg { @apply !size-5; } }
+@utility menu-item-arrow { @apply relative; }
+@utility menu-item-arrow-active { @apply rotate-180 text-brand-600 dark:text-brand-300; }
+@utility menu-item-arrow-inactive { @apply text-gray-400 group-hover:text-gray-600; }
+@utility menu-dropdown-item { @apply relative flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium; }
+@utility menu-dropdown-item-active { @apply bg-brand-50 text-brand-700 dark:bg-brand-500/[0.14] dark:text-brand-300; }
+@utility menu-dropdown-item-inactive { @apply text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5; }
+
+/* ---------- États d'une compétence : la FORME porte l'information, pas seulement la couleur ----------
+   déclarée = contour en pointillés (affirmation non vérifiée) ; vérifiée = trait plein (preuve examinée).
+   À combiner avec une icône et un libellé (cahier des charges §5.1). */
+@utility etat-declaree  { @apply border border-dashed border-gray-400 bg-transparent text-gray-600 dark:border-gray-500 dark:text-gray-300; }
+@utility etat-en-cours  { @apply border border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-300; }
+@utility etat-verifiee  { @apply border border-success-600 bg-success-50 text-success-700 dark:border-success-500/60 dark:bg-success-500/15 dark:text-success-300; }
+@utility etat-rejetee   { @apply border border-error-300 bg-error-50 text-error-700 dark:border-error-500/40 dark:bg-error-500/15 dark:text-error-300; }
+@utility etat-a-revalider { @apply border border-ocre-300 bg-ocre-50 text-ocre-700 dark:border-ocre-500/40 dark:bg-ocre-500/15 dark:text-ocre-200; }
+
+/* ---------- Utilitaires conservés ---------- */
+@utility no-scrollbar {
+  &::-webkit-scrollbar { display: none; }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+@utility custom-scrollbar {
+  &::-webkit-scrollbar { @apply size-1.5; }
+  &::-webkit-scrollbar-track { @apply rounded-full; }
+  &::-webkit-scrollbar-thumb { @apply rounded-full bg-gray-300 dark:bg-gray-700; }
+}
+
+/* Dates et heures : on masque l'icône native, le composant fournit la sienne. */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="time"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  display: none !important;
+  opacity: 0 !important;
+  -webkit-appearance: none !important;
+}
+
+/* Apparition d'un menu ou d'une fenêtre : répond à un geste, donc autorisée. */
+@keyframes ouverture {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.animate-fadeIn { animation: ouverture 0.14s ease-out both; }
+
+/* Accordéon du menu latéral (CSS Grid, sans calcul de hauteur en JavaScript). */
+.menu-accordion { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 220ms ease-out; }
+.menu-accordion.open { grid-template-rows: 1fr; }
+.menu-accordion > div { overflow: hidden; min-height: 0; }

@@ -1,11 +1,18 @@
-<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-  <div>
-    <h1 class="mc-page-title">{{ title() }}</h1>
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  <div class="min-w-0 max-w-2xl">
+    <h1 class="text-title-lg font-semibold text-gray-900 dark:text-white sm:text-2xl">{{ title() }}</h1>
     @if (description()) {
-      <p class="mc-muted mt-1">{{ description() }}</p>
+      <p class="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-400">{{ description() }}</p>
     }
   </div>
-  @if (actionLabel()) {
-    <button class="btn btn-primary rounded-md">{{ actionLabel() }}</button>
-  }
+  <div class="flex shrink-0 flex-wrap items-center gap-2">
+    <ng-content select="[actions]" />
+    @if (actionLabel()) {
+      <button
+        type="button"
+        (click)="action.emit()"
+        class="rounded-control bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:shadow-focus-ring"
+      >{{ actionLabel() }}</button>
+    }
+  </div>
 </div>

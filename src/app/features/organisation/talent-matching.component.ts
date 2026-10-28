@@ -1,147 +1,166 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { of } from 'rxjs';
 import { PageHeaderComponent } from '../../shared/components';
 import { MatchingService, MatchingResult } from '../../core/services/matching.service';
 import { SuiviBesoinTalentService } from '../../core/services/suivi-besoin-talent.service';
-import { MiseEnRelationService } from '../../core/services/mise-en-relation.service';
-import { AuthService } from '../../core/auth/auth.service';
+import { OrganisationService } from '../../core/services/organisation.service';
+import { BesoinService } from '../../core/services/besoin.service';
+import { LibellePipe } from '../../shared/libelle.pipe';
 
 @Component({
   selector: 'app-talent-matching',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent, RouterLink],
+  imports: [LibellePipe, FormsModule, PageHeaderComponent, RouterLink],
   templateUrl: './talent-matching.component.html',
 })
 export class TalentMatchingComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(MatchingService);
   private readonly suiviService = inject(SuiviBesoinTalentService);
-  private readonly relationService = inject(MiseEnRelationService);
-  private readonly auth = inject(AuthService);
+  private readonly organisations = inject(OrganisationService);
+  private readonly besoins = inject(BesoinService);
 
-  items: MatchingResult[] = [];
-  loading = true;
-  error = '';
-  actionError = '';
-  actionMessage = '';
-  filter = '';
-  minimumScore = 0;
-  sortOrder: 'desc' | 'asc' = 'desc';
+  readonly filter = signal('');
+  readonly minimumScore = signal(0);
+  readonly sortOrder = signal<'desc' | 'asc'>('desc');
+  readonly actionError = signal('');
+  readonly actionMessage = signal('');
   readonly pendingActions = new Set<string>();
   readonly completedActions = new Set<string>();
-  private besoinId = '';
 
-  constructor() {
-    this.besoinId = this.route.snapshot.paramMap.get('besoinId') ?? '';
-    this.charger();
-  }
+  readonly besoinId = signal(this.route.snapshot.paramMap.get('besoinId') ?? '');
 
-  get resultatsFiltres(): MatchingResult[] {
-    const query = this.filter.trim().toLocaleLowerCase();
-    return this.items
-      .filter((item) => item.score >= this.minimumScore)
-      .filter((item) => {
-        if (!query) return true;
-        const talent = item.talent;
-        const values = [
-          talent?.pseudo,
-          talent?.metierNom,
-          talent?.localisation,
-          ...(talent?.competences?.map((competence) => competence.nom) ?? []),
-          ...(item.competencesCorrespondantes ?? []),
-        ];
-        return values.some((value) => value?.toLowerCase().includes(query));
-      })
-      .sort((left, right) =>
-        this.sortOrder === 'desc' ? right.score - left.score : left.score - right.score,
-      );
-  }
+  readonly orgResource = rxResource({
+    stream: () => this.organisations.obtenirPourUtilisateur(),
+  });
 
-  charger(): void {
-    if (!this.besoinId) {
-      this.error = 'Identifiant du besoin manquant dans l’adresse.';
-      this.loading = false;
-      return;
+  readonly besoinResource = rxResource({
+    params: () => this.besoinId(),
+    stream: ({ params }) => (params ? this.besoins.obtenir(params) : of(null)),
+  });
+
+  readonly matchingResource = rxResource({
+    params: () => ({
+      besoinId: this.besoinId(),
+      orgStatut: this.orgResource.value()?.statut,
+      besoinStatut: this.besoinResource.value()?.statut,
+    }),
+    stream: ({ params }) => {
+      if (
+        !params.besoinId ||
+        params.orgStatut !== 'APPROUVEE' ||
+        params.besoinStatut !== 'OUVERT'
+      ) {
+        return of([] as MatchingResult[]);
+      }
+      return this.service.listerPourBesoin(params.besoinId);
+    },
+    defaultValue: [] as MatchingResult[],
+  });
+
+  readonly loading = computed(
+    () =>
+      this.orgResource.isLoading() ||
+      this.besoinResource.isLoading() ||
+      this.matchingResource.isLoading()
+  );
+
+  readonly blockedReason = computed(() => {
+    if (this.orgResource.isLoading() || this.besoinResource.isLoading()) return '';
+    const org = this.orgResource.value();
+    if (org && org.statut !== 'APPROUVEE') {
+      return 'La recherche de correspondances est réservée aux organisations validées.';
     }
+    const besoin = this.besoinResource.value();
+    if (besoin && besoin.statut !== 'OUVERT') {
+      return 'Le matching est disponible uniquement pour un besoin ouvert.';
+    }
+    return '';
+  });
 
-    this.loading = true;
-    this.error = '';
-    this.actionError = '';
-    this.actionMessage = '';
-    this.service.listerPourBesoin(this.besoinId).subscribe({
-      next: (rows) => {
-        this.items = rows ?? [];
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error =
-          error?.error?.message ??
-          error?.message ??
-          'Impossible de charger les correspondances. Réessayez ultérieurement.';
-        this.loading = false;
-      },
-    });
+  readonly error = computed(() => {
+    if (!this.besoinId()) return 'Identifiant du besoin manquant.';
+    const orgErr = this.orgResource.error() as { message?: string } | undefined;
+    if (orgErr) return orgErr.message || 'Impossible de vérifier le statut de l’organisation.';
+    const bErr = this.besoinResource.error() as
+      | { error?: { message?: string }; message?: string }
+      | undefined;
+    if (bErr) return bErr.error?.message ?? bErr.message ?? 'Impossible de vérifier le besoin.';
+    const mErr = this.matchingResource.error() as
+      | { error?: { message?: string }; message?: string }
+      | undefined;
+    if (mErr)
+      return mErr.error?.message ?? mErr.message ?? 'Impossible de charger les correspondances.';
+    return '';
+  });
+
+  readonly items = computed(() => this.matchingResource.value() ?? []);
+
+  readonly resultatsFiltres = computed(() => {
+    const query = this.filter().trim().toLocaleLowerCase();
+    const min = this.minimumScore();
+    const order = this.sortOrder();
+    return this.items()
+      .filter((item) => item.score >= min)
+      .filter(
+        (item) =>
+          !query ||
+          [
+            item.talent?.pseudo,
+            item.talent?.metierNom,
+            item.talent?.localisation,
+            ...(item.talent?.competences?.map((c) => c.nom) ?? []),
+            ...(item.competencesCorrespondantes ?? []),
+            ...(item.competencesManquantes ?? []),
+          ].some((v) => v?.toLowerCase().includes(query))
+      )
+      .sort((a, b) => (order === 'desc' ? b.score - a.score : a.score - b.score));
+  });
+
+  reessayer(): void {
+    this.orgResource.reload();
+    this.besoinResource.reload();
+    this.matchingResource.reload();
   }
 
   suivre(item: MatchingResult): void {
-    const organisationId = this.auth.getCurrentUser()?.id;
-    if (!organisationId) {
-      this.actionError = 'Compte connecté introuvable. Veuillez vous reconnecter.';
-      return;
-    }
-    const actionKey = `suivi:${item.talentId}`;
-    this.effectuerAction(actionKey, () =>
-      this.suiviService.creer({
-        organisationId,
-        besoinId: this.besoinId,
+    const key = `suivi:${item.talentId}`;
+    if (this.pendingActions.has(key) || this.completedActions.has(key)) return;
+    this.pendingActions.add(key);
+    this.actionError.set('');
+    this.actionMessage.set('');
+    const orgId = this.orgResource.value()?.id ?? '';
+    const bId = this.besoinId();
+
+    this.suiviService
+      .creer({
+        organisationId: orgId,
+        besoinId: bId,
         citoyenId: item.talentId,
         statut: 'A_L_ETUDE',
-      }),
-    );
-  }
-
-  demanderMiseEnRelation(item: MatchingResult): void {
-    const demandeurId = this.auth.getCurrentUser()?.id;
-    if (!demandeurId) {
-      this.actionError = 'Compte connecté introuvable. Veuillez vous reconnecter.';
-      return;
-    }
-    const actionKey = `relation:${item.talentId}`;
-    this.effectuerAction(actionKey, () =>
-      this.relationService.creer({
-        demandeurId,
-        destinataireId: item.talentId,
-        statut: 'EN_ATTENTE',
-        message: `Demande de mise en relation concernant le besoin ${this.besoinId}.`,
-      }),
-    );
-  }
-
-  private effectuerAction(
-    actionKey: string,
-    request: () => Observable<unknown>,
-  ): void {
-    if (this.pendingActions.has(actionKey) || this.completedActions.has(actionKey)) return;
-
-    this.pendingActions.add(actionKey);
-    this.actionError = '';
-    this.actionMessage = '';
-    request().subscribe({
-      next: () => {
-        this.pendingActions.delete(actionKey);
-        this.completedActions.add(actionKey);
-        this.actionMessage = 'Votre action a bien été enregistrée.';
-      },
-      error: (error: HttpErrorResponse) => {
-        this.pendingActions.delete(actionKey);
-        this.actionError =
-          error.error?.message ??
-          error.message ??
-          'L’action a échoué. Aucune modification n’a été enregistrée.';
-      },
-    });
+        scoreCorrespondance: item.score,
+        detailsCorrespondance: `${(item.competencesCorrespondantes ?? []).join(', ')} | manquantes: ${(item.competencesManquantes ?? []).join(', ')}`,
+      })
+      .subscribe({
+        next: () => {
+          this.pendingActions.delete(key);
+          this.completedActions.add(key);
+          this.actionMessage.set('Talent ajouté au suivi.');
+        },
+        error: (e: HttpErrorResponse) => {
+          this.pendingActions.delete(key);
+          this.actionError.set(
+            e.error?.message ??
+              (e.status === 409
+                ? 'Ce talent est déjà suivi pour ce besoin.'
+                : e.message) ??
+              'Impossible d’ajouter ce talent au suivi.'
+          );
+        },
+      });
   }
 }

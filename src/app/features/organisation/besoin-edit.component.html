@@ -1,28 +1,106 @@
-<mc-page-header
-  title="Modifier un besoin"
-  description="Mettre à jour le besoin et les compétences associées."
-/>
+<mc-page-header title="Modifier un besoin" description="" />
 
-@if (loading) {
-  <div class="mc-card p-6" role="status">Chargement du besoin…</div>
-} @else {
-<section class="mc-card max-w-4xl p-6">
-  @if (error) {
-    <div class="alert alert-warning mb-5" role="status">{{ error }}</div>
-  }
-  <div class="grid gap-5 md:grid-cols-2">
-    <label class="block md:col-span-2">
-      <span class="mc-label">Titre</span>
-      <input class="mc-input" [(ngModel)]="besoin.titre" name="titre" />
-    </label>
-    <label class="block md:col-span-2">
-      <span class="mc-label">Description</span>
-      <textarea class="mc-input" rows="4" [(ngModel)]="besoin.description" name="description"></textarea>
-    </label>
-  </div>
-  <div class="mt-6 flex gap-3">
-    <button class="btn btn-primary" type="button" (click)="save()">Enregistrer</button>
-    <button class="btn btn-ghost" type="button" (click)="cancel()">Annuler</button>
-  </div>
-</section>
+@if (loading) { 
+  <div class="mc-card p-6" role="status">Chargement du besoin et du référentiel…</div> 
+} @else if (error && !besoin) { 
+  <div class="alert alert-error" role="alert">{{ error }}</div> 
+} @else if (besoin; as data) {
+  <section class="mc-card max-w-4xl p-6 md:p-8">
+    
+    <!-- Affichage des erreurs de validation lors de l'enregistrement -->
+    @if (error) { 
+      <div class="alert alert-error mb-5" role="alert">{{ error }}</div> 
+    }
+    
+    @if (data.statut === 'CLOTURE') { 
+      <div class="alert alert-warning text-gray-100 mb-5" role="status">Ce besoin est clôturé et ne peut plus être modifié.</div> 
+    }
+    
+    @if (statutOrganisation !== 'APPROUVEE') { 
+      <div class="alert alert-warning text-gray-100 mb-5" role="status">Organisation {{ statutOrganisation || 'non vérifiée' }} : la publication est interdite, mais le brouillon peut être préparé.</div> 
+    }
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="sm:col-span-2">
+        <span class="mc-label">Titre *</span>
+        <input class="mc-input" name="titre" [(ngModel)]="titre" required maxlength="150" [disabled]="data.statut === 'CLOTURE'" />
+      </label>
+
+      <label class="sm:col-span-2">
+        <span class="mc-label">Description</span>
+        <textarea class="mc-input" name="description" [(ngModel)]="description" rows="4" [disabled]="data.statut === 'CLOTURE'"></textarea>
+      </label>
+
+      <label>
+        <span class="mc-label">Date de début</span>
+        <input class="mc-input" type="date" name="dateDebut" [(ngModel)]="dateDebut" [disabled]="data.statut === 'CLOTURE'" />
+      </label>
+
+      <label>
+        <span class="mc-label">Date de fin</span>
+        <input class="mc-input" type="date" name="dateFin" [(ngModel)]="dateFin" [min]="dateDebut" [disabled]="data.statut === 'CLOTURE'" />
+      </label>
+
+      <div class="sm:col-span-2">
+        <app-zone-besoin [(regionId)]="zoneRegionId" [(communeId)]="zoneCommuneId" />
+      </div>
+
+      <label>
+        <span class="mc-label">Statut</span>
+        <select class="mc-input" name="statut" [(ngModel)]="statut" [disabled]="data.statut === 'CLOTURE'">
+          <option value="BROUILLON">Brouillon</option>
+          <option value="OUVERT" [disabled]="statutOrganisation !== 'APPROUVEE'">Ouvert / publié</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="mt-7">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 class="mc-section-heading">Compétences recherchées</h2>
+        <button class="btn btn-sm btn-outline" type="button" (click)="ajouter()" [disabled]="data.statut === 'CLOTURE'">Ajouter</button>
+      </div>
+
+      <div class="mt-3 space-y-3">
+        @for (line of lignes; track $index; let i = $index) { 
+          <div class="grid gap-3 rounded-xl border border-base-300 p-4 sm:grid-cols-[2fr_1fr_1fr_auto]">
+            <label>
+              <span class="mc-label">Compétence</span>
+              <select class="mc-input" [(ngModel)]="line.competenceId" [name]="'comp-'+i" [disabled]="data.statut === 'CLOTURE'">
+                <option value="">Choisir</option>
+                @for (c of competences; track c.id) { 
+                  <option [value]="c.id">{{ c.nom }}</option> 
+                }
+              </select>
+            </label>
+
+            <label>
+              <span class="mc-label">Niveau</span>
+              <select class="mc-input" [(ngModel)]="line.niveau" [name]="'niv-'+i" [disabled]="data.statut === 'CLOTURE'">
+                <option value="DEBUTANT">Débutant</option>
+                <option value="INTERMEDIAIRE">Intermédiaire</option>
+                <option value="EXPERT">Expert</option>
+              </select>
+            </label>
+
+            <label>
+              <span class="mc-label">Quantité</span>
+              <input class="mc-input" type="number" min="1" step="1" [(ngModel)]="line.quantite" [name]="'qte-'+i" [disabled]="data.statut === 'CLOTURE'" />
+            </label>
+
+            <div class="flex items-end">
+              <button class="btn btn-ghost" type="button" (click)="retirer(i)" [disabled]="data.statut === 'CLOTURE'">Retirer</button>
+            </div>
+          </div> 
+        }
+      </div>
+    </div>
+
+    <div class="mt-7 flex flex-wrap gap-3">
+      <button class="btn btn-primary" type="button" (click)="enregistrer()" [disabled]="saving || data.statut === 'CLOTURE'">
+        {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+      <a class="btn btn-outline" [routerLink]="['/app/organisation/besoins', data.id]">Annuler</a>
+    </div>
+
+  </section> 
 }

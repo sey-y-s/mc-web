@@ -4,6 +4,7 @@ export * from './organisations-admin.component';
 export * from './centres-admin.component';
 export * from './validations-admin.component';
 export * from './tests-numeriques-admin.component';
+export * from './regles-validation-admin.component';
 export * from './referentiel-admin.component';
 export * from './opportunites-admin.component';
 export * from './skills-gap-admin.component';

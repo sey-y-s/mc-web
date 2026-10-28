@@ -1,0 +1,273 @@
+<mc-page-header
+  title="Territoires"
+  description="Consulter et gérer les régions, le district de Bamako et les communes."
+/>
+<section class="mc-card p-5 sm:p-6">
+  @if (errorMessage()) {
+    <p class="mb-3 text-sm text-red-700" role="alert">{{ errorMessage() }}</p>
+  }
+  @if (message()) {
+    <p class="mb-3 text-sm text-emerald-800" role="status">{{ message() }}</p>
+  }
+  <div class="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Niveau territorial">
+    <button
+      class="btn"
+      [class.btn-primary]="tab() === 'regions'"
+      [class.btn-secondary]="tab() !== 'regions'"
+      (click)="tab.set('regions'); reset()"
+      role="tab"
+      [attr.aria-selected]="tab() === 'regions'"
+    >
+      Territoires ({{ regions().length }})
+    </button>
+    <button
+      class="btn"
+      [class.btn-primary]="tab() === 'communes'"
+      [class.btn-secondary]="tab() !== 'communes'"
+      (click)="tab.set('communes'); reset()"
+      role="tab"
+      [attr.aria-selected]="tab() === 'communes'"
+    >
+      Communes ({{ communes().length }})
+    </button>
+  </div>
+  @if (tab() === 'regions') {
+    <form
+      id="territoire-editor"
+      class="sticky top-2 z-10 grid gap-3 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm md:grid-cols-3"
+      (ngSubmit)="enregistrerRegion()"
+    >
+      <label class="text-sm font-medium"
+        >Nom du territoire *<input
+          class="mc-input mt-1"
+          name="regionNom"
+          [(ngModel)]="regionForm.nom"
+          maxlength="100"
+          required
+        />
+      </label>
+      <label class="text-sm font-medium"
+        >Code stable *<input
+          class="mc-input mt-1 font-mono"
+          name="regionCodeStable"
+          [(ngModel)]="regionForm.codeStable"
+          maxlength="32"
+          [disabled]="!!regionEditId()"
+          required
+        /><span class="mt-1 block text-xs text-base-content/70">Immuable après attribution.</span></label
+      ><label class="text-sm font-medium"
+        >Niveau territorial<select
+          class="mc-input mt-1"
+          name="regionNiveau"
+          [(ngModel)]="regionForm.niveau"
+          [disabled]="!!regionEditId()"
+          required
+        >
+          <option value="REGION">Région</option>
+          <option value="DISTRICT">District</option>
+        </select></label
+      >
+      <!-- <label class="text-sm font-medium md:col-span-2"
+        >Description<input
+          class="mc-input mt-1"
+          name="regionDescription"
+          [(ngModel)]="regionForm.description"
+      /></label> -->
+      <div class="flex gap-2 md:col-span-2">
+        <button class="btn btn-primary" type="submit" [disabled]="saving()">
+          {{ regionEditId() ? 'Modifier le territoire' : 'Créer le territoire' }}</button
+        ><button class="btn btn-secondary" type="button" (click)="reset()">Effacer</button>
+      </div>
+    </form>
+    <label class="mt-4 block max-w-md"
+      ><span class="mc-label">Rechercher un territoire</span
+      ><input
+        class="mc-input mt-1"
+        type="search"
+        [ngModel]="rechercheRegion()"
+        (ngModelChange)="rechercheRegion.set($event); pageRegions.set(1)"
+        name="rechercheRegion"
+        placeholder="Nom, code ou niveau"
+    /></label>
+    @if (regionsResource.isLoading()) {
+      <p class="py-6 text-sm">Chargement des régions…</p>
+    } @else if (!regionsFiltrees().length) {
+      <p class="py-6 text-sm text-slate-500">Aucune région enregistrée.</p>
+    } @else {
+      <div class="mt-4 overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>Territoire</th>
+              <th>Niveau</th>
+              <th>Code stable</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of regionsFiltreesPage(); track r.id) {
+              <tr>
+                <td>{{ r.nom }}</td>
+                <td>
+                  {{ r.niveau || (r.codeStable?.startsWith('ML-DIS-') ? 'DISTRICT' : 'REGION') }}
+                </td>
+                <td>
+                  <code>{{ r.codeStable || '—' }}</code>
+                </td>
+                <td>{{ r.description || '—' }}</td>
+                <td>
+                  <div class="flex gap-2">
+                    <button class="btn btn-sm btn-secondary" (click)="editRegion(r)">
+                      Modifier</button
+                    ><button class="btn btn-sm btn-secondary" (click)="deleteRegion(r)">
+                      Supprimer
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+        <span
+          >{{ regionsFiltrees().length }} territoire(s) · Page {{ pageRegions() }} /
+          {{ totalPagesRegions() }}</span
+        >
+        <div class="flex gap-2">
+          <button
+            class="btn btn-sm btn-secondary"
+            type="button"
+            [disabled]="pageRegions() <= 1"
+            (click)="pageRegions.set(pageRegions() - 1)"
+          >
+            Précédent</button
+          ><button
+            class="btn btn-sm btn-secondary"
+            type="button"
+            [disabled]="pageRegions() >= totalPagesRegions()"
+            (click)="pageRegions.set(pageRegions() + 1)"
+          >
+            Suivant
+          </button>
+        </div>
+      </div>
+    }
+  } @else {
+    <form
+      id="territoire-editor"
+      class="sticky top-2 z-10 grid gap-3 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm md:grid-cols-2"
+      (ngSubmit)="enregistrerCommune()"
+    >
+      <label class="text-sm font-medium"
+        >Région *<select
+          class="mc-input mt-1"
+          name="communeRegion"
+          [(ngModel)]="communeForm.regionId"
+          required
+        >
+          <option value="">Sélectionner une région</option>
+          @for (r of regions(); track r.id) {
+            <option [value]="r.id">{{ r.nom }}</option>
+          }
+        </select></label
+      ><label class="text-sm font-medium"
+        >Nom de la commune *<input
+          class="mc-input mt-1"
+          name="communeNom"
+          [(ngModel)]="communeForm.nom"
+          maxlength="100"
+          required /></label
+      >
+      <!-- <label class="text-sm font-medium md:col-span-2"
+        >Description<input
+          class="mc-input mt-1"
+          name="communeDescription"
+          [(ngModel)]="communeForm.description"
+      /></label> -->
+      <div class="flex gap-2 md:col-span-2">
+        <button class="btn btn-primary" type="submit" [disabled]="saving() || !regions().length">
+          {{ communeEditId() ? 'Modifier la commune' : 'Créer la commune' }}</button
+        ><button class="btn btn-secondary" type="button" (click)="reset()">Effacer</button>
+      </div>
+    </form>
+    <label class="mt-4 block max-w-md"
+      ><span class="mc-label">Rechercher une commune</span
+      ><input
+        class="mc-input mt-1"
+        type="search"
+        [ngModel]="rechercheCommune()"
+        (ngModelChange)="rechercheCommune.set($event); pageCommunes.set(1)"
+        name="rechercheCommune"
+        placeholder="Nom ou région"
+    /></label>
+    @if (communesResource.isLoading()) {
+      <p class="py-6 text-sm">Chargement des communes…</p>
+    } @else if (!communesFiltrees().length) {
+      <p class="py-6 text-sm text-slate-500">Aucune commune enregistrée.</p>
+    } @else {
+      <div class="mt-4 overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>Commune</th>
+              <th>Région</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of communesFiltreesPage(); track c.id) {
+              <tr>
+                <td>{{ c.nom }}</td>
+                <td>{{ c.regionNom || nomRegion(c.regionId) }}</td>
+                <td>{{ c.description || '—' }}</td>
+                <td>
+                  <div class="flex gap-2">
+                    <button class="btn btn-sm btn-secondary" (click)="editCommune(c)">
+                      Modifier</button
+                    ><button class="btn btn-sm btn-secondary" (click)="deleteCommune(c)">
+                      Supprimer
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+        <span
+          >{{ communesFiltrees().length }} commune(s) · Page {{ pageCommunes() }} /
+          {{ totalPagesCommunes() }}</span
+        >
+        <div class="flex gap-2">
+          <button
+            class="btn btn-sm btn-secondary"
+            type="button"
+            [disabled]="pageCommunes() <= 1"
+            (click)="pageCommunes.set(pageCommunes() - 1)"
+          >
+            Précédent</button
+          ><button
+            class="btn btn-sm btn-secondary"
+            type="button"
+            [disabled]="pageCommunes() >= totalPagesCommunes()"
+            (click)="pageCommunes.set(pageCommunes() + 1)"
+          >
+            Suivant
+          </button>
+        </div>
+      </div>
+    }
+  }
+</section>
+<section class="mc-card mt-5 p-5">
+  <h2 class="font-semibold">Aperçu cartographique partagé</h2>
+  <p class="mc-muted mb-4 mt-1 text-sm">
+    Limites administratives locales HDX/OCHA, sans tuiles externes : 19 régions et le district de
+    Bamako. Les indicateurs sont joints par code stable.
+  </p>
+  <app-mali-map />
+</section>
