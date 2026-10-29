@@ -1,19 +1,20 @@
-@import "tailwindcss";
-@import "leaflet/dist/leaflet.css";
-@import "@angular/cdk/overlay-prebuilt.css";
 
-/* Imports officiels Fontsource (remplacent les blocs @font-face manuels bloqués par esbuild) */
-/* @import "@fontsource-variable/inter";
-@import "@fontsource-variable/bricolage-grotesque"; */
+/* ---------- Imports ---------- */
+@import "tailwindcss";
+@import "@fontsource-variable/source-sans-3";
+@import "leaflet/dist/leaflet.css";
+@import "./composants.css";
+@import "./graphiques.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-*: initial;
-  --font-sans: "Inter Variable", Inter, "Noto Sans", "Segoe UI", Roboto, Arial, sans-serif;
-  --font-display: "Bricolage Grotesque Variable", "Inter Variable", Inter, "Noto Sans", sans-serif;
+  --font-sans: "Source Sans 3 Variable", "Source Sans 3", "Noto Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: var(--font-sans);
   --font-outfit: var(--font-sans);
 
+  /* ---------- Breakpoints ---------- */
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
   --breakpoint-xsm: 425px;
@@ -24,34 +25,37 @@
   --breakpoint-2xl: 1536px;
   --breakpoint-3xl: 2000px;
 
-  /* ... le reste de votre configuration @theme reste inchangé ... */
-  --text-title-lg: 22px;
-  --text-title-lg--line-height: 30px;
-  --text-title-sm: 18px;
-  --text-title-sm--line-height: 26px;
-  --text-theme-sm: 14px;
-  --text-theme-sm--line-height: 20px;
-  --text-theme-xs: 12px;
-  --text-theme-xs--line-height: 16px;
+  /* ---------- Échelle typographique agrandie ---------- */
+  --text-title-lg: 26px;
+  --text-title-lg--line-height: 34px;
+  --text-title-sm: 21px;
+  --text-title-sm--line-height: 29px;
+  --text-theme-sm: 16px;
+  --text-theme-sm--line-height: 24px;
+  --text-theme-xs: 14px;
+  --text-theme-xs--line-height: 20px;
 
+  /* ---------- Couleurs fondamentales ---------- */
   --color-current: currentColor;
   --color-transparent: transparent;
   --color-white: #ffffff;
-  --color-black: #0d111c;
+  --color-black: #101811;
 
-  --color-brand-25: #f4f7fd;
-  --color-brand-50: #eaf0fb;
-  --color-brand-100: #d6e2f7;
-  --color-brand-200: #b0c8ef;
-  --color-brand-300: #7fa3e3;
-  --color-brand-400: #4f7cd3;
-  --color-brand-500: #2a5dbe;
-  --color-brand-600: #1b4aa0;
-  --color-brand-700: #153b83;
-  --color-brand-800: #122f68;
-  --color-brand-900: #10264f;
-  --color-brand-950: #0a1730;
+  /* ---------- Vert institutionnel MaliCompétences ---------- */
+  --color-brand-25: #f8fbf8;
+  --color-brand-50: #eaf4ed;
+  --color-brand-100: #d5e8da;
+  --color-brand-200: #b1d4bd;
+  --color-brand-300: #86b99a;
+  --color-brand-400: #599b73;
+  --color-brand-500: #367e55;
+  --color-brand-600: #216644;
+  --color-brand-700: #195238;
+  --color-brand-800: #153f2d;
+  --color-brand-900: #123426;
+  --color-brand-950: #0c241a;
 
+  /* ---------- Ocre : vigilance et revalidation ---------- */
   --color-ocre-50: #fbf5e8;
   --color-ocre-100: #f5e6c3;
   --color-ocre-200: #ebcd8a;
@@ -63,20 +67,22 @@
   --color-ocre-800: #5a3a0f;
   --color-ocre-900: #3f280c;
 
-  --color-gray-25: #fbfbfd;
-  --color-gray-50: #f6f7f9;
-  --color-gray-100: #eef0f4;
-  --color-gray-200: #e1e4ea;
-  --color-gray-300: #cdd2dc;
-  --color-gray-400: #9aa3b5;
-  --color-gray-500: #657089;
-  --color-gray-600: #4a546b;
-  --color-gray-700: #343d52;
-  --color-gray-800: #222a3c;
-  --color-gray-900: #151b2b;
-  --color-gray-950: #0d111c;
-  --color-gray-dark: #171e30;
+  /* ---------- Neutres légèrement chauds ---------- */
+  --color-gray-25: #fcfcfa;
+  --color-gray-50: #f7f8f6;
+  --color-gray-100: #eef0eb;
+  --color-gray-200: #dfe4dc;
+  --color-gray-300: #c9d1c7;
+  --color-gray-400: #96a196;
+  --color-gray-500: #687568;
+  --color-gray-600: #4d594d;
+  --color-gray-700: #374237;
+  --color-gray-800: #252f27;
+  --color-gray-900: #19231b;
+  --color-gray-950: #101811;
+  --color-gray-dark: #19251d;
 
+  /* ---------- Succès : distinct de la marque ---------- */
   --color-success-50: #ecf7f1;
   --color-success-100: #cfeedd;
   --color-success-300: #7fcaa2;
@@ -84,6 +90,8 @@
   --color-success-600: #1f7a4d;
   --color-success-700: #195f3d;
   --color-success-800: #134a30;
+
+  /* ---------- Erreurs ---------- */
   --color-error-50: #fdf1ef;
   --color-error-100: #fbdcd7;
   --color-error-300: #f0a49a;
@@ -92,6 +100,7 @@
   --color-error-700: #9c2a21;
   --color-error-800: #7a221b;
 
+  /* ---------- Avertissements : palette ocre ---------- */
   --color-warning-50: var(--color-ocre-50);
   --color-warning-100: var(--color-ocre-100);
   --color-warning-300: var(--color-ocre-300);
@@ -99,16 +108,19 @@
   --color-warning-600: var(--color-ocre-600);
   --color-warning-700: var(--color-ocre-700);
 
+  /* ---------- Formes ---------- */
   --radius-control: 0.5rem;
   --radius-panel: 0.75rem;
 
-  --shadow-theme-xs: 0 1px 1px 0 rgb(21 27 43 / 0.04);
-  --shadow-theme-sm: 0 1px 2px 0 rgb(21 27 43 / 0.06);
-  --shadow-theme-md: 0 6px 16px -4px rgb(21 27 43 / 0.12);
-  --shadow-theme-lg: 0 14px 28px -8px rgb(21 27 43 / 0.16);
-  --shadow-theme-xl: 0 22px 40px -12px rgb(21 27 43 / 0.2);
-  --shadow-focus-ring: 0 0 0 3px rgb(42 93 190 / 0.28);
+  /* ---------- Élévation ---------- */
+  --shadow-theme-xs: 0 1px 1px 0 rgb(25 35 27 / 0.04);
+  --shadow-theme-sm: 0 1px 2px 0 rgb(25 35 27 / 0.06);
+  --shadow-theme-md: 0 6px 16px -4px rgb(25 35 27 / 0.12);
+  --shadow-theme-lg: 0 14px 28px -8px rgb(25 35 27 / 0.16);
+  --shadow-theme-xl: 0 22px 40px -12px rgb(25 35 27 / 0.20);
+  --shadow-focus-ring: 0 0 0 3px rgb(33 102 68 / 0.28);
 
+  /* ---------- Superposition ---------- */
   --z-index-1: 1;
   --z-index-9: 9;
   --z-index-99: 99;
@@ -117,29 +129,71 @@
   --z-index-99999: 99999;
 }
 
+/* ---------- Base ---------- */
 @layer base {
   *, ::after, ::before, ::backdrop, ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
   }
-  button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
+
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 
   body {
     @apply relative z-1 bg-gray-50 font-sans text-gray-800 antialiased dark:bg-gray-950 dark:text-gray-200;
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.65;
     text-rendering: optimizeLegibility;
   }
+
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
+    font-weight: 600;
     font-optical-sizing: auto;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
   }
-  table, .tabular { font-variant-numeric: tabular-nums; }
+
+  h1 {
+    font-size: 2.25rem;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 1.875rem;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    line-height: 1.4;
+  }
+
+  p, li, dd, dt {
+    line-height: 1.7;
+  }
+
+  label {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  input, select, textarea, button {
+    font: inherit;
+  }
+
+  table, .tabular {
+    font-variant-numeric: tabular-nums;
+  }
 
   :focus-visible {
-    outline: 2px solid var(--color-brand-500);
-    outline-offset: 2px;
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 3px;
   }
 }
 
+/* ---------- Réduction des animations ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
@@ -148,42 +202,110 @@
     scroll-behavior: auto !important;
   }
 }
-html[data-eco="true"] *, html[data-eco="true"] ::before, html[data-eco="true"] ::after {
+
+/* ---------- Mode économie de données ---------- */
+html[data-eco="true"] *,
+html[data-eco="true"] ::before,
+html[data-eco="true"] ::after {
   animation: none !important;
   transition: none !important;
 }
 
-/* Utilitaires et classes personnalisées */
-@utility menu-item { @apply relative flex w-full items-center gap-3 rounded-control px-3 py-2 text-sm font-medium; }
-@utility menu-item-active { @apply bg-brand-50 font-semibold text-brand-700 dark:bg-brand-500/[0.14] dark:text-brand-300; box-shadow: inset 3px 0 0 var(--color-brand-600); }
-@utility menu-item-inactive { @apply text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200; }
-@utility menu-item-icon-active { @apply text-brand-600 dark:text-brand-300; }
-@utility menu-item-icon-inactive { @apply text-gray-400 group-hover:text-gray-600 dark:text-gray-500; }
-@utility menu-item-icon-size { & svg { @apply !size-5; } }
-@utility menu-item-arrow { @apply relative; }
-@utility menu-item-arrow-active { @apply rotate-180 text-brand-600 dark:text-brand-300; }
-@utility menu-item-arrow-inactive { @apply text-gray-400 group-hover:text-gray-600; }
-@utility menu-dropdown-item { @apply relative flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium; }
-@utility menu-dropdown-item-active { @apply bg-brand-50 text-brand-700 dark:bg-brand-500/[0.14] dark:text-brand-300; }
-@utility menu-dropdown-item-inactive { @apply text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5; }
+/* ---------- Menu latéral ---------- */
+@utility menu-item {
+  @apply relative flex w-full items-center gap-3 rounded-control px-3 py-2 text-base font-medium;
+}
 
-@utility etat-declaree  { @apply border border-dashed border-gray-400 bg-transparent text-gray-600 dark:border-gray-500 dark:text-gray-300; }
-@utility etat-en-cours  { @apply border border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-300; }
-@utility etat-verifiee  { @apply border border-success-600 bg-success-50 text-success-700 dark:border-success-500/60 dark:bg-success-500/15 dark:text-success-300; }
-@utility etat-rejetee   { @apply border border-error-300 bg-error-50 text-error-700 dark:border-error-500/40 dark:bg-error-500/15 dark:text-error-300; }
-@utility etat-a-revalider { @apply border border-ocre-300 bg-ocre-50 text-ocre-700 dark:border-ocre-500/40 dark:bg-ocre-500/15 dark:text-ocre-200; }
+@utility menu-item-active {
+  @apply bg-brand-50 font-semibold text-brand-700 dark:bg-brand-500/[0.14] dark:text-brand-300;
+  box-shadow: inset 3px 0 0 var(--color-brand-600);
+}
 
+@utility menu-item-inactive {
+  @apply text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200;
+}
+
+@utility menu-item-icon-active {
+  @apply text-brand-600 dark:text-brand-300;
+}
+
+@utility menu-item-icon-inactive {
+  @apply text-gray-400 group-hover:text-gray-600 dark:text-gray-500;
+}
+
+@utility menu-item-icon-size {
+  & svg {
+    @apply !size-5;
+  }
+}
+
+@utility menu-item-arrow {
+  @apply relative;
+}
+
+@utility menu-item-arrow-active {
+  @apply rotate-180 text-brand-600 dark:text-brand-300;
+}
+
+@utility menu-item-arrow-inactive {
+  @apply text-gray-400 group-hover:text-gray-600;
+}
+
+@utility menu-dropdown-item {
+  @apply relative flex items-center gap-3 rounded-control px-3 py-2 text-base font-medium;
+}
+
+@utility menu-dropdown-item-active {
+  @apply bg-brand-50 text-brand-700 dark:bg-brand-500/[0.14] dark:text-brand-300;
+}
+
+@utility menu-dropdown-item-inactive {
+  @apply text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5;
+}
+
+/* ---------- États des compétences ---------- */
+@utility etat-declaree {
+  @apply border border-dashed border-gray-400 bg-transparent text-gray-600 dark:border-gray-500 dark:text-gray-300;
+}
+
+@utility etat-en-cours {
+  @apply border border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-300;
+}
+
+@utility etat-verifiee {
+  @apply border border-success-600 bg-success-50 text-success-700 dark:border-success-500/60 dark:bg-success-500/15 dark:text-success-300;
+}
+
+@utility etat-rejetee {
+  @apply border border-error-300 bg-error-50 text-error-700 dark:border-error-500/40 dark:bg-error-500/15 dark:text-error-300;
+}
+
+@utility etat-a-revalider {
+  @apply border border-ocre-300 bg-ocre-50 text-ocre-700 dark:border-ocre-500/40 dark:bg-ocre-500/15 dark:text-ocre-200;
+}
+
+/* ---------- Utilitaires de défilement ---------- */
 @utility no-scrollbar {
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 @utility custom-scrollbar {
-  &::-webkit-scrollbar { @apply size-1.5; }
-  &::-webkit-scrollbar-track { @apply rounded-full; }
-  &::-webkit-scrollbar-thumb { @apply rounded-full bg-gray-300 dark:bg-gray-700; }
+  &::-webkit-scrollbar {
+    @apply size-1.5;
+  }
+  &::-webkit-scrollbar-track {
+    @apply rounded-full;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-gray-300 dark:bg-gray-700;
+  }
 }
 
+/* ---------- Champs date et heure ---------- */
 input[type="date"]::-webkit-inner-spin-button,
 input[type="time"]::-webkit-inner-spin-button,
 input[type="date"]::-webkit-calendar-picker-indicator,
@@ -193,17 +315,34 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   -webkit-appearance: none !important;
 }
 
+/* ---------- Apparition des menus et fenêtres ---------- */
 @keyframes ouverture {
-  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
-.animate-fadeIn { animation: ouverture 0.14s ease-out both; }
 
-.menu-accordion { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 220ms ease-out; }
-.menu-accordion.open { grid-template-rows: 1fr; }
-.menu-accordion > div { overflow: hidden; min-height: 0; }
+.animate-fadeIn {
+  animation: ouverture 0.14s ease-out both;
+}
 
-.cdk-overlay-container { z-index: 99999; }
-.cdk-overlay-pane { background: transparent !important; }
+/* ---------- Accordéon du menu latéral ---------- */
+.menu-accordion {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 220ms ease-out;
+}
 
+.menu-accordion.open {
+  grid-template-rows: 1fr;
+}
 
+.menu-accordion > div {
+  overflow: hidden;
+  min-height: 0;
+}

@@ -1,4 +1,5 @@
 import { AuthLayoutComponent } from '../../shared/components/auth-layout.component';
+import { StepperComponent } from '../../shared/components/stepper.component';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
@@ -44,7 +45,7 @@ const siteWebValide = (c: AbstractControl): ValidationErrors | null => {
   selector: 'app-register',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, AuthLayoutComponent],
+  imports: [ReactiveFormsModule, RouterLink, AuthLayoutComponent, StepperComponent],
   templateUrl: './register.component.html',
 })
 export class RegisterComponent {
@@ -205,7 +206,7 @@ export class RegisterComponent {
   suivant(): void {
     this.error.set('');
     if (!this.etapeValide(this.etape())) {
-      this.error.set('Certaines informations sont manquantes ou invalides : corrigez les champs signalés en rouge.');
+      this.error.set('Certaines informations sont manquantes ou invalides : corrigez les champs indiqués sous chaque question.');
       return;
     }
     this.etape.update((e) => Math.min(e + 1, this.etapes.length - 1));
@@ -250,7 +251,7 @@ export class RegisterComponent {
     for (let i = 0; i < 4; i++) {
       if (!this.etapeValide(i)) {
         this.etape.set(i);
-        this.error.set('Certaines informations sont manquantes ou invalides : corrigez les champs signalés en rouge.');
+        this.error.set('Certaines informations sont manquantes ou invalides : corrigez les champs indiqués sous chaque question.');
         return;
       }
     }

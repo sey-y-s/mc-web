@@ -11,5 +11,15 @@ export const AUTH_ROUTES: Routes = [
     title: 'Vérifier mon compte — MaliCompétences',
     loadComponent: () => import('./verification.component').then((m) => m.VerificationComponent),
   },
+  {
+    path: 'forgot-password',
+    title: 'Mot de passe oublié — MaliCompétences',
+    loadComponent: () => import('./forgot-password.component').then((m) => m.ForgotPasswordComponent),
+  },
+  {
+    path: 'reset-password',
+    title: 'Nouveau mot de passe — MaliCompétences',
+    loadComponent: () => import('./reset-password.component').then((m) => m.ResetPasswordComponent),
+  },
   { path: '', pathMatch: 'full', redirectTo: 'login' },
 ];

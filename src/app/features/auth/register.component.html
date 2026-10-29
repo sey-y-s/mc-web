@@ -3,25 +3,10 @@
       <h1 id="auth-title" class="font-display text-2xl font-semibold tracking-tight text-gray-900">Créer un compte organisation</h1>
       <p class="mc-muted mt-1 text-sm">Votre dossier est vérifié par l’administration avant l’accès à la recherche de talents. Comptez environ 5 minutes.</p>
 
-      <!-- Étapes -->
-      <ol class="mt-6 grid grid-cols-5 gap-1 text-center text-xs" aria-label="Étapes de l'inscription">
-        @for (libelle of etapes; track libelle; let i = $index) {
-          <li>
-            <button type="button" class="flex w-full flex-col items-center gap-1.5 rounded-md p-1"
-                    [disabled]="i >= etape()" (click)="allerA(i)" [attr.aria-current]="i === etape() ? 'step' : null">
-              <span class="flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold"
-                    [class]="i < etape() ? 'border-primary bg-primary text-primary-content' : i === etape() ? 'border-primary text-primary' : 'border-base-300 text-base-content/50'">
-                {{ i < etape() ? '✓' : i + 1 }}
-              </span>
-              <span class="hidden sm:block" [class]="i === etape() ? 'font-semibold' : 'text-base-content/60'">{{ libelle }}</span>
-            </button>
-          </li>
-        }
-      </ol>
-      <p class="mt-2 text-center text-sm font-semibold sm:hidden">Étape {{ etape() + 1 }} / {{ etapes.length }} · {{ etapes[etape()] }}</p>
+      <mc-stepper [steps]="etapes" [current]="etape()" (stepSelected)="allerA($event)" />
 
       @if (error()) {
-        <div class="alert alert-error mt-5 rounded-md py-3 text-sm" role="alert">{{ error() }}</div>
+        <div class="alert alert-error mt-5 rounded-control py-3 text-sm" role="alert">{{ error() }}</div>
       }
 
       <form class="mt-6" [formGroup]="form" (ngSubmit)="etape() === etapes.length - 1 ? submit() : suivant()" novalidate>
@@ -36,7 +21,7 @@
                 @for (t of types; track t.code) {
                   @if (!typeChoisi() || typeChoisi() === t.code) {
                   <button type="button" role="radio" [attr.aria-checked]="form.controls.typeOrganisation.value === t.code"
-                          class="rounded-lg border p-3 text-left transition hover:border-primary"
+                          class="rounded-panel border p-3 text-left transition hover:border-primary"
                           [class.border-primary]="form.controls.typeOrganisation.value === t.code"
                           [class.bg-base-200]="form.controls.typeOrganisation.value === t.code"
                           [class.border-base-300]="form.controls.typeOrganisation.value !== t.code"
@@ -48,7 +33,7 @@
                 }
               </div>
               @if (typeChoisi()) {
-                <button type="button" class="btn btn-ghost btn-xs mt-1" (click)="changerType()">⇄ Changer de nature juridique</button>
+                <button type="button" class="btn btn-ghost btn-xs mt-1" (click)="changerType()">Changer de nature juridique</button>
               }
               @if (invalid('typeOrganisation', 'required')) { <small class="text-error">Choisissez la nature juridique.</small> }
             </div>
@@ -222,7 +207,7 @@
             <p class="text-sm text-base-content/65">PDF, JPG ou PNG, 10 Mo maximum par fichier. Vous pouvez aussi les ajouter plus tard depuis « Mon organisation » ; le dossier n’est examiné qu’une fois les pièces obligatoires fournies.</p>
             <ul class="space-y-3">
               @for (p of piecesListe(); track p.type) {
-                <li class="rounded-lg border border-base-300 p-3">
+                <li class="rounded-panel border border-base-300 p-3">
                   <div class="flex flex-wrap items-start justify-between gap-3">
                     <div class="min-w-0">
                       <p class="font-medium">{{ documents[p.type].libelle }}
@@ -230,7 +215,7 @@
                       </p>
                       <p class="text-xs text-base-content/60">{{ documents[p.type].aide }}</p>
                       @if (pieces()[p.type]; as f) {
-                        <p class="mt-1 truncate text-sm text-success">✓ {{ f.name }} · {{ taille(f) }}</p>
+                        <p class="mt-1 truncate text-sm text-success"><span class="mr-1.5 inline-block size-2 rotate-45 bg-current align-middle" aria-hidden="true"></span>{{ f.name }} · {{ taille(f) }}</p>
                       }
                       @if (erreursPieces()[p.type]; as e) { <p class="mt-1 text-sm text-error" role="alert">{{ e }}</p> }
                     </div>
@@ -257,14 +242,14 @@
 
         <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
           @if (etape() > 0) {
-            <button type="button" class="btn btn-ghost" (click)="precedent()" [disabled]="loading()">← Précédent</button>
+            <button type="button" class="btn btn-ghost" (click)="precedent()" [disabled]="loading()">Précédent</button>
           } @else {
             <span></span>
           }
           @if (etape() < etapes.length - 1) {
-            <button type="submit" class="btn btn-primary rounded-md px-6">Continuer →</button>
+            <button type="submit" class="btn btn-primary rounded-control px-6">Continuer</button>
           } @else {
-            <button type="submit" class="btn btn-primary rounded-md px-6" [disabled]="loading()">
+            <button type="submit" class="btn btn-primary rounded-control px-6" [disabled]="loading()">
               {{ loading() ? (progression() || 'Création…') : 'Créer le compte et envoyer le dossier' }}
             </button>
           }

@@ -1,0 +1,24 @@
+<ng-template #contenu>
+  <p class="mc-stat-label">{{ label() }}</p>
+  <p class="mc-stat-value" [class]="classeValeur()">{{ affichage() }}</p>
+  @if (explication()) {
+    <p class="mt-1 text-theme-xs text-gray-600">{{ explication() }}</p>
+  } @else if (hint()) {
+    <p class="mt-1 text-theme-xs text-gray-600">{{ hint() }}</p>
+  }
+  @if (jauge() !== null && !sansDonnee()) {
+    <div class="mc-kpi-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="jauge()" [attr.aria-label]="label()">
+      <span [style.width.%]="jauge()"></span>
+    </div>
+  }
+</ng-template>
+
+@if (lien(); as destination) {
+  <a [routerLink]="destination" class="mc-card mc-stat-card mc-card-hover block" [class.border-dashed]="sansDonnee()">
+    <ng-container [ngTemplateOutlet]="contenu" />
+  </a>
+} @else {
+  <div class="mc-card mc-stat-card" [class.border-dashed]="sansDonnee()" [class.border-gray-400]="sansDonnee()">
+    <ng-container [ngTemplateOutlet]="contenu" />
+  </div>
+}

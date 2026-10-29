@@ -4,9 +4,7 @@
 >Aller au contenu principal</a>
 
 <div class="min-h-screen bg-base-100 lg:grid lg:grid-cols-[26rem_minmax(0,1fr)] xl:grid-cols-[30rem_minmax(0,1fr)]">
-  <aside class="relative isolate flex flex-col overflow-hidden bg-brand-950 text-white">
-    <div class="motif-bogolan-fond absolute inset-0 -z-10 text-brand-800/35" aria-hidden="true"></div>
-
+  <aside class="relative flex flex-col overflow-hidden bg-brand-950 text-white">
     <div class="flex items-center gap-3 px-6 py-5 lg:px-10 lg:pt-10">
       <span class="barre-mali-v shrink-0" aria-hidden="true"></span>
       <div>
@@ -16,30 +14,35 @@
     </div>
 
     <div class="hidden flex-1 flex-col justify-center px-10 py-10 lg:flex">
-      <h2 class="font-display text-[2rem] font-semibold leading-[1.15] tracking-tight">
-        Des compétences visibles.<br />Des preuves vérifiables.
-      </h2>
-      <p class="mt-4 max-w-sm text-sm leading-6 text-brand-100">
-        Une compétence déclarée n’est jamais présentée comme vérifiée sans justification.
+      <h1 class="max-w-lg font-display text-3xl font-semibold leading-tight tracking-tight xl:text-4xl">
+        Les compétences du Mali,
+        <span class="text-brand-300">mieux connues et valorisées.</span>
+      </h1>
+      <p class="mt-5 max-w-sm text-sm leading-6 text-brand-100">
+        Un espace dédié aux acteurs qui valorisent, vérifient et recherchent les compétences au Mali.
       </p>
-
-      <figure class="mt-10 max-w-sm rounded-panel bg-white p-4 text-gray-900 shadow-theme-lg">
-        <figcaption class="mb-3 text-theme-xs font-medium text-gray-500">Exemple de lecture d’un Passeport Compétences</figcaption>
-        <ul class="space-y-2">
-          <li class="flex items-center justify-between gap-3 rounded-control border border-gray-300 px-3 py-2.5">
-            <span class="text-sm font-medium">Soudure à l’arc</span>
-            <mc-status-badge value="VERIFIEE" />
-          </li>
-          <li class="flex items-center justify-between gap-3 rounded-control border border-dashed border-gray-400 px-3 py-2.5">
-            <span class="text-sm font-medium">Couture sur mesure</span>
-            <mc-status-badge value="DECLAREE" />
-          </li>
-        </ul>
-        <p class="mt-3 text-theme-xs leading-5 text-gray-500">Trait plein : preuve examinée. Pointillés : simple déclaration.</p>
-      </figure>
     </div>
 
-    <div class="barre-mali mt-auto h-1.5! w-full!" aria-hidden="true"></div>
+    <!-- Bande de bogolan, sur toute la largeur du panneau. Version courte sur mobile. -->
+    <div class="mt-2 lg:mt-0" aria-hidden="true">
+      <div class="motif-bogolan-dents revelation text-white/90"></div>
+      <div class="motif-bogolan-chevrons revelation mt-2 text-brand-300 [--delai:120ms]"></div>
+      <div class="hidden lg:block">
+        <div class="motif-bogolan-losanges revelation mt-2 text-white/90 [--delai:240ms]"></div>
+        <div class="motif-bogolan-croix revelation mt-2 text-brand-300/80 [--delai:360ms]"></div>
+        <div class="motif-bogolan-chevrons revelation mt-2 text-white/70 [--delai:480ms]"></div>
+        <div class="motif-bogolan-points revelation mt-2 text-white/50 [--delai:600ms]"></div>
+      </div>
+    </div>
+
+    <!-- <dl class="hidden gap-x-6 gap-y-1 px-10 pb-6 pt-5 text-theme-xs text-brand-100 lg:flex lg:flex-wrap">
+      <div class="flex items-center gap-2"><dt><span class="inline-block h-0 w-7 border-t-2 border-white/90" aria-hidden="true"></span><span class="sr-only">Trait plein</span></dt><dd>preuve examinée</dd></div>
+      <div class="flex items-center gap-2"><dt><span class="inline-block h-0 w-7 border-t-2 border-dashed border-white/90" aria-hidden="true"></span><span class="sr-only">Pointillés</span></dt><dd>simple déclaration</dd></div>
+    </dl> -->
+    <dl class="hidden gap-x-6 gap-y-1 px-10 pb-6 pt-5 text-theme-xs text-brand-100 lg:flex lg:flex-wrap">
+    </dl>
+
+    <div class="barre-mali h-1.5! w-full!" aria-hidden="true"></div>
   </aside>
 
   <main id="main-content" tabindex="-1" class="flex min-w-0 items-start justify-center px-5 py-10 focus:outline-none sm:px-8 lg:items-center lg:py-12">
@@ -48,3 +51,203 @@
     </div>
   </main>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+<a
+  href="#main-content"
+  class="sr-only rounded-control bg-brand-600 px-4 py-3 font-semibold text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-99999"
+>
+  Aller au contenu principal
+</a>
+
+<div
+  class="min-h-screen bg-base-100 lg:grid lg:grid-cols-[26rem_minmax(0,1fr)] xl:grid-cols-[30rem_minmax(0,1fr)]"
+> -->
+  <!-- Panneau institutionnel -->
+  <!-- <aside
+    class="relative flex flex-col overflow-hidden bg-brand-950 text-white"
+    aria-label="Présentation de MaliCompétences"
+  >
+    <div class="flex items-center gap-3 px-6 py-5 lg:px-10 lg:pt-9">
+      <span class="barre-mali-v shrink-0" aria-hidden="true"></span>
+
+      <div class="min-w-0">
+        <p class="font-display text-title-sm font-semibold leading-6">
+          MaliCompétences
+        </p>
+        <p class="mt-0.5 text-theme-xs text-brand-200">
+          Portail des acteurs habilités
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-1 flex-col justify-center px-6 py-8 lg:px-10 lg:py-12">
+      <p
+        class="mb-5 text-theme-xs font-semibold uppercase tracking-[0.12em] text-brand-300"
+      >
+        Compétences · Confiance · Territoires
+      </p>
+
+      <h1
+        class="max-w-lg font-display text-3xl font-semibold leading-tight tracking-tight xl:text-4xl"
+      >
+        Les compétences du Mali,
+        <span class="text-brand-300">mieux connues et valorisées.</span>
+      </h1>
+
+      <p class="mt-5 max-w-md text-sm leading-6 text-brand-100">
+        Un espace dédié aux organisations, aux évaluateurs habilités,
+        aux centres autorisés et aux acteurs institutionnels pour
+        identifier les savoir-faire, vérifier les compétences et mieux
+        comprendre les besoins du territoire.
+      </p> -->
+
+      <!-- Principes fondamentaux -->
+      <!-- <div class="mt-8 max-w-md space-y-5">
+        <div class="flex items-start gap-3">
+          <span
+            class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-control border border-white/15 bg-white/5 text-brand-300"
+            aria-hidden="true"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+          </span>
+
+          <div class="min-w-0">
+            <h2 class="text-sm font-semibold text-white">
+              Une confiance fondée sur les preuves
+            </h2>
+            <p class="mt-1 text-sm leading-5 text-brand-200">
+              Les compétences déclarées sont distinguées de celles
+              qui ont fait l’objet d’une validation.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <span
+            class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-control border border-white/15 bg-white/5 text-brand-300"
+            aria-hidden="true"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="10" cy="7" r="4"/>
+              <path d="M20 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </span>
+
+          <div class="min-w-0">
+            <h2 class="text-sm font-semibold text-white">
+              Des accès adaptés aux responsabilités
+            </h2>
+            <p class="mt-1 text-sm leading-5 text-brand-200">
+              Chaque acteur accède aux fonctionnalités et aux données
+              correspondant à ses autorisations.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Motifs inspirés du bogolan : identité visuelle secondaire -->
+    <!-- <div class="mt-2 lg:mt-0" aria-hidden="true">
+      <div class="motif-bogolan-dents text-white/80"></div>
+      <div
+        class="motif-bogolan-chevrons mt-2 text-brand-300/80"
+      ></div>
+
+      <div class="hidden lg:block">
+        <div
+          class="motif-bogolan-losanges mt-2 text-white/70"
+        ></div>
+        <div
+          class="motif-bogolan-points mt-2 text-white/40"
+        ></div>
+      </div>
+    </div> -->
+
+    <!-- Légende de confiance -->
+    <!-- <div
+      class="hidden flex-wrap gap-x-6 gap-y-2 px-10 pb-6 pt-5 text-theme-xs text-brand-100 lg:flex"
+      aria-label="Légende des états des compétences"
+    >
+      <div class="flex items-center gap-2">
+        <span
+          class="inline-block h-0 w-7 border-t-2 border-dashed border-white/90"
+          aria-hidden="true"
+        ></span>
+        <span>Compétence déclarée</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span
+          class="inline-block h-0 w-7 border-t-2 border-white/90"
+          aria-hidden="true"
+        ></span>
+        <span>Compétence vérifiée</span>
+      </div>
+    </div> -->
+
+    <!-- Signature graphique -->
+    <!-- <div
+      class="barre-mali h-1.5! w-full!"
+      aria-hidden="true"
+    ></div>
+  </aside> -->
+
+  <!-- Zone de connexion : le formulaire est fourni par le composant parent -->
+  <!-- <main
+    id="main-content"
+    tabindex="-1"
+    class="flex min-w-0 items-start justify-center px-5 py-10 focus:outline-none sm:px-8 lg:items-center lg:py-12"
+  >
+    <div
+      class="w-full"
+      [class.max-w-md]="!large()"
+      [class.max-w-3xl]="large()"
+    >
+      <ng-content />
+    </div>
+  </main>
+</div> -->

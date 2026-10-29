@@ -6,7 +6,7 @@
     "enabled": true
   },
   "assets": {
-    "directory": "dist/ng-tailadmin/browser",
+    "directory": "dist/malicompetences-web/browser",
     "not_found_handling": "single-page-application"
   }
 }

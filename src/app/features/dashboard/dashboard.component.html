@@ -2,111 +2,95 @@
   title="Tableau de bord"
   description="Vue synthétique des compétences, besoins et tensions territoriales."
 />
+
 @if (error) {
-  <div class="alert alert-warning text-gray-100 mb-5 rounded-md text-sm">
-    {{ error }}
-    
-  </div>
+  <div class="alert alert-warning mb-5" role="alert">{{ error }}</div>
 }
+
 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-  <div class="mc-card p-5">
-    <p class="text-xs font-medium uppercase tracking-wide text-base-content/50">Demande estimée</p>
-    <p class="mt-2 text-2xl font-semibold">{{ data.length ? totalDemand : '—' }}</p>
-    <p class="mt-1 text-xs text-base-content/50">besoins ouverts, calcul à la demande</p>
-  </div>
-  <div class="mc-card p-5">
-    <p class="text-xs font-medium uppercase tracking-wide text-base-content/50">Offre disponible</p>
-    <p class="mt-2 text-2xl font-semibold">{{ data.length ? totalOffer : '—' }}</p>
-    <p class="mt-1 text-xs text-base-content/50">personnes ayant la compétence validée</p>
-  </div>
-  <div class="mc-card p-5">
-    <p class="text-xs font-medium uppercase tracking-wide text-base-content/50">Écart cumulé</p>
-    <p class="mt-2 text-2xl font-semibold" [class.text-error]="totalGap < 0">{{ data.length ? totalGap : '—' }}</p>
-    <p class="mt-1 text-xs text-base-content/50">offre − demande (négatif : pénurie)</p>
-  </div>
-  <div class="mc-card p-5">
-    <p class="text-xs font-medium uppercase tracking-wide text-base-content/50">Indicateurs</p>
-    <p class="mt-2 text-2xl font-semibold">{{ data.length || '—' }}</p>
-    <p class="mt-1 text-xs text-base-content/50">indicateurs territoriaux</p>
-  </div>
+  <mc-stat-card label="Demande estimée" [value]="data.length ? totalDemand : null" hint="besoins ouverts, calcul à la demande" />
+  <mc-stat-card label="Offre disponible" [value]="data.length ? totalOffer : null" hint="personnes ayant la compétence validée" />
+  <mc-stat-card
+    label="Écart cumulé"
+    [value]="data.length ? totalGap : null"
+    [ton]="totalGap < 0 ? 'penurie' : totalGap > 0 ? 'excedent' : 'normal'"
+    [hint]="totalGap < 0 ? 'pénurie : la demande dépasse l’offre' : totalGap > 0 ? 'excédent : l’offre dépasse la demande' : 'offre − demande'"
+  />
+  <mc-stat-card label="Indicateurs" [value]="data.length || null" hint="indicateurs territoriaux" />
 </div>
-<div class="mt-5 grid gap-5 xl:grid-cols-[1.6fr_1fr]">
-  <section class="mc-card p-5">
-    <div class="mb-2 flex items-start justify-between gap-3">
-      <div>
-        <h2 class="font-semibold">Offre et demande par compétence</h2>
-        <p class="mc-muted">Les compétences les plus recherchées, territoire par territoire.</p>
-      </div>
-      <mc-status-badge value="Skills-Gap" />
-    </div>
-    @if (!loading) {
-      @if (data.length) {
-        <mc-bar-chart [categories]="categoriesOffreDemande()" [series]="seriesOffreDemande" [height]="240"
-          ariaLabel="Offre et demande par compétence" />
-      } @else {
-        <p class="mc-muted py-8">Aucun indicateur retourné.</p>
+
+<div class="mt-6">
+  <app-mali-map [items]="data" [mesure]="mesure()">
+    <div
+      commandes
+      class="inline-flex overflow-hidden rounded-control border border-gray-300"
+      role="group"
+      aria-label="Indicateur affiché sur la carte"
+    >
+      @for (m of mesures; track m.code) {
+        <button
+          type="button"
+          class="px-3.5 py-2 text-sm font-semibold transition-colors"
+          [class]="mesure() === m.code ? 'bg-brand-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+          [attr.aria-pressed]="mesure() === m.code"
+          (click)="mesure.set(m.code)"
+        >{{ m.libelle }}</button>
       }
+    </div>
+  </app-mali-map>
+</div>
+
+<div class="mt-6 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+  <section class="mc-card p-5">
+    <h2 class="mc-section-heading">Offre et demande par compétence</h2>
+    <p class="mc-muted mb-3">Les compétences les plus recherchées, territoire par territoire.</p>
+    @if (loading) {
+      <div class="flex items-center gap-3 py-8 text-sm text-gray-600" role="status"><span class="loading" aria-hidden="true"></span> Chargement en cours…</div>
+    } @else if (data.length) {
+      <mc-bar-chart [categories]="categoriesOffreDemande()" [series]="seriesOffreDemande" [height]="240" ariaLabel="Offre et demande par compétence" />
     } @else {
-      <span class="loading loading-spinner"></span>
+      <mc-empty-state title="Aucun indicateur" message="Aucun indicateur n’a été retourné pour le moment." />
     }
   </section>
+
   <section class="mc-card p-5">
-    <h2 class="font-semibold">Couverture de la demande</h2>
+    <h2 class="mc-section-heading">Couverture de la demande</h2>
     <p class="mc-muted">Part de la demande que les talents validés peuvent satisfaire.</p>
     @if (data.length) {
       <div class="mt-5">
-        <mc-donut-chart [segments]="segmentsCouverture()" [centerValue]="couverture() !== null ? couverture() + ' %' : '—'"
-          centerLabel="de la demande couverte" [legendSide]="false" [size]="190" ariaLabel="Couverture de la demande" />
+        <mc-donut-chart
+          [segments]="segmentsCouverture()"
+          [centerValue]="couverture() !== null ? couverture() + ' %' : '—'"
+          centerLabel="de la demande couverte"
+          [legendSide]="false"
+          [size]="190"
+          ariaLabel="Couverture de la demande"
+        />
       </div>
     } @else if (!loading) {
-      <p class="mc-muted py-8">Aucun indicateur retourné.</p>
+      <mc-empty-state title="Aucun indicateur" message="La couverture sera calculée dès que des indicateurs existent." />
     }
   </section>
 </div>
-<div class="mt-5 grid gap-5 lg:grid-cols-2">
+
+<div class="mt-6 grid gap-6 lg:grid-cols-2">
   <section class="mc-card p-5">
-    <h2 class="font-semibold">Compétences sous tension</h2>
+    <h2 class="mc-section-heading">Compétences sous tension</h2>
     <p class="mc-muted mb-4">Nombre de talents qui manquent là où la demande dépasse l’offre.</p>
-    <mc-hbar-chart [categories]="categoriesTension()" [series]="[{ name: 'Talents manquants', color: C.rouge }]" ariaLabel="Compétences sous tension" />
+    @if (categoriesTension().length) {
+      <mc-hbar-chart [categories]="categoriesTension()" [series]="[{ name: 'Talents manquants', color: C.orFonce }]" ariaLabel="Compétences sous tension" />
+    } @else if (!loading) {
+      <p class="mc-muted py-4">Aucune pénurie à signaler.</p>
+    }
   </section>
+
   <section class="mc-card p-5">
-    <h2 class="font-semibold">Équilibre par région</h2>
+    <h2 class="mc-section-heading">Équilibre par région</h2>
     <p class="mc-muted mb-4">Offre − demande cumulée : à gauche les pénuries, à droite les excédents.</p>
-    <mc-hbar-chart [categories]="categoriesRegions()" ariaLabel="Écart offre moins demande par région" />
+    @if (categoriesRegions().length) {
+      <mc-hbar-chart [categories]="categoriesRegions()" ariaLabel="Écart offre moins demande par région" />
+    } @else if (!loading) {
+      <p class="mc-muted py-4">Aucune région n’a encore d’indicateur.</p>
+    }
   </section>
 </div>
-<div class="mt-5">
-  <section class="mc-card overflow-hidden">
-    <div class="border-b border-base-300 px-5 py-4">
-      <h2 class="font-semibold">Lecture territoriale</h2>
-      <p class="mc-muted">Répartition régionale des indicateurs disponibles.</p>
-    </div>
-    <app-mali-map [items]="data" />
-  </section>
-</div>
-<!-- <div class="mt-5 grid gap-5 lg:grid-cols-2">
-  <section class="mc-card p-5">
-    <h2 class="font-semibold">Activité récente</h2>
-    <div class="mt-4 space-y-4 text-sm">
-      <div class="flex gap-3">
-        <span class="mt-1 h-2 w-2 rounded-full bg-primary"></span>
-        <p>
-          Les validations, besoins et mises en relation apparaîtront ici lorsque leurs API seront
-          disponibles.
-        </p>
-      </div>
-      <div class="flex gap-3">
-        <span class="mt-1 h-2 w-2 rounded-full bg-warning"></span>
-        <p>Aucune activité récente à afficher pour le moment.</p>
-      </div>
-    </div>
-  </section>
-  <section class="mc-card p-5">
-    <h2 class="font-semibold">Périmètre de votre rôle</h2>
-    <p class="mc-muted mt-2">
-      Session : <strong>{{ auth.getCurrentUser()?.role }}</strong
-      >. Les menus sont filtrés côté interface ; les autorisations réelles restent celles du
-      
-    </p>
-  </section>
-</div> -->

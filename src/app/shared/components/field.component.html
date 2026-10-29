@@ -1,0 +1,14 @@
+<div>
+  <label class="mc-label" [attr.for]="fieldId()">
+    {{ label() }}@if (optional()) { <span class="ml-1 font-normal text-gray-600">(facultatif)</span> }
+  </label>
+  <ng-content />
+  @if (hint() && !error()) {
+    <p class="mt-1.5 text-theme-xs text-gray-600" [id]="fieldId() + '-aide'">{{ hint() }}</p>
+  }
+  <p class="text-theme-xs font-medium text-error-700" [class.mt-1.5]="error()" [id]="fieldId() + '-erreur'" aria-live="polite">
+    @if (error()) {
+      <span class="mr-1.5 inline-block size-1.5 rotate-45 bg-current align-middle" aria-hidden="true"></span>{{ error() }}
+    }
+  </p>
+</div>

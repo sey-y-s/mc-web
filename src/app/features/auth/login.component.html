@@ -1,6 +1,6 @@
 <mc-auth-layout>
   <section aria-labelledby="auth-title">
-    <h1 id="auth-title" class="font-display text-2xl font-semibold tracking-tight text-gray-900">Connexion</h1>
+    <h1 id="auth-title" class="font-display text-3xl font-semibold tracking-tight text-gray-900">Connexion</h1>
     <p class="mc-muted mt-1">Accédez à votre espace professionnel.</p>
 
     @if (error()) {
@@ -25,7 +25,10 @@
       </div>
 
       <div>
-        <label class="mc-label" for="password">Mot de passe</label>
+        <div class="flex items-end justify-between">
+          <label class="mc-label" for="password">Mot de passe</label>
+          <a routerLink="/auth/forgot-password" class="mc-link mb-1.5 text-sm">Mot de passe oublié ?</a>
+        </div>
         <div class="relative">
           <input
             id="password"

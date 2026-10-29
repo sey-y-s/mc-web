@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { PageHeaderComponent, StatusBadgeComponent, DonutChartComponent, BarChartComponent, HBarChartComponent, ChartCategory, ChartSegment, MC_CHART } from '../../shared/components';
+import { PageHeaderComponent, StatCardComponent, EmptyStateComponent, DonutChartComponent, BarChartComponent, HBarChartComponent, ChartCategory, ChartSegment, MC_CHART } from '../../shared/components';
+import type { Mesure } from '../../core/geo/mali-palette';
 import { SkillsGapService } from '../../core/services/skills-gap.service';
 import { SkillsGap } from '../../shared/models';
 import { AuthService } from '../../core/auth/auth.service';
@@ -9,7 +10,7 @@ import { MaliMapComponent } from './mali-map.component';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [PageHeaderComponent, StatusBadgeComponent, MaliMapComponent, DonutChartComponent, BarChartComponent, HBarChartComponent],
+  imports: [PageHeaderComponent, StatCardComponent, EmptyStateComponent, MaliMapComponent, DonutChartComponent, BarChartComponent, HBarChartComponent],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent {
@@ -39,6 +40,15 @@ export class DashboardComponent {
     return Math.max(1, ...this.data.map((x) => Math.max(x.demandeEstimee, x.offreDisponible)));
   }
 
+  /** Indicateur affiché sur la carte. */
+  readonly mesure = signal<Mesure>('ECART');
+  readonly mesures: readonly { code: Mesure; libelle: string }[] = [
+    { code: 'ECART', libelle: 'Écart' },
+    { code: 'OFFRE', libelle: 'Offre' },
+    { code: 'DEMANDE', libelle: 'Demande' },
+  ];
+
+  /** Même logique de couleur que la carte : offre en bleu, demande et pénurie en ocre. */
   readonly C = MC_CHART;
   readonly seriesOffreDemande = [
     { name: 'Offre (talents validés)', color: MC_CHART.vert },
@@ -57,8 +67,8 @@ export class DashboardComponent {
     const surplus = Math.max(0, this.totalOffer - this.totalDemand);
     return [
       { label: 'Demande couverte', value: couverte, color: MC_CHART.vert },
-      { label: 'Talents manquants', value: manque, color: MC_CHART.rouge },
-      ...(surplus ? [{ label: 'Talents en plus', value: surplus, color: MC_CHART.or }] : []),
+      { label: 'Talents manquants', value: manque, color: MC_CHART.orFonce },
+      ...(surplus ? [{ label: 'Talents en plus', value: surplus, color: MC_CHART.vertClair }] : []),
     ];
   }
 

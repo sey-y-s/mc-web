@@ -1,5 +1,8 @@
 import * as L from 'leaflet';
 
+/** Type représentant les différentes mesures affichables sur la carte. */
+export type Mesure = 'OFFRE' | 'DEMANDE' | 'ECART';
+
 /** Style appliqué aux territoires ne disposant d'aucune donnée (pointillés gris). */
 export const STYLE_SANS_DONNEE: L.PathOptions = {
   color: '#9ca3af',
@@ -27,7 +30,7 @@ export const ECHELLE_NIVEAU = [
  * Calcule dynamiquement la couleur d'un territoire selon la mesure active,
  * sa valeur brute et son ratio normalisé (entre 0 et 1).
  */
-export function couleurMesure(measure: 'OFFRE' | 'DEMANDE' | 'ECART', value: number, ratio: number): string {
+export function couleurMesure(measure: Mesure, value: number, ratio: number): string {
   const r = Math.max(0, Math.min(1, ratio));
 
   if (measure === 'ECART') {

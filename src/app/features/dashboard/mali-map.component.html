@@ -5,6 +5,7 @@
       <h3 class="mc-section-heading">{{ libelleMesure() }}, par territoire</h3>
       <p class="mc-muted mt-0.5 text-theme-xs" role="status" aria-live="polite">{{ status }}</p>
     </div>
+    <div class="shrink-0 empty:hidden"><ng-content select="[commandes]" /></div>
   </header>
 
   <div class="grid xl:grid-cols-[minmax(0,1fr)_22rem]">
