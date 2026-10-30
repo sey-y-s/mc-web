@@ -34,7 +34,7 @@
   @if (tab() === 'regions') {
     <form
       id="territoire-editor"
-      class="sticky top-2 z-10 grid gap-3 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm md:grid-cols-3"
+      class="md:sticky md:top-2 md:z-10 grid gap-3 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm md:grid-cols-3"
       (ngSubmit)="enregistrerRegion()"
     >
       <label class="text-sm font-medium"
@@ -157,7 +157,7 @@
   } @else {
     <form
       id="territoire-editor"
-      class="sticky top-2 z-10 grid gap-3 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm md:grid-cols-2"
+      class="md:sticky md:top-2 md:z-10 grid gap-3 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm md:grid-cols-2"
       (ngSubmit)="enregistrerCommune()"
     >
       <label class="text-sm font-medium"

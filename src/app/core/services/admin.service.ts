@@ -76,7 +76,11 @@ export interface NotificationAdminRequest {
 export interface OrganisationAdmin { id: string; utilisateurId?: string; email?: string; nom: string; description?: string; numeroRccm?: string | null; nif?: string | null; statut: string; motifStatut?: string; typeOrganisation?: string | null; typeOrganisationLibelle?: string | null; communeNom?: string | null; regionNom?: string | null; nombreDocuments?: number; nombreDocumentsManquants?: number; dossierComplet?: boolean }
 export interface CitoyenAdmin { id: string; nom: string; prenom: string; disponibilite?: string }
 export interface AdminDashboard { citoyens?: number; organisations?: number; validations?: number; tests?: number; besoins?: number; misesEnRelation?: number }
-export interface AdminValidation { id: string; type: string; libelle: string; statut: 'EN_ATTENTE' | 'APPROUVEE' | 'REJETEE'; }
+export interface AdminValidation {
+  id: string; type: string; libelle: string; statut: 'EN_ATTENTE' | 'APPROUVEE' | 'REJETEE';
+  /** Pièce à examiner (validation documentaire) ; null pour une évaluation faite par un centre. */
+  preuveTitre?: string | null; preuveUrl?: string | null; centreNom?: string | null; dateDemande?: string | null; commentaire?: string | null;
+}
 
 
 export interface AdminUser {
@@ -122,6 +126,9 @@ export class AdminService {
   }
 
   validations() { return this.api.get<AdminValidation[]>('/api/v1/admin/validations'); }
+
+  /** Fichier privé (justificatif) : récupéré avec le jeton de connexion, jamais par un simple lien. */
+  fichierPrive(url: string) { return this.api.getBlob(url); }
 
   modifierStatutValidation(id: string, statut: AdminValidation['statut'], commentaire?: string) {
     return this.api.patch<AdminValidation>(`/api/v1/admin/validations/${id}/statut`, { statut, ...(commentaire ? { commentaire } : {}) });

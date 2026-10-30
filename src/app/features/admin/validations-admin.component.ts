@@ -16,7 +16,7 @@ import { LibellePipe } from '../../shared/libelle.pipe';
       @if (validationsResource.error() || actionError()) { <p class="mb-4 text-sm text-red-700" role="alert">{{ errorMessage() }}</p> }
       @if (message()) { <p class="mb-4 text-sm text-emerald-800" role="status">{{ message() }}</p> }
       <div class="mb-4 flex flex-wrap gap-3"><input class="mc-input max-w-sm" type="search" [ngModel]="query()" (ngModelChange)="query.set($event); page.set(1)" placeholder="Rechercher par libellé ou type" aria-label="Rechercher une validation" /><select class="mc-input max-w-xs" [ngModel]="filter()" (ngModelChange)="filter.set($event); page.set(1)" aria-label="Filtrer les validations"><option value="">Tous les statuts</option><option value="EN_ATTENTE">En attente</option><option value="APPROUVEE">Approuvée</option><option value="REJETEE">Rejetée</option></select></div>
-      @if (validationsResource.isLoading()) { <p class="py-8 text-sm text-slate-500">Chargement des validations…</p> } @else if (!filtered().length) { <p class="py-8 text-sm text-slate-500">Aucune validation pour ces filtres.</p> } @else { <div class="overflow-x-auto"><table class="table w-full"><thead><tr><th>Type</th><th>Libellé</th><th>Statut</th><th>Décision</th></tr></thead><tbody>@for (v of pageItems(); track v.id) { <tr><td>{{ v.type | libelle }}</td><td>{{ v.libelle }}</td><td>{{ v.statut | libelle }}</td><td><div class="flex flex-wrap gap-2"><button class="btn btn-sm btn-secondary" [disabled]="pending.has(v.id) || v.statut==='APPROUVEE'" (click)="decider(v,'APPROUVEE')">Approuver</button><button class="btn btn-sm btn-secondary" [disabled]="pending.has(v.id) || v.statut==='REJETEE'" (click)="decider(v,'REJETEE')">Rejeter</button></div></td></tr> }</tbody></table></div><div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm"><span>{{ filtered().length }} résultat(s) · Page {{ page() }} / {{ totalPages() }}</span><div class="flex gap-2"><button class="btn btn-sm btn-secondary" type="button" [disabled]="page() <= 1" (click)="page.set(page() - 1)">Précédent</button><button class="btn btn-sm btn-secondary" type="button" [disabled]="page() >= totalPages()" (click)="page.set(page() + 1)">Suivant</button></div></div> }
+      @if (validationsResource.isLoading()) { <p class="py-8 text-sm text-slate-500">Chargement des validations…</p> } @else if (!filtered().length) { <p class="py-8 text-sm text-slate-500">Aucune validation pour ces filtres.</p> } @else { <div class="overflow-x-auto"><table class="table w-full"><thead><tr><th>Type</th><th>Libellé</th><th>Justificatif</th><th>Statut</th><th>Décision</th></tr></thead><tbody>@for (v of pageItems(); track v.id) { <tr><td>{{ v.type | libelle }}</td><td>{{ v.libelle }}@if (v.centreNom) { <br /><span class="text-xs text-slate-500">Centre : {{ v.centreNom }}</span> }</td><td>@if (v.preuveUrl) { <button class="btn btn-sm btn-secondary" type="button" (click)="voirJustificatif(v)">{{ v.preuveTitre || 'Voir le justificatif' }}</button> } @else { <span class="text-xs text-slate-500">Aucun document</span> }</td><td>{{ v.statut | libelle }}</td><td><div class="flex flex-wrap gap-2"><button class="btn btn-sm btn-secondary" [disabled]="pending.has(v.id) || v.statut==='APPROUVEE' || !peutDecider(v)" [title]="peutDecider(v) ? '' : 'Ouvrez d’abord le justificatif pour le vérifier.'" (click)="decider(v,'APPROUVEE')">Approuver</button><button class="btn btn-sm btn-secondary" [disabled]="pending.has(v.id) || v.statut==='REJETEE'" (click)="decider(v,'REJETEE')">Rejeter</button></div></td></tr> }</tbody></table></div><div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm"><span>{{ filtered().length }} résultat(s) · Page {{ page() }} / {{ totalPages() }}</span><div class="flex gap-2"><button class="btn btn-sm btn-secondary" type="button" [disabled]="page() <= 1" (click)="page.set(page() - 1)">Précédent</button><button class="btn btn-sm btn-secondary" type="button" [disabled]="page() >= totalPages()" (click)="page.set(page() + 1)">Suivant</button></div></div> }
     </section>
   `,
 })
@@ -58,6 +58,25 @@ export class ValidationsAdminComponent {
     const p = Math.min(this.page(), this.totalPages());
     return this.filtered().slice((p - 1) * this.pageSize, p * this.pageSize);
   });
+
+  /** Justificatifs que l'administrateur a ouverts : on ne peut approuver qu'une pièce que l'on a vérifiée. */
+  readonly consultes = signal<ReadonlySet<string>>(new Set());
+
+  peutDecider(v: AdminValidation): boolean {
+    return !v.preuveUrl || this.consultes().has(v.id);
+  }
+
+  voirJustificatif(v: AdminValidation): void {
+    if (!v.preuveUrl) return;
+    this.actionError.set('');
+    this.service.fichierPrive(v.preuveUrl).subscribe({
+      next: (blob) => {
+        window.open(URL.createObjectURL(blob), '_blank', 'noopener');
+        this.consultes.update((s) => new Set(s).add(v.id));
+      },
+      error: () => this.actionError.set('Impossible d’ouvrir ce justificatif.'),
+    });
+  }
 
   errorMessage(): string {
     if (this.actionError()) return this.actionError();
