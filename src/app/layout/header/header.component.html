@@ -1,22 +1,108 @@
-<header class="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95">
-  <div class="flex min-h-14 items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
-    <div class="flex min-w-0 items-center gap-3">
-      <button
-        type="button"
-        class="rounded-control border border-gray-300 px-3 py-1.5 text-sm font-semibold text-gray-800 hover:bg-gray-50 lg:hidden"
-        (click)="toggleNavigation.emit()"
-        aria-controls="mc-navigation"
-        [attr.aria-expanded]="navigationOpen"
-      >{{ navigationOpen ? 'Fermer' : 'Menu' }}</button>
-      <p class="hidden truncate text-sm font-medium text-gray-700 dark:text-gray-200 sm:block">{{ workspaceLabel(auth.getCurrentUser()?.role) }}</p>
+<header class="sticky top-0 z-40 flex w-full shrink-0 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+  <div class="flex min-h-[80px] w-full flex-col justify-between xl:flex-row xl:items-center">
+    <div class="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 sm:gap-4 xl:w-auto xl:border-b-0 xl:px-6 xl:py-4 dark:border-gray-800">
+      <div class="flex min-w-0 items-center gap-3">
+        <button type="button" (click)="toggleSidebar.emit()" aria-label="Réduire ou agrandir la sidebar"
+          class="hidden size-10 items-center justify-center rounded-lg border border-gray-300 bg-transparent text-gray-500 shadow-theme-xs transition hover:bg-gray-50 hover:text-gray-800 xl:inline-flex dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700/50 dark:hover:text-white">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none"><path d="M4 5h16M4 12h16M4 19h16M9 5v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button type="button" (click)="toggleNavigation.emit()" aria-label="Ouvrir ou fermer la navigation"
+          class="inline-flex size-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 xl:hidden dark:border-gray-700 dark:text-gray-400">
+          @if (navigationOpen) {
+            <svg class="size-5" viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          } @else {
+            <svg class="size-5" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          }
+        </button>
+        <a routerLink="/app" class="flex items-center gap-2 xl:hidden" aria-label="MaliCompétences">
+          <span class="flex size-8 items-center justify-center rounded-lg bg-brand-600 text-white"><svg viewBox="0 0 32 32" class="size-5" fill="none"><path d="M6 24V8l10 10L26 8v16" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="font-outfit text-sm font-semibold text-gray-800 dark:text-white">MaliCompétences</span>
+        </a>
+        <div class="hidden min-w-0 sm:block xl:ml-1">
+          <p class="truncate text-xs font-medium text-gray-400 dark:text-gray-500">{{ workspaceLabel(auth.getCurrentUser()?.role) }}</p>
+          <h1 class="mt-0.5 truncate font-outfit text-lg font-semibold text-gray-800 dark:text-white">{{ pageTitle }}</h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 xl:hidden">
+        <button type="button" (click)="toggleSearch()" aria-label="Rechercher" class="inline-flex size-10 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5">
+          <svg viewBox="0 0 24 24" class="size-5" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
     </div>
 
-    <nav class="flex shrink-0 items-center gap-0.5 text-sm font-medium" aria-label="Compte">
-      <a routerLink="/app/notifications" class="rounded-control px-3 py-2 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/5">Notifications</a>
-      <a routerLink="/app/profil" class="rounded-control px-3 py-2 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/5">Profil</a>
-      <button type="button" class="rounded-control px-3 py-2 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/5" (click)="auth.logout()">
-        <span class="sm:hidden">Sortir</span><span class="hidden sm:inline">Se déconnecter</span>
-      </button>
-    </nav>
+    <div class="flex w-full items-center justify-between gap-3 px-4 py-3 xl:w-auto xl:justify-end xl:px-6 xl:py-4">
+      <div class="relative hidden w-full max-w-[360px] xl:block">
+        <label class="sr-only" for="mc-global-search">Rechercher dans MaliCompétences</label>
+        <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+          <svg viewBox="0 0 24 24" class="size-5" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </span>
+        <input id="mc-global-search" type="search" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" (focus)="openSearch()" (keydown.escape)="closeSearch()" placeholder="Rechercher une page..."
+          class="h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-11 pr-16 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+        <kbd class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-white/5">⌘ K</kbd>
+        @if (searchOpen() && searchQuery().trim()) {
+          <div class="absolute left-0 right-0 top-full z-50 mt-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-theme-lg dark:border-gray-800 dark:bg-gray-900">
+            @for (result of searchResults(); track result.path) {
+              <button type="button" (click)="navigateTo(result.path)" class="flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
+                <span class="min-w-0 flex-1 truncate">{{ result.label }}</span><span class="ml-3 text-xs text-gray-400">{{ result.section }}</span>
+              </button>
+            } @empty {
+              <p class="px-3 py-3 text-sm text-gray-500">Aucune page ne correspond à cette recherche.</p>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+        <button type="button" (click)="toggleNotifications()" [attr.aria-expanded]="notificationOpen()" aria-label="Ouvrir les notifications"
+          class="relative inline-flex size-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/5">
+          <svg viewBox="0 0 24 24" class="size-5" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          @if (unreadCount() > 0) { <span class="absolute right-0.5 top-0.5 flex size-4 items-center justify-center rounded-full bg-brand-600 text-[9px] font-semibold text-white ring-2 ring-white dark:ring-gray-900">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span> }
+        </button>
+        @if (notificationOpen()) {
+          <div class="absolute right-4 top-[72px] z-50 w-[min(360px,calc(100vw-2rem))] rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-[#1E2635] xl:right-6">
+            <div class="flex items-center justify-between px-2 py-1"><h2 class="text-sm font-semibold text-gray-800 dark:text-white">Notifications</h2><span class="text-xs text-gray-500">{{ unreadCount() }} non lue(s)</span></div>
+            <div class="my-2 h-px bg-gray-100 dark:bg-gray-700"></div>
+            @for (item of notifications().slice(0, 5); track item.id) {
+              <button type="button" (click)="markAsRead(item); navigateTo(destination(item))" class="flex w-full gap-3 rounded-lg px-2 py-3 text-left transition hover:bg-gray-50 dark:hover:bg-white/5">
+                <span class="mt-1.5 size-2 shrink-0 rounded-full" [ngClass]="item.lu ? 'bg-gray-300 dark:bg-gray-600' : 'bg-brand-600'"></span>
+                <span class="min-w-0 flex-1"><span class="block truncate text-sm font-medium text-gray-800 dark:text-white">{{ item.titre }}</span><span class="mt-0.5 line-clamp-2 block text-xs text-gray-500 dark:text-gray-400">{{ item.message }}</span></span>
+              </button>
+            } @empty { <p class="px-2 py-5 text-center text-sm text-gray-500">Aucune notification.</p> }
+            <a routerLink="/app/notifications" (click)="notificationOpen.set(false)" class="mt-2 block rounded-lg bg-gray-50 px-3 py-2.5 text-center text-sm font-medium text-brand-700 hover:bg-brand-50 dark:bg-white/5 dark:text-brand-300 dark:hover:bg-brand-500/10">Voir toutes les notifications</a>
+          </div>
+        }
+
+        <div class="relative">
+          <button type="button" (click)="toggleProfile()" [attr.aria-expanded]="profileOpen()" aria-label="Ouvrir le menu du compte"
+            class="flex items-center gap-3 rounded-full border border-gray-200 bg-white py-1.5 pl-1.5 pr-2 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-white/5">
+            <span class="flex size-8 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">{{ accountLabel.slice(0, 1) }}</span>
+            <span class="hidden max-w-36 text-left sm:block"><span class="block truncate text-sm font-medium text-gray-700 dark:text-gray-300">{{ accountLabel }}</span><span class="block text-xs text-gray-500">Compte connecté</span></span>
+            <svg viewBox="0 0 20 20" class="hidden size-4 text-gray-400 sm:block" fill="none"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          @if (profileOpen()) {
+            <div class="absolute right-0 top-full z-50 mt-3 flex w-64 flex-col gap-1 rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-[#1E2635]">
+              <div class="px-3 py-2"><span class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ accountLabel }}</span><span class="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">Espace professionnel</span></div>
+              <div class="-mx-3 my-1.5 h-px bg-gray-100 dark:bg-gray-700"></div>
+              <a routerLink="/app/notifications" (click)="profileOpen.set(false)" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
+                <svg viewBox="0 0 24 24" class="size-5 text-gray-500" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Notifications
+              </a>
+              <div class="-mx-3 my-1.5 h-px bg-gray-100 dark:bg-gray-700"></div>
+              <button type="button" (click)="logout()" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-error-600 transition hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-500/10">
+                <svg viewBox="0 0 24 24" class="size-5" fill="none"><path d="M10 17l5-5-5-5M15 12H3m9-8h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Se déconnecter
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
   </div>
+  @if (searchOpen()) {
+    <div class="fixed inset-0 z-30 bg-gray-950/30 xl:hidden" (click)="closeSearch()"></div>
+    <div class="absolute left-3 right-3 top-full z-40 rounded-xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-900 xl:hidden">
+      <input type="search" autofocus [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Rechercher une page..." class="h-11 w-full rounded-lg border border-gray-200 bg-transparent px-3 text-sm outline-none focus:border-brand-300 dark:border-gray-700 dark:text-white" />
+      @if (searchQuery().trim()) {
+        @for (result of searchResults(); track result.path) { <button type="button" (click)="navigateTo(result.path)" class="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5">{{ result.label }}</button> }
+      }
+    </div>
+  }
 </header>

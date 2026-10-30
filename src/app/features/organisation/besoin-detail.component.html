@@ -4,49 +4,42 @@
 />
 
 @if (besoinResource.isLoading()) {
-  <div class="mc-card animate-pulse space-y-4 p-6" aria-label="Chargement du besoin">
-    <div class="h-7 w-1/3 rounded bg-base-300"></div>
-    <div class="h-4 w-2/3 rounded bg-base-300"></div>
-    <div class="h-24 rounded bg-base-300"></div>
-  </div>
+  <div class="mc-card flex items-center gap-3 p-6 text-sm text-gray-600" role="status"><span class="loading" aria-hidden="true"></span> Chargement du besoin…</div>
 } @else if (besoinResource.error()) {
   <div class="alert alert-error" role="alert">
     <span>{{ errorMessage() }}</span>
-    <button class="btn btn-sm" type="button" (click)="besoinResource.reload()">Réessayer</button>
+    <button class="btn btn-sm btn-secondary" type="button" (click)="besoinResource.reload()">Réessayer</button>
     <a class="btn btn-sm btn-ghost" routerLink="/app/organisation/besoins">Retour à la liste</a>
   </div>
 } @else if (besoinResource.value(); as data) {
   <section class="mc-card p-6 md:p-8">
     @if (message()) { <div class="alert alert-success mb-4" role="status">{{ message() }}</div> }
     @if (clotureError()) { <div class="alert alert-error mb-4" role="alert">{{ clotureError() }}</div> }
+
     <div class="flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <h2 class="text-2xl font-semibold tracking-tight md:text-3xl">{{ data.titre }}</h2>
-        <p class="mt-2 text-sm text-base-content/60">
-          Créé le {{ data.dateCreation | date: 'longDate' }}
-        </p>
+      <div class="min-w-0">
+        <h2 class="font-display text-2xl font-semibold tracking-tight text-gray-900 md:text-3xl">{{ data.titre }}</h2>
+        <p class="mc-muted mt-2">Créé le {{ data.dateCreation | date: 'longDate' }}</p>
       </div>
       <mc-status-badge [value]="data.statut" />
     </div>
 
-    <p class="mt-5 whitespace-pre-line text-base-content/80">
-      {{ data.description || 'Aucune description fournie.' }}
-    </p>
+    <p class="mt-5 max-w-3xl whitespace-pre-line leading-7 text-gray-800">{{ data.description || 'Aucune description fournie.' }}</p>
 
-    <div class="mt-6 grid gap-4 sm:grid-cols-3">
-      <div class="rounded-xl border border-base-300/70 bg-base-200/50 p-4">
-        <div class="text-xs font-semibold uppercase tracking-wide text-base-content/55">Zone</div>
-        <div class="mt-2 font-medium">{{ data.communeNom ? data.communeNom + (data.regionNom ? ' (' + data.regionNom + ')' : '') : (data.regionNom || 'Tout le Mali') }}</div>
+    <dl class="mt-6 grid divide-y divide-base-300 overflow-hidden rounded-panel border border-base-300 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <div class="p-4">
+        <dt class="text-theme-xs font-medium text-gray-600">Zone</dt>
+        <dd class="mt-1 font-medium text-gray-900">{{ data.communeNom ? data.communeNom + (data.regionNom ? ' (' + data.regionNom + ')' : '') : (data.regionNom || 'Tout le Mali') }}</dd>
       </div>
-      <div class="rounded-xl border border-base-300/70 bg-base-200/50 p-4">
-        <div class="text-xs font-semibold uppercase tracking-wide text-base-content/55">Date de début</div>
-        <div class="mt-2 font-medium">{{ data.dateDebut ? (data.dateDebut | date:'dd/MM/yyyy') : 'Non définie' }}</div>
+      <div class="p-4">
+        <dt class="text-theme-xs font-medium text-gray-600">Date de début</dt>
+        <dd class="mt-1 font-medium text-gray-900">{{ data.dateDebut ? (data.dateDebut | date:'dd/MM/yyyy') : 'Non définie' }}</dd>
       </div>
-      <div class="rounded-xl border border-base-300/70 bg-base-200/50 p-4">
-        <div class="text-xs font-semibold uppercase tracking-wide text-base-content/55">Date de fin</div>
-        <div class="mt-2 font-medium">{{ data.dateFin ? (data.dateFin | date:'dd/MM/yyyy') : 'Non définie' }}</div>
+      <div class="p-4">
+        <dt class="text-theme-xs font-medium text-gray-600">Date de fin</dt>
+        <dd class="mt-1 font-medium text-gray-900">{{ data.dateFin ? (data.dateFin | date:'dd/MM/yyyy') : 'Non définie' }}</dd>
       </div>
-    </div>
+    </dl>
 
     <div class="mt-8">
       <div class="flex items-center justify-between gap-3">
@@ -54,42 +47,34 @@
         <span class="badge badge-outline">{{ data.competences?.length ?? 0 }} compétence(s)</span>
       </div>
       @if (data.competences?.length) {
-        <div class="mt-3 overflow-x-auto">
-          <table class="mc-table">
+        <div class="mt-3 overflow-x-auto rounded-panel border border-base-300">
+          <table class="table">
             <thead>
-              <tr>
-                <th>Compétence</th>
-                <th>Niveau</th>
-                <th>Quantité</th>
-                <th>Importance</th>
-              </tr>
+              <tr><th scope="col">Compétence</th><th scope="col">Niveau</th><th scope="col">Quantité</th></tr>
             </thead>
             <tbody>
               @for (competence of data.competences; track competence.id) {
                 <tr>
-                  <td>{{ competence.competenceNom || competence.competenceId }}</td>
+                  <td class="font-medium text-gray-900">{{ competence.competenceNom || competence.competenceId }}</td>
                   <td>{{ competence.niveau | libelle }}</td>
                   <td>{{ competence.quantite }}</td>
-                  <td>{{ competence.requis ? 'Requise' : 'Souhaitée' }}</td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
       } @else {
-        <p class="mt-3 text-sm text-base-content/60">
-          Aucune compétence détaillée n’est associée à ce besoin.
-        </p>
+        <p class="mc-muted mt-3">Aucune compétence détaillée n’est associée à ce besoin.</p>
       }
     </div>
 
-    <div class="mt-8 flex flex-wrap gap-3">
+    <div class="mt-8 flex flex-wrap gap-3 border-t border-base-300 pt-6">
       @if (data.statut === 'OUVERT' && organisationApprouvee()) {
         <a class="btn btn-primary" [routerLink]="['/app/organisation/matching', data.id]">Voir les talents correspondants</a>
-        <a class="btn btn-outline btn-primary" [routerLink]="['/app/organisation/besoins', data.id, 'carte']">Carte des talents</a>
+        <a class="btn btn-outline" [routerLink]="['/app/organisation/besoins', data.id, 'carte']">Carte des talents</a>
       }
       @if (data.statut !== 'CLOTURE') {
-        <a class="btn btn-outline" [routerLink]="['/app/organisation/besoins', data.id, 'modifier']">Modifier le besoin</a>
+        <a class="btn btn-secondary" [routerLink]="['/app/organisation/besoins', data.id, 'modifier']">Modifier le besoin</a>
         <button class="btn btn-secondary" type="button" (click)="cloturer()" [disabled]="clotureEnCours()">{{ clotureEnCours() ? 'Clôture…' : 'Clôturer le besoin' }}</button>
       }
       <a class="btn btn-ghost" routerLink="/app/organisation/besoins">Retour à la liste</a>

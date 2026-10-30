@@ -154,3 +154,14 @@ textarea.mc-input, .textarea { @apply min-h-24; }
 .text-base-content\/40, .text-base-content\/45, .text-base-content\/50, .text-base-content\/55, .text-base-content\/60, .text-base-content\/65 { color: color-mix(in oklab, var(--color-base-content) 74%, transparent); }
 .text-slate-400 { color: #64748b; }
 .mc-observe { opacity: 1; transform: none; }
+
+
+/* Cartes de synthèse : surface sobre, sans jauges ni accents décoratifs. */
+.mc-overview-card { @apply rounded-xl border border-gray-200 bg-white p-5 transition duration-200 dark:border-gray-800 dark:bg-gray-900; }
+.mc-overview-card-linked:hover { @apply border-brand-300 shadow-theme-sm; }
+.mc-overview-icon { @apply flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300; }
+.mc-overview-icon-gold { @apply bg-ocre-50 text-ocre-700 dark:bg-ocre-500/10 dark:text-ocre-300; }
+.mc-stat-icon { @apply flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300; }
+
+.mc-stat-card::after { display: none; }
+.mc-stat-card::before { content: ''; @apply absolute inset-y-4 left-0 w-1 rounded-r-full bg-brand-500; }

@@ -1,39 +1,72 @@
-<div class="flex h-full flex-col" aria-label="Navigation de l’espace professionnel">
-  <a
-    routerLink="/app"
-    (click)="onNavigate()"
-    class="flex items-center gap-3 border-b border-gray-200 px-5 py-4 dark:border-gray-800"
-    aria-label="MaliCompétences, accueil de l’espace"
-  >
-    <span class="barre-mali-v shrink-0" aria-hidden="true"></span>
-    <span class="flex flex-col gap-0.5">
-      <span class="font-display text-title-sm font-semibold leading-6 tracking-tight text-gray-900 dark:text-white">MaliCompétences</span>
-      <span class="text-theme-xs text-gray-500 dark:text-gray-400">{{ espace }}</span>
-    </span>
-  </a>
-
-  <div class="custom-scrollbar flex-1 overflow-y-auto px-3 py-4">
-    @for (groupe of groupes(); track groupe.titre) {
-      <section class="mb-5">
-        <h2 class="px-3 pb-1.5 font-sans text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ groupe.titre }}</h2>
-        <nav class="space-y-0.5" [attr.aria-label]="groupe.titre">
-          @for (item of groupe.entrees; track item.path) {
-            <a
-              [routerLink]="item.path"
-              (click)="onNavigate()"
-              routerLinkActive
-              #lien="routerLinkActive"
-              [routerLinkActiveOptions]="{ exact: exact(item) }"
-              ariaCurrentWhenActive="page"
-              class="menu-item"
-              [class.menu-item-active]="lien.isActive"
-              [class.menu-item-inactive]="!lien.isActive"
-            >{{ item.label }}</a>
-          }
-        </nav>
-      </section>
-    }
+<div class="flex h-full min-h-0 flex-col" aria-label="Navigation de l’espace professionnel" (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">
+  <div class="flex h-[84px] shrink-0 items-center border-b border-gray-200 px-6 dark:border-gray-800"
+       [class.justify-center]="collapsed" [class.px-3]="collapsed">
+    <a routerLink="/app" (click)="onNavigate()" class="flex min-w-0 items-center gap-3" aria-label="MaliCompétences, accueil">
+      <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white shadow-theme-sm">
+        <svg viewBox="0 0 32 32" class="size-6" fill="none" aria-hidden="true"><path d="M6 24V8l10 10L26 8v16" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 24v-5m10 5v-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </span>
+      @if (!collapsed) {
+        <span class="flex min-w-0 flex-col gap-0.5">
+          <span class="truncate font-outfit text-lg font-semibold leading-6 tracking-tight text-gray-900 dark:text-white">MaliCompétences</span>
+          <span class="truncate text-xs text-gray-500 dark:text-gray-400">{{ espace }}</span>
+        </span>
+      }
+    </a>
   </div>
 
-  <div class="motif-bogolan-bande mx-5 mb-4 shrink-0 text-gray-200 dark:text-gray-800" aria-hidden="true"></div>
+  <div class="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-6">
+    <nav class="mb-6 flex flex-col gap-6" aria-label="Menu principal">
+      <section>
+        <h2 class="mb-4 flex items-center text-xs font-medium uppercase leading-5 text-gray-400"
+            [class.justify-center]="collapsed">
+          @if (!collapsed) { Navigation } @else { <span class="size-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></span> }
+        </h2>
+        <ul class="flex flex-col gap-1">
+          @for (group of groups(); track group.title) {
+            <li>
+              <button type="button" (click)="toggleGroup(group.title)"
+                [attr.aria-expanded]="openedGroup() === group.title"
+                [attr.title]="collapsed ? group.title : null"
+                class="menu-item group"
+                [ngClass]="groupIsActive(group) ? 'menu-item-active' : 'menu-item-inactive'">
+                <span class="menu-item-icon-size shrink-0" [ngClass]="groupIsActive(group) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" [innerHTML]="group.icon"></span>
+                @if (!collapsed) {
+                  <span class="menu-item-text min-w-0 flex-1 truncate text-left">{{ group.title }}</span>
+                  <svg class="menu-item-arrow size-5 shrink-0 transition-transform duration-200" [ngClass]="openedGroup() === group.title ? 'menu-item-arrow-active rotate-180' : 'menu-item-arrow-inactive'" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+              </button>
+              @if (!collapsed && openedGroup() === group.title) {
+                <ul class="mt-1.5 flex flex-col gap-1 pl-9">
+                  @for (item of group.items; track item.path) {
+                    <li>
+                      <a [routerLink]="item.path" (click)="onNavigate()" routerLinkActive
+                        #link="routerLinkActive" [routerLinkActiveOptions]="{ exact: item.path === '/app/dashboard' || item.path.endsWith('/tableau-de-bord') }"
+                        ariaCurrentWhenActive="page"
+                        class="menu-dropdown-item group"
+                        [ngClass]="link.isActive ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                        <span class="size-1.5 shrink-0 rounded-full" [ngClass]="link.isActive ? 'bg-brand-600 dark:bg-brand-400' : 'bg-gray-300 dark:bg-gray-600'"></span>
+                        <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+                      </a>
+                    </li>
+                  }
+                </ul>
+              }
+              @if (collapsed && groupIsActive(group)) {
+                <span class="mx-auto mt-1 block size-1.5 rounded-full bg-brand-600 dark:bg-brand-400"></span>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    </nav>
+  </div>
+
+  @if (!collapsed) {
+    <div class="shrink-0 border-t border-gray-200 p-5 dark:border-gray-800">
+      <div class="rounded-xl bg-gray-50 p-3 dark:bg-white/[0.03]">
+        <p class="text-xs font-medium text-gray-700 dark:text-gray-300">MaliCompétences</p>
+        <p class="mt-1 text-[11px] leading-4 text-gray-500 dark:text-gray-500">Cartographier les compétences, révéler les talents.</p>
+      </div>
+    </div>
+  }
 </div>

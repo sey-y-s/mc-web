@@ -19,15 +19,17 @@ type Portee = 'NATIONAL' | 'REGION' | 'COMMUNE';
   standalone: true,
   imports: [FormsModule],
   template: `
-    <fieldset class="rounded-xl border border-base-300 p-4">
-      <legend class="px-1 font-semibold">Où cherchez-vous ces talents ?</legend>
+    <fieldset class="rounded-panel border border-base-300 p-4">
+      <legend class="px-1 text-sm font-semibold text-gray-900">Où cherchez-vous ces talents ?</legend>
       <div class="mt-1 grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label="Portée du besoin">
         @for (p of portees; track p.code) {
           <button type="button" role="radio" [attr.aria-checked]="portee() === p.code"
-                  [class]="portee() === p.code ? 'rounded-lg border border-primary bg-base-200 p-3 text-left' : 'rounded-lg border border-base-300 p-3 text-left transition hover:border-primary'"
+                  class="relative rounded-panel border p-3 pr-9 text-left transition-colors"
+                  [class]="portee() === p.code ? 'border-brand-600 bg-brand-50' : 'border-base-300 hover:border-brand-300'"
                   (click)="choisir(p.code)">
-            <span class="block text-sm font-semibold">{{ p.libelle }}</span>
-            <span class="block text-xs text-base-content/65">{{ p.aide }}</span>
+            <span class="absolute right-3 top-3.5 size-2.5 rotate-45 border-[1.5px] border-brand-600" [class.bg-brand-600]="portee() === p.code" aria-hidden="true"></span>
+            <span class="block text-sm font-semibold text-gray-900">{{ p.libelle }}</span>
+            <span class="block text-xs text-gray-600">{{ p.aide }}</span>
           </button>
         }
       </div>
@@ -49,7 +51,7 @@ type Portee = 'NATIONAL' | 'REGION' | 'COMMUNE';
           }
         </div>
       }
-      <p class="mt-2 text-xs text-base-content/60">{{ resume() }}</p>
+      <p class="mt-2 text-xs text-gray-600">{{ resume() }}</p>
     </fieldset>
   `,
 })

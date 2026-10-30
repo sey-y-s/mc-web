@@ -35,12 +35,29 @@ const PIECES = [
       @if (error()) { <p class="mb-4 text-sm text-red-700" role="alert">{{ error() }}</p> }
       @if (message()) { <p class="mb-4 text-sm text-emerald-800" role="status">{{ message() }}</p> }
 
-      <label class="block max-w-xl text-sm font-medium">Compétence
-        <select class="mc-input mt-1" [ngModel]="competenceId()" (ngModelChange)="choisir($event)" aria-label="Choisir une compétence">
-          <option value="">Sélectionner une compétence</option>
-          @for (c of competences(); track c.id) { <option [value]="c.id">{{ c.nom }}</option> }
-        </select>
-      </label>
+      <div class="relative mb-4 max-w-xl">
+        <label for="recherche-competence" class="block text-sm font-medium">Rechercher une compétence</label>
+        <div class="relative mt-1">
+          <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.6"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <input id="recherche-competence" class="mc-input pl-10" type="search" autocomplete="off" [ngModel]="rechercheCompetence()" (ngModelChange)="rechercher($event)" placeholder="Saisir le nom d’une compétence…" />
+        </div>
+        @if (rechercheCompetence().trim() && !competenceId()) {
+          <div class="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900" role="listbox" aria-label="Résultats de recherche">
+            @for (c of competencesFiltrees(); track c.id) {
+              <button type="button" class="flex w-full flex-col rounded-lg px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800" (click)="choisir(c.id)">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ c.nom }}</span>
+                <span class="text-xs text-gray-500">{{ c.metierNom || 'Métier non précisé' }} · {{ c.secteurNom || 'Secteur non précisé' }}</span>
+              </button>
+            } @empty { <p class="px-3 py-3 text-sm text-gray-500">Aucune compétence ne correspond à cette recherche.</p> }
+          </div>
+        }
+        @if (competenceSelectionnee(); as selected) {
+          <div class="mt-2 flex items-center justify-between rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800 dark:bg-brand-500/10 dark:text-brand-200">
+            <span><strong>{{ selected.nom }}</strong><span class="ml-2 text-xs opacity-75">{{ selected.metierNom || '' }}</span></span>
+            <button type="button" class="text-xs font-semibold hover:underline" (click)="effacerSelection()">Changer</button>
+          </div>
+        }
+      </div>
 
       @if (loading()) { <p class="py-6 text-sm text-slate-500">Chargement des règles…</p> }
       @else if (competenceId() && regles().length) {
@@ -106,6 +123,15 @@ export class ReglesValidationAdminComponent {
   readonly competences = computed(() => this.competencesResource.value() ?? []);
 
   readonly competenceId = signal('');
+  readonly rechercheCompetence = signal('');
+  readonly competencesFiltrees = computed(() => {
+    const q = this.rechercheCompetence().trim().toLocaleLowerCase();
+    if (!q) return [];
+    return this.competences().filter((c) => c.nom.toLocaleLowerCase().includes(q)
+      || (c.metierNom ?? '').toLocaleLowerCase().includes(q)
+      || (c.secteurNom ?? '').toLocaleLowerCase().includes(q)).slice(0, 12);
+  });
+  readonly competenceSelectionnee = computed(() => this.competences().find((c) => c.id === this.competenceId()));
   readonly regles = signal<RegleDraft[]>([]);
   readonly parDefaut = signal(false);
   readonly loading = signal(false);
@@ -113,8 +139,27 @@ export class ReglesValidationAdminComponent {
   readonly message = signal('');
   readonly error = signal('');
 
+  rechercher(value: string): void {
+    this.rechercheCompetence.set(value);
+    if (this.competenceSelectionnee()?.nom !== value) {
+      this.competenceId.set('');
+      this.regles.set([]);
+      this.message.set('');
+      this.error.set('');
+    }
+  }
+
+  effacerSelection(): void {
+    this.competenceId.set('');
+    this.rechercheCompetence.set('');
+    this.regles.set([]);
+    this.message.set('');
+    this.error.set('');
+  }
+
   choisir(id: string): void {
     this.competenceId.set(id);
+    this.rechercheCompetence.set(this.competences().find((c) => c.id === id)?.nom ?? '');
     this.message.set('');
     this.error.set('');
     this.regles.set([]);

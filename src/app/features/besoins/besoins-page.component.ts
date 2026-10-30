@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { PageHeaderComponent, StatusBadgeComponent } from '../../shared/components';
+import { EmptyStateComponent, PageHeaderComponent, StatusBadgeComponent } from '../../shared/components';
 import { BesoinService } from '../../core/services/besoin.service';
 import { OrganisationService } from '../../core/services/organisation.service';
 import { Besoin } from '../../shared/models';
@@ -11,7 +11,7 @@ import { DatePipe } from '@angular/common';
 @Component({
   selector: 'app-besoins-page',
   standalone: true,
-  imports: [DatePipe, FormsModule, RouterLink, PageHeaderComponent, StatusBadgeComponent],
+  imports: [DatePipe, FormsModule, RouterLink, PageHeaderComponent, StatusBadgeComponent, EmptyStateComponent],
   templateUrl: './besoins-page.component.html',
 })
 export class BesoinsPageComponent {

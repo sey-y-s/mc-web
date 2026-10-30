@@ -1,11 +1,14 @@
-<mc-page-header title="Besoins" description="Consultez, filtrez et gérez les besoins de votre organisation." />
-<div class="mb-4 flex flex-wrap justify-end gap-3">
-  <a routerLink="/app/organisation/besoins/nouveau" class="btn btn-primary">Préparer un besoin</a>
-  <button class="btn btn-ghost" type="button" (click)="besoinsResource.reload()" [disabled]="besoinsResource.isLoading()">Actualiser</button>
-</div>
+<mc-page-header title="Besoins" description="Consultez, filtrez et gérez les besoins de votre organisation.">
+  <div actions class="flex flex-wrap gap-2">
+    <button class="btn btn-secondary" type="button" (click)="besoinsResource.reload()" [disabled]="besoinsResource.isLoading()">Actualiser</button>
+    <a routerLink="/app/organisation/besoins/nouveau" class="btn btn-primary">Préparer un besoin</a>
+  </div>
+</mc-page-header>
+
 @if (besoinsResource.error()) {
   <div class="alert alert-error mb-4" role="alert">{{ errorMessage() }}</div>
 }
+
 <section class="mc-card mb-4 grid gap-4 p-4 md:grid-cols-[2fr_1fr]">
   <label>
     <span class="mc-label">Recherche</span>
@@ -21,46 +24,51 @@
     </select>
   </label>
 </section>
-<section class="mc-card overflow-x-auto">
+
+<section class="mc-card overflow-hidden">
   @if (besoinsResource.isLoading()) {
-    <div class="p-6" role="status">Chargement des besoins…</div>
+    <div class="flex items-center gap-3 p-6 text-sm text-gray-600" role="status"><span class="loading" aria-hidden="true"></span> Chargement des besoins…</div>
   } @else if (!filtered().length) {
-    <div class="p-8 text-center">
-      <h2 class="font-semibold">Aucun besoin trouvé</h2>
-      <p class="mt-1 text-sm text-base-content/60">Aucun résultat ne correspond aux filtres.</p>
-    </div>
+    @if (!besoinsResource.value()?.length) {
+      <mc-empty-state title="Aucun besoin pour le moment" message="Un besoin décrit les compétences que votre organisation recherche. Vous pouvez d’abord l’enregistrer en brouillon.">
+        <a routerLink="/app/organisation/besoins/nouveau" class="btn btn-primary">Préparer un besoin</a>
+      </mc-empty-state>
+    } @else {
+      <mc-empty-state title="Aucun besoin trouvé" message="Aucun résultat ne correspond aux filtres." />
+    }
   } @else {
-    <table class="mc-table">
-      <thead>
-        <tr><th>Titre</th><th>Statut</th><th>Début</th><th>Fin</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        @for (b of visible(); track b.id) {
-          <tr>
-            <td class="font-medium">{{ b.titre }}</td>
-            <td><mc-status-badge [value]="b.statut" /></td>
-            <td>{{ b.dateDebut ? (b.dateDebut | date:'dd/MM/yyyy') : '—' }}</td>
-            <td>{{ b.dateFin ? (b.dateFin | date:'dd/MM/yyyy') : '—' }}</td>
-            <td>
-              <div class="flex flex-wrap gap-2">
-                <a class="mc-link" [routerLink]="['/app/organisation/besoins', b.id]">Détail</a>
-                @if (b.statut !== 'CLOTURE') {
-                  <a class="mc-link" [routerLink]="['/app/organisation/besoins', b.id, 'modifier']">Modifier</a>
-                }
-                @if (b.statut === 'OUVERT' && organisationApprouvee()) {
-                  <a class="mc-link" [routerLink]="['/app/organisation/matching', b.id]">Matching</a>
-                }
-              </div>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead>
+          <tr><th scope="col">Titre</th><th scope="col">Statut</th><th scope="col">Début</th><th scope="col">Fin</th><th scope="col">Actions</th></tr>
+        </thead>
+        <tbody>
+          @for (b of visible(); track b.id) {
+            <tr>
+              <td><a class="font-semibold text-gray-900 hover:text-brand-700 hover:underline" [routerLink]="['/app/organisation/besoins', b.id]">{{ b.titre }}</a></td>
+              <td><mc-status-badge [value]="b.statut" /></td>
+              <td>{{ b.dateDebut ? (b.dateDebut | date:'dd/MM/yyyy') : '—' }}</td>
+              <td>{{ b.dateFin ? (b.dateFin | date:'dd/MM/yyyy') : '—' }}</td>
+              <td>
+                <div class="flex flex-wrap gap-x-4 gap-y-1">
+                  @if (b.statut !== 'CLOTURE') {
+                    <a class="mc-link" [routerLink]="['/app/organisation/besoins', b.id, 'modifier']">Modifier</a>
+                  }
+                  @if (b.statut === 'OUVERT' && organisationApprouvee()) {
+                    <a class="mc-link" [routerLink]="['/app/organisation/matching', b.id]">Matching</a>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
     <div class="flex flex-wrap items-center justify-between gap-3 border-t border-base-300 p-4">
-      <p class="text-sm text-base-content/60">{{ filtered().length }} besoin(s) · page {{ page() }} sur {{ pageCount() }}.</p>
+      <p class="text-sm text-gray-600">{{ filtered().length }} besoin(s) · page {{ page() }} sur {{ pageCount() }}</p>
       <div class="flex gap-2">
-        <button class="btn btn-sm btn-outline" (click)="goPage(page() - 1)" [disabled]="page() <= 1">Précédent</button>
-        <button class="btn btn-sm btn-outline" (click)="goPage(page() + 1)" [disabled]="page() >= pageCount()">Suivant</button>
+        <button class="btn btn-sm btn-secondary" type="button" (click)="goPage(page() - 1)" [disabled]="page() <= 1">Précédent</button>
+        <button class="btn btn-sm btn-secondary" type="button" (click)="goPage(page() + 1)" [disabled]="page() >= pageCount()">Suivant</button>
       </div>
     </div>
   }

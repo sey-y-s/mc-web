@@ -95,7 +95,7 @@
 
   <!-- Carte + liste des localités -->
   <div class="mt-4 grid gap-4" [class]="compact ? 'xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]' : 'lg:grid-cols-[minmax(0,1fr)_320px]'">
-    <div class="relative min-w-0">
+    <div class="relative min-w-0" [class.mc-map-sticky]="!compact">
       <div #carte class="mc-carte-fond w-full overflow-hidden rounded-xl border border-base-300"
            [class]="compact ? 'h-[380px] sm:h-[500px]' : 'h-[420px] sm:h-[560px]'"
            role="region" aria-label="Carte du Mali des talents par localité"></div>

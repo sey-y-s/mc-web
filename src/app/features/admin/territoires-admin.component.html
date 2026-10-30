@@ -1,273 +1,131 @@
 <mc-page-header
   title="Territoires"
-  description="Consulter et gérer les régions, le district de Bamako et les communes."
+  description="Parcourir les territoires du Mali et gérer les communes rattachées à chaque région."
 />
+
+@if (errorMessage()) {
+  <div class="mb-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700" role="alert">{{ errorMessage() }}</div>
+}
+@if (message()) {
+  <div class="mb-4 rounded-lg border border-success-200 bg-success-50 px-4 py-3 text-sm text-success-700" role="status">{{ message() }}</div>
+}
+
 <section class="mc-card p-5 sm:p-6">
-  @if (errorMessage()) {
-    <p class="mb-3 text-sm text-red-700" role="alert">{{ errorMessage() }}</p>
-  }
-  @if (message()) {
-    <p class="mb-3 text-sm text-emerald-800" role="status">{{ message() }}</p>
-  }
-  <div class="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Niveau territorial">
-    <button
-      class="btn"
-      [class.btn-primary]="tab() === 'regions'"
-      [class.btn-secondary]="tab() !== 'regions'"
-      (click)="tab.set('regions'); reset()"
-      role="tab"
-      [attr.aria-selected]="tab() === 'regions'"
-    >
-      Territoires ({{ regions().length }})
-    </button>
-    <button
-      class="btn"
-      [class.btn-primary]="tab() === 'communes'"
-      [class.btn-secondary]="tab() !== 'communes'"
-      (click)="tab.set('communes'); reset()"
-      role="tab"
-      [attr.aria-selected]="tab() === 'communes'"
-    >
-      Communes ({{ communes().length }})
-    </button>
-  </div>
-  @if (tab() === 'regions') {
-    <form
-      id="territoire-editor"
-      class="sticky top-2 z-10 grid gap-3 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm md:grid-cols-3"
-      (ngSubmit)="enregistrerRegion()"
-    >
-      <label class="text-sm font-medium"
-        >Nom du territoire *<input
-          class="mc-input mt-1"
-          name="regionNom"
-          [(ngModel)]="regionForm.nom"
-          maxlength="100"
-          required
-        />
-      </label>
-      <label class="text-sm font-medium"
-        >Code stable *<input
-          class="mc-input mt-1 font-mono"
-          name="regionCodeStable"
-          [(ngModel)]="regionForm.codeStable"
-          maxlength="32"
-          [disabled]="!!regionEditId()"
-          required
-        /><span class="mt-1 block text-xs text-base-content/70">Immuable après attribution.</span></label
-      ><label class="text-sm font-medium"
-        >Niveau territorial<select
-          class="mc-input mt-1"
-          name="regionNiveau"
-          [(ngModel)]="regionForm.niveau"
-          [disabled]="!!regionEditId()"
-          required
-        >
-          <option value="REGION">Région</option>
-          <option value="DISTRICT">District</option>
-        </select></label
-      >
-      <!-- <label class="text-sm font-medium md:col-span-2"
-        >Description<input
-          class="mc-input mt-1"
-          name="regionDescription"
-          [(ngModel)]="regionForm.description"
-      /></label> -->
-      <div class="flex gap-2 md:col-span-2">
-        <button class="btn btn-primary" type="submit" [disabled]="saving()">
-          {{ regionEditId() ? 'Modifier le territoire' : 'Créer le territoire' }}</button
-        ><button class="btn btn-secondary" type="button" (click)="reset()">Effacer</button>
+  @if (regionSelectionnee(); as region) {
+    <nav class="mb-5 flex flex-wrap items-center gap-2 text-sm" aria-label="Fil d’Ariane">
+      <button type="button" class="font-medium text-brand-700 hover:underline dark:text-brand-300" (click)="revenirAuxTerritoires()">Territoires</button>
+      <span class="text-gray-400">/</span>
+      <span class="font-semibold text-gray-800 dark:text-white">{{ region.nom }}</span>
+    </nav>
+
+    <div class="mb-6 flex flex-col gap-4 border-b border-gray-200 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800">
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ region.nom }}</h2>
+          <span class="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">{{ region.niveau || (region.codeStable?.startsWith('ML-DIS-') ? 'District' : 'Région') }}</span>
+        </div>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ communesDeLaRegion().length }} commune(s) rattachée(s)</p>
       </div>
-    </form>
-    <label class="mt-4 block max-w-md"
-      ><span class="mc-label">Rechercher un territoire</span
-      ><input
-        class="mc-input mt-1"
-        type="search"
-        [ngModel]="rechercheRegion()"
-        (ngModelChange)="rechercheRegion.set($event); pageRegions.set(1)"
-        name="rechercheRegion"
-        placeholder="Nom, code ou niveau"
-    /></label>
-    @if (regionsResource.isLoading()) {
-      <p class="py-6 text-sm">Chargement des régions…</p>
-    } @else if (!regionsFiltrees().length) {
-      <p class="py-6 text-sm text-slate-500">Aucune région enregistrée.</p>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="btn btn-secondary" (click)="editRegion(region)"><svg viewBox="0 0 24 24" class="size-4" fill="none"><path d="m14 5 5 5M4 20l4.5-1 11-11a2.1 2.1 0 0 0-3-3l-11 11L4 20Z" stroke="currentColor" stroke-width="1.5"/></svg> Modifier</button>
+        <button type="button" class="btn btn-ghost text-error-600" (click)="deleteRegion(region)"><svg viewBox="0 0 24 24" class="size-4" fill="none"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m4 4v5m4-5v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Supprimer</button>
+        <button type="button" class="btn btn-primary" (click)="ouvrirAjoutCommune()"><svg viewBox="0 0 24 24" class="size-4" fill="none"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Ajouter une commune</button>
+      </div>
+    </div>
+
+    <label class="mb-4 block max-w-md">
+      <span class="mc-label">Rechercher dans les communes</span>
+      <input class="mc-input mt-1" type="search" [ngModel]="rechercheCommune()" (ngModelChange)="rechercheCommune.set($event)" placeholder="Nom de commune…" />
+    </label>
+
+    @if (communesResource.isLoading()) {
+      <p class="py-10 text-center text-sm text-gray-500">Chargement des communes…</p>
+    } @else if (!communesDeLaRegion().length) {
+      <div class="rounded-xl border border-dashed border-gray-300 px-5 py-12 text-center dark:border-gray-700">
+        <div class="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800"><svg viewBox="0 0 24 24" class="size-6" fill="none"><path d="M4 5.5 12 3l8 2.5v13L12 21l-8-2.5v-13ZM12 3v18m8-15.5-8 2.5-8-2.5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+        <h3 class="font-semibold text-gray-900 dark:text-white">Aucune commune trouvée</h3>
+        <p class="mt-1 text-sm text-gray-500">Ajoutez la première commune de ce territoire.</p>
+        <button type="button" class="btn btn-primary mt-4" (click)="ouvrirAjoutCommune()">Ajouter une commune</button>
+      </div>
     } @else {
-      <div class="mt-4 overflow-x-auto">
-        <table class="table w-full">
-          <thead>
-            <tr>
-              <th>Territoire</th>
-              <th>Niveau</th>
-              <th>Code stable</th>
-              <th>Description</th>
-              <th>Actions</th>
-            </tr>
+      <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
+        <table class="w-full min-w-[420px] divide-y divide-gray-200 text-left dark:divide-gray-800">
+          <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:bg-gray-800/60 dark:text-gray-400">
+            <tr><th class="px-4 py-3">Commune</th><th class="px-4 py-3 text-right">Actions</th></tr>
           </thead>
-          <tbody>
-            @for (r of regionsFiltreesPage(); track r.id) {
-              <tr>
-                <td>{{ r.nom }}</td>
-                <td>
-                  {{ r.niveau || (r.codeStable?.startsWith('ML-DIS-') ? 'DISTRICT' : 'REGION') }}
-                </td>
-                <td>
-                  <code>{{ r.codeStable || '—' }}</code>
-                </td>
-                <td>{{ r.description || '—' }}</td>
-                <td>
-                  <div class="flex gap-2">
-                    <button class="btn btn-sm btn-secondary" (click)="editRegion(r)">
-                      Modifier</button
-                    ><button class="btn btn-sm btn-secondary" (click)="deleteRegion(r)">
-                      Supprimer
-                    </button>
-                  </div>
-                </td>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            @for (commune of communesDeLaRegion(); track commune.id) {
+              <tr class="transition hover:bg-gray-50/80 dark:hover:bg-white/[0.02]">
+                <td class="px-4 py-4 font-medium text-gray-800 dark:text-gray-200">{{ commune.nom }}</td>
+                <td class="px-4 py-4"><div class="flex justify-end gap-2"><button type="button" class="btn btn-sm btn-secondary" (click)="editCommune(commune)">Modifier</button><button type="button" class="btn btn-sm btn-secondary text-error-600" (click)="deleteCommune(commune)">Supprimer</button></div></td>
               </tr>
             }
           </tbody>
         </table>
-      </div>
-      <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
-        <span
-          >{{ regionsFiltrees().length }} territoire(s) · Page {{ pageRegions() }} /
-          {{ totalPagesRegions() }}</span
-        >
-        <div class="flex gap-2">
-          <button
-            class="btn btn-sm btn-secondary"
-            type="button"
-            [disabled]="pageRegions() <= 1"
-            (click)="pageRegions.set(pageRegions() - 1)"
-          >
-            Précédent</button
-          ><button
-            class="btn btn-sm btn-secondary"
-            type="button"
-            [disabled]="pageRegions() >= totalPagesRegions()"
-            (click)="pageRegions.set(pageRegions() + 1)"
-          >
-            Suivant
-          </button>
-        </div>
       </div>
     }
   } @else {
-    <form
-      id="territoire-editor"
-      class="sticky top-2 z-10 grid gap-3 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm md:grid-cols-2"
-      (ngSubmit)="enregistrerCommune()"
-    >
-      <label class="text-sm font-medium"
-        >Région *<select
-          class="mc-input mt-1"
-          name="communeRegion"
-          [(ngModel)]="communeForm.regionId"
-          required
-        >
-          <option value="">Sélectionner une région</option>
-          @for (r of regions(); track r.id) {
-            <option [value]="r.id">{{ r.nom }}</option>
-          }
-        </select></label
-      ><label class="text-sm font-medium"
-        >Nom de la commune *<input
-          class="mc-input mt-1"
-          name="communeNom"
-          [(ngModel)]="communeForm.nom"
-          maxlength="100"
-          required /></label
-      >
-      <!-- <label class="text-sm font-medium md:col-span-2"
-        >Description<input
-          class="mc-input mt-1"
-          name="communeDescription"
-          [(ngModel)]="communeForm.description"
-      /></label> -->
-      <div class="flex gap-2 md:col-span-2">
-        <button class="btn btn-primary" type="submit" [disabled]="saving() || !regions().length">
-          {{ communeEditId() ? 'Modifier la commune' : 'Créer la commune' }}</button
-        ><button class="btn btn-secondary" type="button" (click)="reset()">Effacer</button>
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Découpage territorial</h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Sélectionnez un territoire pour consulter ses communes.</p>
       </div>
-    </form>
-    <label class="mt-4 block max-w-md"
-      ><span class="mc-label">Rechercher une commune</span
-      ><input
-        class="mc-input mt-1"
-        type="search"
-        [ngModel]="rechercheCommune()"
-        (ngModelChange)="rechercheCommune.set($event); pageCommunes.set(1)"
-        name="rechercheCommune"
-        placeholder="Nom ou région"
-    /></label>
-    @if (communesResource.isLoading()) {
-      <p class="py-6 text-sm">Chargement des communes…</p>
-    } @else if (!communesFiltrees().length) {
-      <p class="py-6 text-sm text-slate-500">Aucune commune enregistrée.</p>
+      <button type="button" class="btn btn-primary" (click)="ouvrirAjoutRegion()">Ajouter un territoire</button>
+    </div>
+    <label class="mb-5 block max-w-md">
+      <span class="mc-label">Rechercher un territoire</span>
+      <input class="mc-input mt-1" type="search" [ngModel]="rechercheRegion()" (ngModelChange)="rechercheRegion.set($event)" placeholder="Nom, code ou niveau…" />
+    </label>
+    @if (regionsResource.isLoading()) {
+      <p class="py-10 text-center text-sm text-gray-500">Chargement des territoires…</p>
+    } @else if (!regionsFiltrees().length) {
+      <div class="rounded-xl border border-dashed border-gray-300 px-5 py-12 text-center dark:border-gray-700">
+        <h3 class="font-semibold text-gray-900 dark:text-white">Aucun territoire trouvé</h3>
+        <p class="mt-1 text-sm text-gray-500">Ajoutez un territoire pour commencer le découpage.</p>
+      </div>
     } @else {
-      <div class="mt-4 overflow-x-auto">
-        <table class="table w-full">
-          <thead>
-            <tr>
-              <th>Commune</th>
-              <th>Région</th>
-              <th>Description</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (c of communesFiltreesPage(); track c.id) {
-              <tr>
-                <td>{{ c.nom }}</td>
-                <td>{{ c.regionNom || nomRegion(c.regionId) }}</td>
-                <td>{{ c.description || '—' }}</td>
-                <td>
-                  <div class="flex gap-2">
-                    <button class="btn btn-sm btn-secondary" (click)="editCommune(c)">
-                      Modifier</button
-                    ><button class="btn btn-sm btn-secondary" (click)="deleteCommune(c)">
-                      Supprimer
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
-        <span
-          >{{ communesFiltrees().length }} commune(s) · Page {{ pageCommunes() }} /
-          {{ totalPagesCommunes() }}</span
-        >
-        <div class="flex gap-2">
-          <button
-            class="btn btn-sm btn-secondary"
-            type="button"
-            [disabled]="pageCommunes() <= 1"
-            (click)="pageCommunes.set(pageCommunes() - 1)"
-          >
-            Précédent</button
-          ><button
-            class="btn btn-sm btn-secondary"
-            type="button"
-            [disabled]="pageCommunes() >= totalPagesCommunes()"
-            (click)="pageCommunes.set(pageCommunes() + 1)"
-          >
-            Suivant
-          </button>
-        </div>
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        @for (territoire of regionsFiltrees(); track territoire.id) {
+          <article class="group rounded-xl border border-gray-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-theme-md dark:border-gray-800 dark:bg-gray-900 dark:hover:border-brand-700">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"><svg viewBox="0 0 24 24" class="size-6" fill="none"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg></div>
+              <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">{{ territoire.niveau || (territoire.codeStable?.startsWith('ML-DIS-') ? 'District' : 'Région') }}</span>
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">{{ territoire.nom }}</h3>
+            <p class="mt-1 font-mono text-xs text-gray-500 dark:text-gray-400">{{ territoire.codeStable || 'Code non renseigné' }}</p>
+            <div class="mt-5 border-t border-gray-100 pt-4 dark:border-gray-800">
+              <button type="button" class="btn btn-secondary btn-sm w-full justify-center" (click)="ouvrirRegion(territoire)">Détails <span aria-hidden="true">→</span></button>
+            </div>
+          </article>
+        }
       </div>
     }
   }
 </section>
-<section class="mc-card mt-5 p-5">
-  <h2 class="font-semibold">Aperçu cartographique partagé</h2>
-  <p class="mc-muted mb-4 mt-1 text-sm">
-    Limites administratives locales HDX/OCHA, sans tuiles externes : 19 régions et le district de
-    Bamako. Les indicateurs sont joints par code stable.
-  </p>
-  <app-mali-map />
-</section>
+
+@if (modalOuvert()) {
+  <dialog class="modal modal-open z-[90]">
+    <section class="modal-box max-w-xl border border-gray-200 bg-white p-0 dark:border-gray-800 dark:bg-gray-900" aria-labelledby="territoire-modal-title">
+      <header class="border-b border-gray-200 px-6 py-5 dark:border-gray-800">
+        <h2 id="territoire-modal-title" class="text-lg font-semibold text-gray-900 dark:text-white">{{ typeFormulaire() === 'region' ? (regionEditId() ? 'Modifier le territoire' : 'Ajouter un territoire') : (communeEditId() ? 'Modifier la commune' : 'Ajouter une commune') }}</h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Les champs marqués d’un astérisque sont obligatoires.</p>
+      </header>
+      <form class="grid gap-4 p-6" (ngSubmit)="enregistrer()">
+        @if (actionError()) { <p class="rounded-lg bg-error-50 px-3 py-2 text-sm text-error-700" role="alert">{{ actionError() }}</p> }
+        @if (typeFormulaire() === 'region') {
+          <label class="block text-sm font-medium">Nom du territoire *<input class="mc-input mt-1" name="regionNom" [(ngModel)]="regionForm.nom" maxlength="100" required /></label>
+          <label class="block text-sm font-medium">Code stable *<input class="mc-input mt-1 font-mono" name="regionCodeStable" [(ngModel)]="regionForm.codeStable" maxlength="32" [disabled]="!!regionEditId()" required /><span class="mt-1 block text-xs font-normal text-gray-500">Ce code ne pourra plus être modifié après création.</span></label>
+          <label class="block text-sm font-medium">Niveau territorial<select class="mc-input mt-1" name="regionNiveau" [(ngModel)]="regionForm.niveau" [disabled]="!!regionEditId()" required><option value="REGION">Région</option><option value="DISTRICT">District</option></select></label>
+        } @else {
+          <label class="block text-sm font-medium">Région de rattachement *<select class="mc-input mt-1" name="communeRegion" [(ngModel)]="communeForm.regionId" [disabled]="!!regionSelectionnee() && !communeEditId()" required><option value="">Sélectionner une région</option>@for (region of regions(); track region.id) { <option [value]="region.id">{{ region.nom }}</option> }</select></label>
+          <label class="block text-sm font-medium">Nom de la commune *<input class="mc-input mt-1" name="communeNom" [(ngModel)]="communeForm.nom" maxlength="100" required /></label>
+        }
+        <footer class="mt-2 flex justify-end gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
+          <button type="button" class="btn btn-secondary" (click)="fermerModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Enregistrement…' : (regionEditId() || communeEditId() ? 'Enregistrer les modifications' : 'Ajouter') }}</button>
+        </footer>
+      </form>
+    </section>
+    <button type="button" class="modal-backdrop" aria-label="Fermer la fenêtre" (click)="fermerModal()"></button>
+  </dialog>
+}

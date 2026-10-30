@@ -16,7 +16,7 @@ export interface RegisterRequest {
   telephone: string;
   email?: string;
   password: string;
-  role: 'ORGANISATION' | 'CITOYEN';
+  role: 'ORGANISATION';
 
   // Compte organisation
   nomOrganisation?: string;
@@ -26,10 +26,6 @@ export interface RegisterRequest {
   /** Acceptation explicite des conditions d'utilisation (exigée par le serveur). */
   conditionsAcceptees?: boolean;
   
-  // Compte citoyen (inscription faite surtout sur mobile)
-  nom?: string;
-  prenom?: string;
-  communeId?: string;
 }
 
 export interface LoginResponse {

@@ -17,7 +17,7 @@ import { ConfirmationService } from '../../core/ui/confirmation.service';
       description="Gérer les rôles et l’état des comptes utilisateurs."
     />
     <section class="mc-card p-5 sm:p-6">
-      <p class="mb-4 rounded-md border border-base-300 bg-base-200/50 px-4 py-3 text-sm text-base-content/70">Le rôle Gestionnaire de centre se donne depuis la fiche d’un centre. Le compte doit déjà posséder le profil correspondant à son type.</p>
+      <p class="mb-4 rounded-md border border-base-300 bg-base-200/50 px-4 py-3 text-sm text-base-content/70">Cette page permet de gérer les rôles et l’activation des comptes existants. La création d’un utilisateur par le Super Admin nécessite encore un endpoint backend dédié ; aucun formulaire ne sera branché sur une route inexistante. Le rôle Gestionnaire de centre se donne depuis la fiche d’un centre.</p>
       @if (usersResource.error() || actionError()) {
         <p class="mb-4 text-sm text-red-700" role="alert">{{ errorMessage() }}</p>
       }

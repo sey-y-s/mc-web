@@ -227,11 +227,6 @@ export const routes: Routes = [
         canActivate: [roleGuard(superAdmins)],
         loadComponent: () => import('./features/super-admin/opportunite-publication.component').then((m) => m.OpportunitePublicationComponent),
       },
-      {
-        path: 'profil',
-        title: 'Mon profil — MaliCompétences',
-        loadComponent: () => import('./features/profil/profil-page.component').then((m) => m.ProfilPageComponent),
-      },
     ],
   },
 
@@ -283,7 +278,6 @@ export const routes: Routes = [
   { path: 'super-admin/utilisateurs', redirectTo: 'app/super-admin/utilisateurs' },
   { path: 'super-admin/opportunites', redirectTo: 'app/super-admin/opportunites' },
   { path: 'centre-admin', redirectTo: 'app/centre-admin' },
-  { path: 'profil', redirectTo: 'app/profil' },
   { path: 'carte-talents', redirectTo: 'app/carte-talents' },
   { path: '**', redirectTo: '404' },
 ];
